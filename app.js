@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 16.11.2026 15:00 */
+/* Engineering Cockpit – Entwurf, Stand 16.11.2026 15:58 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -531,17 +531,25 @@ class Component extends DCLogic {
 
   vStatus(v) { return this.nodeStatus(NODE[v.id]); }
   openProject(key) { const st = PSTACEY[key] || [1, 0]; this.setState({ boardMsg: '', screen: 'projekt', proj: key, ptab: key === 'sm42' ? 'uebersicht' : (key === 'ih' ? 'aufgaben' : 'planung'), panel: null, highlight: null, sx: st[0], sy: st[1] }); }
+  kbColsOf() { return this.state.kbCols || KB_COLS; }
+  kbSetCols(list, msg) { this.setState({ kbCols: list, kbMsg: msg || '', kbOk: true }); }
+  kbNew(col, o) { const C = this.kbColsOf(), def = C.find(c => c[0] === col), inCol = Object.values(this.state.kb).filter(c => c === col).length;
+    if (def && def[2] && inCol >= def[2]) return this.setState({ kbMsg: 'WIP-Limit „' + def[1] + '“ erreicht (' + inCol + ' von ' + def[2] + '). Neue Aufträge erst in „' + C[0][1] + '“ anlegen oder einen abschließen.', kbOk: false });
+    const id = 'kn' + Date.now().toString(36), k = { id, type: o.type, title: o.title, anlage: o.anlage || '–', cls: o.exp ? 'Expedite' : 'Standard', owner: o.owner, col, age: 0 };
+    KB.push(k); const x = { id: 'ik' + id, title: o.title, proj: 'Instandhaltung Halle 2', due: o.exp ? '2026-11-13' : '2026-11-20', bucket: 'Backlog', prio: o.exp ? 'Hoch' : 'Niedrig', owner: o.owner, mine: o.owner === 'Du', ms: null, kb: id, est: IH_EST[o.type] || 2, desc: o.type + ' an ' + (o.anlage || 'Anlage offen') + '. Serviceklasse: ' + k.cls + '.' };
+    TASKS.push(x); TASK[x.id] = x;
+    this.setState({ kb: Object.assign({}, this.state.kb, { [id]: col }), kbAdd: null, kbMsg: o.type + ' „' + o.title + '“ in „' + (def ? def[1] : col) + '“ angelegt' + (o.owner !== 'Du' ? ', zugewiesen an ' + o.owner : '') + '. Klick auf den Titel öffnet die Details.', kbOk: true, rev: (this.state.rev || 0) + 1 }); }
   moveKb(id, dir) {
-    const order = KB_COLS.map(c => c[0]);
-    const cur = this.state.kb[id], next = KB_COLS[order.indexOf(cur) + dir];
+    const order = this.kbColsOf().map(c => c[0]);
+    const cur = this.state.kb[id], next = this.kbColsOf()[order.indexOf(cur) + dir];
     if (!next) return;
     const limit = next[2];
     const inCol = Object.values(this.state.kb).filter(c => c === next[0]).length;
     if (limit && inCol >= limit) {
-      this.setState({ kbMsg: 'WIP-Limit „' + next[1] + '“ erreicht (' + inCol + ' von ' + limit + '). Erst einen Auftrag abschließen, dann neuen beginnen.' });
+      this.setState({ kbMsg: 'WIP-Limit „' + next[1] + '“ erreicht (' + inCol + ' von ' + limit + '). Erst einen Auftrag abschließen, dann neuen beginnen.', kbOk: false });
       return;
     }
-    const kb = Object.assign({}, this.state.kb); kb[id] = next[0]; this.setState({ kb, kbMsg: '' });
+    const kb = Object.assign({}, this.state.kb); kb[id] = next[0]; this.setState({ kb, kbMsg: '', kbOk: true });
   }
   moveStory(id, dir) {
     const cols = SB_COLS.map(c => c[0]);
@@ -566,7 +574,7 @@ class Component extends DCLogic {
   }
 
   isDone(task) { if (task.story) return this.state.sst[task.story] === 'Done'; if (task.kb) return this.state.kb[task.kb] === 'erledigt'; const d = this.state.done[task.id]; return d === undefined ? task.bucket === 'Erledigt' : d; }
-  bucketOf(task) { if (task.story) return task.ms ? SST_BUCKET[this.state.sst[task.story]] : 'Backlog'; if (task.kb) return KB_BUCKET[this.state.kb[task.kb]]; if (this.isDone(task)) { const o2 = this.state.bk[task.id]; return o2 && this.catOf(task, o2) === 'fertig' ? o2 : this.doneKey(task); } const o = this.state.bk[task.id]; if (o && this.bucketsOf(this.pkOf(task)).some(b => b.key === o)) return o; return task.bucket === 'Erledigt' ? 'Fokus' : task.bucket; }
+  bucketOf(task) { if (task.story) return task.ms ? SST_BUCKET[this.state.sst[task.story]] : 'Backlog'; if (task.kb) return KB_BUCKET[this.state.kb[task.kb]] || 'Backlog'; if (this.isDone(task)) { const o2 = this.state.bk[task.id]; return o2 && this.catOf(task, o2) === 'fertig' ? o2 : this.doneKey(task); } const o = this.state.bk[task.id]; if (o && this.bucketsOf(this.pkOf(task)).some(b => b.key === o)) return o; return task.bucket === 'Erledigt' ? 'Fokus' : task.bucket; }
   toggleFocus(id) {
     const x = TASK[id]; if (this.isDone(x)) return;
     if (x.story) return x.ms ? this.storyTo(x.story, this.bucketOf(x) === 'Fokus' ? 'To Do' : 'In Arbeit') : this.setState({ boardMsg: STORIES[x.story].key + ' liegt im Product Backlog.' });
@@ -600,9 +608,9 @@ class Component extends DCLogic {
   }
   kbTo(kid, col) {
     if (this.state.kb[kid] === col) return;
-    const def = KB_COLS.find(c => c[0] === col), lim = def && def[2], inCol = Object.values(this.state.kb).filter(c => c === col).length;
-    if (lim && inCol >= lim) return this.setState({ kbMsg: 'WIP-Limit „' + def[1] + '“ erreicht (' + inCol + ' von ' + lim + '). Erst einen Auftrag abschließen, dann neuen beginnen.' });
-    const kb = Object.assign({}, this.state.kb); kb[kid] = col; this.setState({ kb, kbMsg: '' });
+    const def = this.kbColsOf().find(c => c[0] === col), lim = def && def[2], inCol = Object.values(this.state.kb).filter(c => c === col).length;
+    if (lim && inCol >= lim) return this.setState({ kbMsg: 'WIP-Limit „' + def[1] + '“ erreicht (' + inCol + ' von ' + lim + '). Erst einen Auftrag abschließen, dann neuen beginnen.', kbOk: false });
+    const kb = Object.assign({}, this.state.kb); kb[kid] = col; this.setState({ kb, kbMsg: '', kbOk: true });
   }
   ganttStart(id, mode) { return e => { this._gd = { id, mode, x0: e.clientX }; try { e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; } catch (er) { /* ältere Browser */ } if (e.stopPropagation) e.stopPropagation(); }; }
   ganttOver() { return e => { if (this._gd && e && e.preventDefault) e.preventDefault(); }; }
@@ -639,8 +647,13 @@ class Component extends DCLogic {
     if (n.type === 'gate') { n.start = iso; n.end = iso; } else if (which === 'start') { n.start = iso; if (n.end < iso) n.end = iso; } else { n.end = iso; if (n.start > iso) n.start = iso; }
     if (VNODE[id]) { VNODE[id].start = n.start; VNODE[id].end = n.end; }
     let p = PARENT[id]; while (p) { const ph = NODE[p]; if (ph && ph.children && ph.children.length) { ph.start = ph.children.reduce((a, c) => (c.start < a ? c.start : a), '9999'); ph.end = ph.children.reduce((a, c) => (c.end > a ? c.end : a), '0000'); } p = PARENT[p]; }
-    this.setState({ rev: (this.state.rev || 0) + 1, mvMsg: '„' + n.name + '“ ' + (n.type === 'gate' ? 'ist jetzt am ' + fmt(D(n.end)) : 'liegt jetzt von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end))) + ' (von Hand eingetragen).' });
+    const m0 = '„' + n.name + '“ ' + (n.type === 'gate' ? 'ist jetzt am ' + fmt(D(n.end)) + D(n.end).getFullYear() : 'liegt jetzt von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + D(n.end).getFullYear()) + ' (von Hand eingetragen). Die Baseline bleibt zum Vergleich erhalten.';
+    this.setState({ rev: (this.state.rev || 0) + 1, mvMsg: m0, pnMsg: m0 });
   }
+  canPlan(pk) { const r = (PMEMBERS[pk] || []).find(x => x[0] === 'Du'); return !r || r[1] === 'Owner' || r[1] === 'Bearbeiter'; }
+  dateEdit(n, can) { const pt = n.type === 'gate', ok = v => /^\d{4}-\d\d-\d\d$/.test(v || '') && +v.slice(0, 4) >= 2020 && +v.slice(0, 4) <= 2100, val = e => (e && e.target ? e.target.value : '');
+    return { edit: !!can, ro: !can, roTitle: can ? '' : 'Nur lesen: Termine ändern dürfen Owner und Bearbeiter.', range: !pt, a: n.start, b: n.end, aLabel: 'Beginn ' + n.name, bLabel: (pt ? 'Termin ' : 'Ende ') + n.name, bTitle: pt ? 'Termin ändern' : 'Ende ändern',
+      setA: e => { const v = val(e); if (ok(v)) this.setNodeDate(n.id, 'start', v); }, setB: e => { const v = val(e); if (ok(v)) this.setNodeDate(n.id, pt ? 'start' : 'end', v); } }; }
   setDue(id, iso) { const x = TASK[id]; if (!x || !/^\d{4}-\d\d-\d\d$/.test(iso || '')) return; this.logH('t:' + id, 'Fällig', fmt(D(x.due)), fmt(D(iso))); x.due = iso; this.setState({ rev: (this.state.rev || 0) + 1, pMsg: 'Fällig jetzt am ' + fmt(D(iso)) + D(iso).getFullYear() + '.' }); }
   coOf(x) { const o = this.state.coOv && this.state.coOv[x.id]; return o || x.co || []; }
   pkOfNode(id) { let r = id; while (PARENT[r]) r = PARENT[r]; return Object.keys(PTREE_OF).find(k => PTREE_OF[k].some(n => n.id === r)) || 'sm42'; }
@@ -1267,7 +1280,18 @@ class Component extends DCLogic {
     // Planbare Zeit: Sollarbeitszeit 35 h/Woche × Planungsfaktor 80 % = 28 h/Woche = 5,6 h/Tag, 10 Arbeitstage
     const capacity = [['J. Novak', 1, 1, '1 Tag Urlaub'], ['S. Keller', 0.5, 0, '–'], ['M. Yilmaz', 0.5, 2, '2 Tage Schulung'], ['F. Roth', 0.3, 0, '–']]
       .map(([name, share, away, awayText]) => ({ name, pct: Math.round(share * 100) + ' %', away: awayText, h: (Math.round((10 - away) * 5.6 * share * 10) / 10).toLocaleString('de-DE') + ' h' }));
-    const sprintIds = ['s1', 's2', 's3', 's4'];
+    const sprintIds = s.s5 ? s.plan5.slice() : ['s1', 's2', 's3', 's4'];
+    const goal5 = s.goal5 !== undefined ? s.goal5 : 'Safety-Zuhaltung und Rezeptverwaltung abnahmebereit';
+    const sp5 = { goal: goal5, setGoal: e => this.setState({ goal5: e && e.target ? e.target.value : '' }), started: !!s.s5, notStarted: !s.s5,
+      hasMsg: !!s.sp5Msg, msg: s.sp5Msg || '', msgColor: s.s5 ? GREEN : RED, goBoard: () => this.setState({ sview: 'board', boardMsg: '' }),
+      boardName: s.s5 ? 'Sprint 5' : 'Sprint 4', boardGoal: s.s5 ? goal5 : 'HMI-Grundbedienung und Not-Halt über Safety-SPS lauffähig', chip: s.s5 ? 'Sprint 5 · 16.11.–27.11. · Tag 1 von 10' : 'Sprint 4 · 02.11.–13.11. · endet heute',
+      start: () => { const g = (goal5 || '').trim(), sum = s.plan5.reduce((a, id) => a + STORIES[id].sp, 0);
+        if (!g) return this.setState({ sp5Msg: 'Ohne Sprintziel geht es nicht: Was soll am Ende des Sprints erreicht sein? Ein Satz reicht.' });
+        if (!sum) return this.setState({ sp5Msg: 'Noch keine Story eingeplant. Links aus dem Backlog mit „+“ in den Sprint holen.' });
+        if (sum > 18) return this.setState({ sp5Msg: 'Über der Kapazität: ' + (sum - 18) + ' SP zu viel. Erst eine Story herausnehmen, sonst ist die Zusage nicht zu halten.' });
+        const sst = Object.assign({}, s.sst); s.plan5.forEach(id => { if (!sst[id] || sst[id] === 'Done') sst[id] = 'To Do'; });
+        const back = ['s1', 's2', 's3', 's4'].filter(id => !s.plan5.includes(id) && s.sst[id] !== 'Done').map(id => STORIES[id].key);
+        this.setState({ s5: true, sst, sp5Msg: 'Sprint 5 gestartet: ' + s.plan5.length + ' Stories, ' + sum + ' SP, Ziel „' + g + '“. Das Team sieht sie jetzt im Sprint-Board.' + (back.length ? ' Nicht übernommen und zurück im Backlog: ' + back.join(', ') + '.' : '') }); } };
     const sboard = SB_COLS.map(([name, color], ci) => {
       const ids = sprintIds.filter(id => s.sst[id] === name), sbKey = 'sb|' + name, sbHot = s.dragOver === sbKey;
       return { name, color, over: this.dragOver(sbKey), drop: this.dropOn(sbKey, tid => { const x = TASK[tid]; if (x && x.story) this.storyTo(x.story, name); }),
@@ -1281,14 +1305,15 @@ class Component extends DCLogic {
         }) };
     });
     const doneSp = sprintIds.filter(id => s.sst[id] === 'Done').reduce((a, id) => a + STORIES[id].sp, 0);
-    const rest = 26 - doneSp;
-    const bx = i => 24 + i * 30, by = v => 140 - v / 26 * 120;
+    const spTot = s.s5 ? Math.max(1, s.plan5.reduce((a, id) => a + STORIES[id].sp, 0)) : 26;
+    const rest = spTot - doneSp;
+    const bx = i => 24 + i * 30, by = v => 140 - v / spTot * 120;
     const actualVals = [26, 26, 26, 26, 21, 21, 21, 21, 21, Math.min(rest, 21)];
     if (doneSp < 5) actualVals[9] = rest;
-    const burn = { rest: String(rest),
-      ideal: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => bx(i) + ',' + by(26 - 26 * i / 9)).join(' '),
-      actual: actualVals.map((v, i) => bx(i) + ',' + by(v)).join(' '),
-      aria: 'Burndown Sprint 4: Rest ' + rest + ' von 26 Story Points am letzten Sprinttag' };
+    const burn = { rest: String(rest), total: String(spTot), from: s.s5 ? '16.11.' : '02.11.', to: s.s5 ? '27.11.' : '13.11.',
+      ideal: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => bx(i) + ',' + by(spTot - spTot * i / 9)).join(' '),
+      actual: (s.s5 ? [spTot, rest] : actualVals).map((v, i) => bx(i) + ',' + by(v)).join(' '),
+      aria: (s.s5 ? 'Burndown Sprint 5, Tag 1: Rest ' : 'Burndown Sprint 4: Rest ') + rest + ' von ' + spTot + ' Story Points' };
     const boardMsg = { show: !!s.boardMsg, text: s.boardMsg };
     const GB = [['erreicht', 'Erreicht'], ['teilweise', 'Teilweise'], ['nicht', 'Nicht erreicht']];
     const goalBtns = GB.map(([k, l]) => { const on = s.goal === k; return { label: l, sel: on ? 'true' : 'false', bg: on ? accent : t.surface, fg: on ? '#FFFFFF' : t.text, bd: on ? accent : t.strong, go: () => this.setState({ goal: k }) }; });
@@ -1303,11 +1328,21 @@ class Component extends DCLogic {
     });
     const accSp = sprintIds.filter(id => s.accept[id] === 'ja').reduce((a, id) => a + STORIES[id].sp, 0);
     const review = { accSp: String(accSp), rel: Math.round(accSp / 26 * 100) + ' %' };
+    const RX = s.retroX || {}, rAdd = s.retroAdd || null, rWho = s.retroWho || 'J. Novak', RTEAM = ['Du', 'J. Novak', 'S. Keller', 'M. Yilmaz', 'F. Roth'];
     const retro = [
-      { title: 'Lief gut', bg: '#DFF6DD', fg: '#0E4F0E', items: [{ text: 'HMI-Prototyp früh mit Bedienern getestet' }, { text: 'Daily kurz und pünktlich' }] },
-      { title: 'Verbessern', bg: '#FFF4CE', fg: '#5C4300', items: [{ text: 'Safety-Validierung zu spät begonnen' }, { text: 'Testanlage oft belegt' }] },
-      { title: 'Maßnahmen', bg: '#DCEAF7', fg: '#0C3B5E', items: [{ text: 'Safety-Validierung ab Sprintbeginn einplanen', owner: 'J. Novak' }, { text: 'Slots für die Testanlage im Kalender reservieren', owner: 'S. Keller' }] }
-    ].map(c => Object.assign({}, c, { items: c.items.map(it => ({ text: it.text, owner: it.owner || '', hasOwner: !!it.owner })) }));
+      { k: 'gut', title: 'Lief gut', bg: '#DFF6DD', fg: '#0E4F0E', items: [{ text: 'HMI-Prototyp früh mit Bedienern getestet' }, { text: 'Daily kurz und pünktlich' }], ph: 'Was lief gut? z. B. Abstimmung mit der Schicht', addLabel: '+ Karte' },
+      { k: 'verb', title: 'Verbessern', bg: '#FFF4CE', fg: '#5C4300', items: [{ text: 'Safety-Validierung zu spät begonnen' }, { text: 'Testanlage oft belegt' }], ph: 'Was hat gebremst oder gestört?', addLabel: '+ Karte' },
+      { k: 'mass', title: 'Maßnahmen', bg: '#DCEAF7', fg: '#0C3B5E', items: [{ text: 'Safety-Validierung ab Sprintbeginn einplanen', owner: 'J. Novak' }, { text: 'Slots für die Testanlage im Kalender reservieren', owner: 'S. Keller' }], ph: 'Was machen wir konkret anders?', addLabel: '+ Maßnahme' }
+    ].map(c => { const adding = rAdd === c.k;
+      const save = () => { const v = (this.state.retroT || '').trim(); if (!v) return this.setState({ retroMsg: 'Bitte erst einen Text eingeben.' }); const it = { text: v }; let msg = 'Karte in „' + c.title + '“ ergänzt.';
+        if (c.k === 'mass') { it.owner = rWho; this.quickTask({ title: v, proj: 'Retrofit Linie 2', due: '2026-11-27', owner: rWho }); msg = 'Maßnahme angelegt und als Aufgabe für ' + (rWho === 'Du' ? 'dich' : rWho) + ' eingeplant, fällig zum Sprintende am 27.11. In der nächsten Retro prüft ihr, ob sie gewirkt hat.'; }
+        this.setState({ retroX: Object.assign({}, this.state.retroX, { [c.k]: ((this.state.retroX || {})[c.k] || []).concat([it]) }), retroAdd: null, retroT: '', retroMsg: msg }); };
+      return Object.assign({}, c, { items: c.items.concat(RX[c.k] || []).map(it => ({ text: it.text, owner: it.owner || '', hasOwner: !!it.owner, canPromote: c.k === 'verb', promote: () => this.setState({ retroAdd: 'mass', retroT: it.text.replace(/^./, m => m.toUpperCase()) + ' – Gegenmaßnahme: ', retroMsg: '' }) })),
+        adding, notAdding: !adding, isMass: c.k === 'mass', text: adding ? (s.retroT || '') : '', setText: e => this.setState({ retroT: e && e.target ? e.target.value : '' }),
+        key: e => { if (e && e.key === 'Enter') save(); if (e && e.key === 'Escape') this.setState({ retroAdd: null, retroT: '' }); },
+        whos: RTEAM.map(n => ({ label: n === 'Du' ? 'ich' : n, pressed: rWho === n ? 'true' : 'false', ring: rWho === n ? '#0C3B5E' : '#D1D1D1', go: () => this.setState({ retroWho: n }) })),
+        saveLabel: c.k === 'mass' ? 'Anlegen (wird Aufgabe)' : 'Hinzufügen', save, add: () => this.setState({ retroAdd: c.k, retroT: '', retroMsg: '' }), cancel: () => this.setState({ retroAdd: null, retroT: '' }) }); });
+    const retroInfo = { hasMsg: !!s.retroMsg, msg: s.retroMsg || '' };
     const moodBtns = [1, 2, 3, 4, 5].map(n => { const on = s.mood === n; return { n: String(n), sel: on ? 'true' : 'false', aria: 'Stimmung ' + n + ' von 5', bg: on ? accent : t.surface, fg: on ? '#FFFFFF' : t.text, bd: on ? accent : t.strong, go: () => this.setState({ mood: n }) }; });
     const moods = [4, 3, 4].concat(s.mood ? [s.mood] : []);
     const moodAvg = (Math.round(moods.reduce((a, b) => a + b, 0) / moods.length * 10) / 10).toLocaleString('de-DE') + ' von 5 (' + moods.length + ' Stimmen)';
@@ -1336,7 +1371,7 @@ class Component extends DCLogic {
     const sprintStrip = [1, 2, 3, 4, 5, 6, 7, 8].map(n => {
       const doneS = n < 4, cur = n === 4, nxt = n === 5;
       const vel = { 1: 15, 2: 19, 3: 21 }[n];
-      return { label: 'Sprint ' + n, sub: doneS ? '✓ ' + vel + ' SP' : (cur ? 'läuft · endet heute' : (nxt ? 'Planung · ab 16.11.' : 'geplant')),
+      return { label: 'Sprint ' + n, sub: doneS ? '✓ ' + vel + ' SP' : (cur ? 'läuft · endet heute' : (nxt ? (s.s5 ? 'läuft seit 16.11.' : 'Planung · ab 16.11.') : 'geplant')),
         bg: doneS ? GREEN : (cur ? accent : t.surface), fg: doneS || cur ? '#FFFFFF' : t.text, bd: doneS ? GREEN : (cur ? accent : (nxt ? accent : t.border)),
         go: cur ? goView('board') : (nxt ? goView('planning') : goView('metrics')) };
     });
@@ -1344,19 +1379,38 @@ class Component extends DCLogic {
     // ── Kanban ──
     const KB_BY = {}; KB.forEach(k => { KB_BY[k.id] = k; });
     const kbCount = col => Object.values(s.kb).filter(c => c === col).length;
-    const kbHead = KB_COLS.map(([key, name, lim, color]) => {
-      const n = kbCount(key), full = lim && n >= lim;
-      return { name, color, lim: lim ? n + ' / ' + lim : String(n), limBg: full ? RED : t.track, limFg: full ? '#FFFFFF' : t.text, bg: full ? (this.props.dark ? '#3A1F22' : '#FDF3F4') : t.surface, bd: full ? RED : t.border };
+    const KBC = this.kbColsOf(), kbGrid = 'repeat(' + KBC.length + ', minmax(200px, 1fr))', kbMinW = (KBC.length * 220) + 'px';
+    const kbHead = KBC.map(([key, name, lim, color], ci) => {
+      const n = kbCount(key), full = lim && n >= lim, LIMS = [null, 2, 3, 4, 5, 6], nextLim = LIMS[(LIMS.indexOf(lim) + 1) % LIMS.length];
+      const swap = d => { const o = KBC.slice(), j = ci + d; if (j < 0 || j >= o.length) return; [o[ci], o[j]] = [o[j], o[ci]]; this.kbSetCols(o, '„' + name + '“ verschoben.'); };
+      return { name, color, lim: lim ? n + ' / ' + lim : String(n), limBg: full ? RED : t.track, limFg: full ? '#FFFFFF' : t.text, bg: full ? (this.props.dark ? '#3A1F22' : '#FDF3F4') : t.surface, bd: full ? RED : t.border,
+        limTitle: (lim ? 'WIP-Limit ' + lim : 'Ohne WIP-Limit') + '. Klick: ' + (nextLim ? 'Limit ' + nextLim : 'ohne Limit'),
+        cycleLim: () => this.kbSetCols(KBC.map(c => (c[0] === key ? [c[0], c[1], nextLim, c[3]] : c)), '„' + name + '“: ' + (nextLim ? 'WIP-Limit ' + nextLim + '.' : 'kein WIP-Limit mehr.')),
+        rename: e => { const v = e && e.target ? e.target.value : name; this.setState({ kbCols: this.kbColsOf().map(c => (c[0] === key ? [c[0], v, c[2], c[3]] : c)) }); },
+        left: () => swap(-1), right: () => swap(1), leftLabel: 'Spalte ' + name + ' nach links', rightLabel: 'Spalte ' + name + ' nach rechts', delLabel: 'Spalte ' + name + ' löschen',
+        del: () => { if (key === 'erledigt') return this.setState({ kbMsg: '„' + name + '“ ist die Erledigt-Spalte und bleibt.', kbOk: false }); if (KBC.length <= 2) return this.setState({ kbMsg: 'Mindestens zwei Spalten müssen bleiben.', kbOk: false });
+          const target = KBC.find(c => c[0] !== key), kb = Object.assign({}, s.kb); let m = 0; Object.keys(kb).forEach(id => { if (kb[id] === key) { kb[id] = target[0]; m++; } });
+          this.setState({ kbCols: KBC.filter(c => c[0] !== key), kb, kbOk: true, kbMsg: 'Spalte „' + name + '“ gelöscht' + (m ? '; ' + m + (m === 1 ? ' Karte liegt' : ' Karten liegen') + ' jetzt in „' + target[1] + '“.' : '.') }); } };
     });
+    const kbAddCol = () => { const fi = KBC.findIndex(c => c[0] === 'erledigt'), o = KBC.slice(); o.splice(fi < 0 ? o.length : fi, 0, ['c' + Date.now().toString(36), 'Neue Spalte', null, '#8764B8']); this.kbSetCols(o, 'Spalte „Neue Spalte“ angelegt. Namen direkt in der Überschrift ändern, Klick auf die Zahl setzt ein WIP-Limit.'); };
+    const KA = s.kbAdd || null, KAT = ['Störung', 'Wartung', 'Auftrag'], KAO = ['A. Schulz', 'D. Petrov', 'K. Weber', 'M. Yilmaz', 'R. Fischer', 'Du'];
+    const kbAddSave = () => { const a = this.state.kbAdd; if (!a) return; const tt = (a.title || '').trim(); if (!tt) return this.setState({ kbMsg: 'Bitte einen Titel eingeben, z. B. „Presse 2: Leckage am Zylinder“.', kbOk: false }); this.kbNew(a.col, { title: tt, type: a.type || 'Auftrag', anlage: (a.anlage || '').trim(), owner: a.owner || 'R. Fischer', exp: !!a.exp }); };
+    const kbAdd = KA ? { title: KA.title || '', setTitle: e => this.setState({ kbAdd: Object.assign({}, this.state.kbAdd, { title: e && e.target ? e.target.value : '' }) }), anlage: KA.anlage || '', setAnlage: e => this.setState({ kbAdd: Object.assign({}, this.state.kbAdd, { anlage: e && e.target ? e.target.value : '' }) }),
+      key: e => { if (e && e.key === 'Enter') kbAddSave(); if (e && e.key === 'Escape') this.setState({ kbAdd: null }); },
+      types: KAT.map(ty => ({ label: ty, pressed: (KA.type || 'Auftrag') === ty ? 'true' : 'false', bg: (KA.type || 'Auftrag') === ty ? KB_TYPE[ty] : t.surface, fg: (KA.type || 'Auftrag') === ty ? '#FFFFFF' : t.text, go: () => this.setState({ kbAdd: Object.assign({}, this.state.kbAdd, { type: ty }) }) })),
+      owners: KAO.map(o => ({ label: o === 'Du' ? 'ich' : o, pressed: (KA.owner || 'R. Fischer') === o ? 'true' : 'false', ring: (KA.owner || 'R. Fischer') === o ? accent : t.border, bg: (KA.owner || 'R. Fischer') === o ? t.soft : t.surface, go: () => this.setState({ kbAdd: Object.assign({}, this.state.kbAdd, { owner: o }) }) })),
+      expLabel: KA.exp ? '✓ Expedite (sofort)' : 'Expedite (sofort)', expRing: KA.exp ? RED : t.border, exp: () => this.setState({ kbAdd: Object.assign({}, this.state.kbAdd, { exp: !KA.exp }) }),
+      save: kbAddSave, cancel: () => this.setState({ kbAdd: null }) } : {};
+    const kbReport = () => this.setState({ kbAdd: { col: KBC[0][0], lane: s.lane === 'keine' ? '' : '\u0000', type: 'Störung', owner: 'R. Fischer', exp: true, title: '', anlage: '' }, lane: 'keine', kbMsg: '' });
     const kbCard = k => {
-      const col = s.kb[k.id], ci = KB_COLS.findIndex(c => c[0] === col), moved = col !== k.col;
+      const col = s.kb[k.id], ci = this.kbColsOf().findIndex(c => c[0] === col), moved = col !== k.col;
       const age = moved ? 0 : k.age, done = col === 'erledigt';
-      return { title: k.title, type: k.type, typeBg: KB_TYPE[k.type], anlage: k.anlage, cls: k.cls === 'Fester Termin' ? 'Termin ' + k.due : k.cls, hasClass: k.cls !== 'Standard', classBg: KB_CLASS[k.cls] || t.strong,
+      return { title: (TASK['ik' + k.id] || k).title, open: () => this.openTask('ik' + k.id, 'proj'), type: k.type, typeBg: KB_TYPE[k.type], anlage: k.anlage, cls: k.cls === 'Fester Termin' ? 'Termin ' + k.due : k.cls, hasClass: k.cls !== 'Standard', classBg: KB_CLASS[k.cls] || t.strong,
         ini: ini(this.ownerOf(TASK['ik' + k.id])), avColor: AV[this.ownerOf(TASK['ik' + k.id])] || accent, drag: this.dragStart('ik' + k.id), dragEnd: this.dragEnd(),
         age: done ? '✓ erledigt' : (age === 0 ? 'heute in Spalte' : age + ' Tage in Spalte'), ageColor: done ? GREEN : (age >= 8 ? RED : (age >= 5 ? '#8A3707' : t.muted)),
         bg: done ? t.surface : (age >= 8 ? (this.props.dark ? '#3A1F22' : '#FDE7E9') : (age >= 5 ? (this.props.dark ? '#3A3320' : '#FFF4CE') : t.surface)), bd: age >= 8 && !done ? RED : (age >= 5 && !done ? '#C19C00' : t.border),
-        canLeft: ci > 0, canRight: ci < KB_COLS.length - 1, left: () => this.moveKb(k.id, -1), right: () => this.moveKb(k.id, 1),
-        leftLabel: k.title + ' nach ' + (KB_COLS[ci - 1] || ['', ''])[1], rightLabel: k.title + ' nach ' + (KB_COLS[ci + 1] || ['', ''])[1] };
+        canLeft: ci > 0, canRight: ci < this.kbColsOf().length - 1, left: () => this.moveKb(k.id, -1), right: () => this.moveKb(k.id, 1),
+        leftLabel: k.title + ' nach ' + (this.kbColsOf()[ci - 1] || ['', ''])[1], rightLabel: k.title + ' nach ' + (this.kbColsOf()[ci + 1] || ['', ''])[1] };
     };
     let laneDefs;
     if (s.lane === 'person') laneDefs = ['A. Schulz', 'D. Petrov', 'K. Weber', 'M. Yilmaz', 'R. Fischer'].map(p => ({ title: p, color: AV[p] || accent, filter: k => this.ownerOf(TASK['ik' + k.id]) === p }));
@@ -1365,8 +1419,9 @@ class Component extends DCLogic {
     const kbLanes = laneDefs.map(l => {
       const ks = KB.filter(l.filter).filter(k => s.kb[k.id] !== 'neu');
       return { title: l.title, color: l.color, showTitle: s.lane !== 'keine', count: String(ks.length),
-        cells: KB_COLS.map(([key]) => { const dk = 'kb|' + l.title + '|' + key, hot = s.dragOver === dk;
-          return { cards: ks.filter(k => s.kb[k.id] === key).map(kbCard), over: this.dragOver(dk), bg: hot ? t.soft : t.surface2, bd: hot ? accent : t.border, bdStyle: hot ? 'dashed' : 'solid',
+        cells: this.kbColsOf().map(([key]) => { const dk = 'kb|' + l.title + '|' + key, hot = s.dragOver === dk;
+          const addingH = !!KA && KA.col === key && (KA.lane === l.title || (KA.lane === '\u0000' && l.title === ''));
+          return { cards: ks.filter(k => s.kb[k.id] === key).map(kbCard), over: this.dragOver(dk), adding: addingH, notAdding: !addingH, add: () => this.setState({ kbAdd: { col: key, lane: l.title, type: 'Auftrag', owner: s.lane === 'person' ? l.title : 'R. Fischer', title: '', anlage: '' }, kbMsg: '' }), bg: hot ? t.soft : t.surface2, bd: hot ? accent : t.border, bdStyle: hot ? 'dashed' : 'solid',
             drop: this.dropOn(dk, tid => { const x = TASK[tid]; if (!x || !x.kb) return; if (s.lane === 'person' && this.ownerOf(x) !== l.title) this.reassign(tid, l.title); this.kbTo(x.kb, key); }) }; }) };
     }).filter(l => s.lane === 'keine' || l.count !== '0');
     const laneBtns = [['keine', 'Keine'], ['person', 'Person'], ['klasse', 'Serviceklasse']].map(([k, l]) => { const on = s.lane === k; return { label: l, sel: on ? 'true' : 'false', bg: on ? t.surface : 'transparent', fg: on ? t.text : t.muted, go: () => this.setState({ lane: k }) }; });
@@ -1378,7 +1433,7 @@ class Component extends DCLogic {
       { label: 'Ø Durchlaufzeit', value: '3,4 Tage', color: t.text },
       { label: 'Älteste Karte in Spalte', value: oldest + ' Tage', color: oldest >= 8 ? RED : t.text }
     ];
-    const kbMsg = { show: !!s.kbMsg, text: s.kbMsg };
+    const kbMsg = { show: !!s.kbMsg, text: s.kbMsg, bg: s.kbOk ? t.soft : '#FDE7E9', fg: s.kbOk ? t.text : '#A4262C', bd: s.kbOk ? accent : '#FDE7E9' };
     const cx = i => 30 + i * 60, cyv = v => 140 - v * 120 / 75;
     const E = [10, 22, 35, 47, 58], W = [6, 7, 6, 8, 7], Q = [5, 6, 4, 5, 5];
     const layer = (top, bottom) => top.map((v, i) => cx(i) + ',' + cyv(v)).concat(bottom.map((v, i) => cx(i) + ',' + cyv(v)).reverse()).join(' ');
@@ -1506,7 +1561,7 @@ class Component extends DCLogic {
       const a = D(n.start), b = D(n.end), point = n.type === 'gate', hint = this.overdueBelow(n), ch = this.chip(status, t, accent);
       const hasKids = !!(n.children && n.children.length) && s.ampel === 'alle';
       return {
-        name: n.name, dragMove: this.ganttStart(n.id, 'move'), dragDur: this.ganttStart(n.id, 'end'), dragStartH: this.ganttStart(n.id, 'start'), over: this.ganttOver(), drop: this.ganttDrop(SPAN), canResize: !point, endLeft: pct((dd(START, b) + 1) / SPAN * 100),
+        name: n.name, de: this.dateEdit(n, true), dragMove: this.ganttStart(n.id, 'move'), dragDur: this.ganttStart(n.id, 'end'), dragStartH: this.ganttStart(n.id, 'start'), over: this.ganttOver(), drop: this.ganttDrop(SPAN), canResize: !point, endLeft: pct((dd(START, b) + 1) / SPAN * 100),
         fw: n.type === 'phase' ? 700 : 500, indent: (8 + depth * 22) + 'px', dates: point ? fmt(b) : fmt(a) + ' – ' + fmt(b),
         hasKids, noKids: !hasKids, expanded: s.expanded[n.id] ? 'true' : 'false', chev: s.expanded[n.id] ? 'rotate(90deg)' : 'none',
         toggleLabel: (s.expanded[n.id] ? 'Zuklappen: ' : 'Aufklappen: ') + n.name,
@@ -1966,7 +2021,7 @@ class Component extends DCLogic {
         owner: nm(o), ini: ini(o), av: AV[o] || accent,
         open: () => this.openTask(x.id, mvFrom), toggle: () => this.toggleDone(x.id), checkLabel: (dn ? 'Wieder öffnen: ' : 'Erledigt: ') + x.title,
         checkColor: dn ? GREEN : t.strong, checkFill: dn ? GREEN : 'none', checkMark: dn ? '#FFFFFF' : 'none', strike: dn ? 'line-through' : 'none',
-        bucket: x.story ? (s.sst[x.story] || 'Backlog') : (x.kb ? (KB_COLS.find(c => c[0] === s.kb[x.kb]) || ['', b])[1] : this.bucketName(x, b)), bucketBg: this.bucketColor(x, b), prio: x.prio, prioBg: PRIO[x.prio], chip: this.chip(ts, t, accent), dueLabel: this.dueLabel(x),
+        bucket: x.story ? (s.sst[x.story] || 'Backlog') : (x.kb ? (this.kbColsOf().find(c => c[0] === s.kb[x.kb]) || ['', b])[1] : this.bucketName(x, b)), bucketBg: this.bucketColor(x, b), prio: x.prio, prioBg: PRIO[x.prio], chip: this.chip(ts, t, accent), dueLabel: this.dueLabel(x),
         inFocus: inF ? 'true' : 'false', star: inF ? '★' : '☆', starColor: inF ? accent : t.muted, focusLabel: (inF ? 'Aus dem Fokus nehmen: ' : 'In den Fokus legen: ') + x.title, focus: () => this.toggleFocus(x.id) };
     };
     const byDue = (a, b) => D(a.due) - D(b.due);
@@ -2674,7 +2729,7 @@ class Component extends DCLogic {
       back2: () => this.openProject('ih'), hasMsg: !!s.moMsg, msg: s.moMsg, msgBg: s.moMsgOk ? '#DFF6DD' : '#FDE7E9', msgFg: s.moMsgOk ? '#0E4F0E' : '#A4262C',
       kpis: [{ label: 'offen', value: moOrdersK.length, color: t.text }, { label: 'Störungen', value: moOrdersK.filter(k => k.type === 'Störung').length, color: RED }, { label: 'heute gebucht', value: (s.moBooked || 0).toLocaleString('de-DE') + ' h', color: GREEN }],
       orders: moOrdersK.map(k => { const col = s.kb[k.id], age = col === k.col ? k.age : 0;
-        return { title: k.title, type: k.type, anlage: k.anlage, color: KB_TYPE[k.type], state: (KB_COLS.find(c => c[0] === col) || ['', ''])[1], stateColor: col === 'arbeit' ? accentText : t.muted,
+        return { title: k.title, type: k.type, anlage: k.anlage, color: KB_TYPE[k.type], state: (this.kbColsOf().find(c => c[0] === col) || ['', ''])[1], stateColor: col === 'arbeit' ? accentText : t.muted,
           age: age ? age + ' Tage in dieser Spalte' : 'heute übernommen', ageColor: age >= 5 ? '#A33F06' : t.muted, open: () => this.setState({ moSel: k.id, moScreen: 'detail', moMsg: '' }) }; }),
       noOrders: moOrdersK.length === 0,
       o: { title: moSel.title, type: moSel.type, anlage: moSel.anlage, color: KB_TYPE[moSel.type], desc: moSel.type + ' · Serviceklasse ' + moSel.cls + ' · gemeldet von der Schichtleitung', hint: MO_HINT[moSel.id] || 'kein Eintrag zu dieser Anlage' },
@@ -2718,7 +2773,7 @@ class Component extends DCLogic {
         this.setState({ bk, bucketsBy: Object.assign({}, s.bucketsBy, { [SK]: bks.filter(x => x.key !== b.key) }), setMsg: '„' + b.name + '“ gelöscht. ' + (moved.length ? moved.length + ' Aufgaben liegen jetzt in „' + target.name + '“, nichts geht verloren.' : 'Er war leer.') });
       } }));
     const FIXED = { rl2: SB_COLS.map(([n, c]) => ({ name: n, color: c, sub: n === 'Done' ? 'nur mit erfüllten Akzeptanzkriterien' : 'Status-Workflow' })),
-      ih: KB_COLS.map(([k, n, lim, c]) => ({ name: n, color: c, sub: lim ? 'WIP-Limit ' + lim : 'ohne Limit' })) };
+      ih: this.kbColsOf().map(([k, n, lim, c]) => ({ name: n, color: c, sub: lim ? 'WIP-Limit ' + lim : 'ohne Limit' })) };
     const ROLES_P = ['Owner', 'Bearbeiter', 'Mitwirkender', 'Leser', 'Gast'].concat(s.rolesExtra[SK] || []);
     const RM = s.rightsBy[SK] || RIGHTS_INIT;
     const memCount = r => PMEMBERS[SK].filter(m => m[1] === r).length;
@@ -2851,7 +2906,7 @@ class Component extends DCLogic {
       const flat = []; const walk = (l, d) => l.forEach(n => { flat.push({ n, d }); if (n.children) walk(n.children, d + 1); }); walk(u.tree || [], 0);
       const gatesAll = flat.map(f => f.n).filter(n => n.type !== 'phase').sort((a, b) => (a.end < b.end ? -1 : 1)), gres = Object.assign({}, s.upGate || {}, s.gateRes || {});
       const phs = flat.map(f => f.n), p0 = phs.length ? phs.reduce((a, n) => (n.start < a ? n.start : a), phs[0].start) : u.start, p1 = phs.length ? phs.reduce((a, n) => (n.end > a ? n.end : a), phs[0].end) : (u.end || u.start), span = Math.max(1, dd(D(p0), D(p1)));
-      const nextG = gatesAll.find(n => !gres[n.id] && n.end >= '2026-11-13'), open = tasks.filter(x => !this.isDone(x)), costSum = u.costs.reduce((a, c) => a + c[1], 0);
+      const nextG = gatesAll.find(n => !gres[n.id] && n.end >= '2026-11-13'), open = tasks.filter(x => !this.isDone(x)), costSum = u.costs.reduce((a, c) => a + c[1], 0) + ((s.pInv || {})[u.key] || []).filter(i0 => i0.status === 'freigegeben').reduce((a, i0) => a + i0.amt, 0);
       const rk = s.upRk || { t: '', w: 3, a: 3 };
       const ovd = flat.filter(f => (f.n.type !== 'phase' || !(f.n.children || []).length) && this.nodeStatus(f.n) === 'ueberfaellig').length, otk = tasks.filter(x => this.taskStatus(x) === 'ueberfaellig').length, chipC = (bg, fg, bd, label) => ({ bg, fg, bd, label });
       pn = { name: u.name, code: u.code, color: (ups.color || u.color), meta: u.model + ' · Stufe ' + ups.stufe + ' · Projektleitung: ' + ((PL_OF[u.key] || 'Du') === 'Du' ? 'du' : PL_OF[u.key]) + ' · ' + fmt(D(p0)) + D(p0).getFullYear() + ' – ' + fmt(D(p1)) + D(p1).getFullYear() + (u.v2status ? ' · Status ' + u.v2status : '') + (u.kst ? ' · KST ' + u.kst : '') + (ups.archived ? ' · archiviert' : ''),
@@ -2878,10 +2933,11 @@ class Component extends DCLogic {
         addCol: () => this.bkAdd(u.key),
         qaDue: s.qaDue || addDays(u.start, 7), setQaDue: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) this.setState({ qaDue: v }); },
         listAdd: () => { const tt = (this.state.qaText || '').trim(); if (!tt) return this.setState({ pnMsg: 'Erst einen Titel eingeben.' }); const ow = u.members.includes(this.state.qaWho) ? this.state.qaWho : 'Du'; this.quickTask({ title: tt, proj: u.name, due: s.qaDue || addDays(u.start, 7), owner: ow }); this.setState({ pnMsg: '„' + tt + '“ angelegt' + (ow !== 'Du' ? ' für ' + ow + ', ohne Annahme (im Projekt)' : '') + '.' }); },
-        rows: tasks.slice().sort(byDue2).map(x => { const dn = this.isDone(x), o = this.ownerOf(x); return { title: x.title, checked: dn ? 'true' : 'false', mark: dn ? '✓' : '', fill: dn ? GREEN : 'transparent', ring: dn ? GREEN : t.strong, strike: dn ? 'line-through' : 'none', toggle: () => this.toggleDone(x.id), open: () => this.openTask(x.id, 'pn'), bucket: this.bucketName(x, this.bucketOf(x)), owner: nm(o), ini: ini(o), av: AV[o] || accent, due: fmt(D(x.due)) }; }),
+        rows: tasks.slice().sort(byDue2).map(x => { const dn = this.isDone(x), o = this.ownerOf(x); return { title: x.title, checked: dn ? 'true' : 'false', mark: dn ? '✓' : '', fill: dn ? GREEN : 'transparent', ring: dn ? GREEN : t.strong, strike: dn ? 'line-through' : 'none', toggle: () => this.toggleDone(x.id), open: () => this.openTask(x.id, 'pn'), bucket: this.bucketName(x, this.bucketOf(x)), owner: nm(o), ini: ini(o), av: AV[o] || accent, due: fmt(D(x.due)), dueIso: x.due, setDue: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v) && +v.slice(0, 4) >= 2020) { this.setDue(x.id, v); this.setState({ pnMsg: '„' + x.title + '“ ist jetzt am ' + fmt(D(v)) + ' fällig.' }); } } }; }),
         noPhases: flat.length === 0, todayLeft: pct(Math.max(0, Math.min(100, dd(D(p0), TODAY) / span * 100))),
         pmonths: (() => { const out = []; let d0 = D(p0); d0 = new Date(d0.getFullYear(), d0.getMonth(), 1); const end = D(p1); while (d0 <= end && out.length < 14) { const nx = new Date(d0.getFullYear(), d0.getMonth() + 1, 1), a0 = d0 < D(p0) ? D(p0) : d0, b0 = nx > end ? end : nx; out.push({ label: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'][d0.getMonth()] + ' ' + String(d0.getFullYear()).slice(2), flex: String(Math.max(1, dd(a0, b0))) }); d0 = nx; } return out; })(),
-        ...(() => { const G0 = new Date(D(p0).getFullYear(), D(p0).getMonth(), 1); let G1 = new Date(D(p1).getFullYear(), D(p1).getMonth() + 1, 0); if (dd(G0, G1) < 89) G1 = new Date(G0.getFullYear(), G0.getMonth() + 3, 0);
+        ...(() => { const gw = (s.pnGWin || {})[u.key] || [0, 0], f0 = D(p0) < TODAY ? D(p0) : TODAY, G0 = new Date(f0.getFullYear(), f0.getMonth() - 1 - gw[0], 1); let G1 = new Date(D(p1).getFullYear(), D(p1).getMonth() + 2 + gw[1], 0); if (dd(G0, G1) < 120) G1 = new Date(G0.getFullYear(), G0.getMonth() + 4, 0);
+          const canP = this.canPlan(u.key), setW = w => this.setState({ pnGWin: Object.assign({}, s.pnGWin, { [u.key]: w }) });
           const GS = dd(G0, G1) + 1, MNL = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'], gMonths = [], gLines = [];
           for (let m = new Date(G0); m <= G1; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) { const days = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate(); gMonths.push({ label: MNL[m.getMonth()] + (m.getMonth() === 0 || !gMonths.length ? ' ' + m.getFullYear() : ''), flex: String(days) }); if (m > G0) gLines.push({ left: pct(dd(G0, m) / GS * 100) }); }
           const amp = s.pnAmpel || 'alle', ex = s.pnExp || {}, isOpen = n => ex[n.id] !== false, blU = (s.blBy || {})[u.key] || null, blM = blU ? blU.map : {}, blOn = s.blOn !== false, raw = [];
@@ -2891,6 +2947,7 @@ class Component extends DCLogic {
           const L = [['alle', 'Alle', t.track, t.strong], ['erledigt', 'Erledigt', GREEN, GREEN], ['plan', 'Im Plan', t.surface, t.strong], ['ueberfaellig', 'Überfällig', RED, RED]];
           const moved = flat.map(f => f.n).filter(n => blM[n.id] && dd(D(blM[n.id][1]), D(n.end)) !== 0), mx = moved.reduce((m0, n) => Math.max(m0, dd(D(blM[n.id][1]), D(n.end))), 0);
           return { gMonths, gLines, gToday: pct(dd(G0, TODAY) / GS * 100), gTodayOn: TODAY >= G0 && TODAY <= G1, gEmpty: !!flat.length && !raw.length,
+            gEarlier: () => setW([gw[0] + 1, gw[1]]), gLater: () => setW([gw[0], gw[1] + 1]), gShifted: !!(gw[0] || gw[1]), gReset: () => setW([0, 0]),
             gLegend: L.map(([k, l, bg, bd]) => ({ label: l, bg, bd, pressed: amp === k ? 'true' : 'false', ring: amp === k ? accent : t.border, pick: () => this.setState({ pnAmpel: k }) })),
             gToggleLabel: allOpen ? 'Alle zuklappen' : 'Alle aufklappen', gToggleAll: () => { const e = Object.assign({}, ex); parents.forEach(n => { e[n.id] = !allOpen; }); this.setState({ pnExp: e }); },
             gbl: { onA: blOn ? 'true' : 'false', ring: blOn ? accent : t.border, btn: blOn ? '▬ Baseline an' : '▬ Baseline aus', toggle: () => this.setState({ blOn: !blOn }), saveLabel: blU ? 'Neue Baseline speichern' : 'Baseline speichern',
@@ -2900,7 +2957,7 @@ class Component extends DCLogic {
               const ch = point && !n.msPoint && st !== 'erledigt' && st !== 'ueberfaellig' ? Object.assign({}, ch0, { bg: '#5B2D90', bd: '#5B2D90', fg: '#FFFFFF' }) : ch0;
               const bm = blM[n.id], bl = (() => { if (!bm || !blOn) return { blShow: false, blLeft: '0%', blWidth: '0%', hasDev: false, dev: '', devColor: t.muted, devTitle: '' }; const ba = D(bm[0]), bb = D(bm[1]), dv = dd(bb, b1);
                 return { blShow: dv !== 0 || dd(ba, a1) !== 0, blLeft: pct(dd(G0, ba) / GS * 100), blWidth: point ? '6px' : pct(Math.max((dd(ba, bb) + 1) / GS * 100, 0.8)), hasDev: dv !== 0, dev: (dv > 0 ? '+' : '−') + Math.abs(dv) + ' T. zur Baseline', devColor: dv > 0 ? RED : GREEN, devTitle: 'Baseline ' + fmt(ba) + (point ? '' : ' – ' + fmt(bb)) }; })();
-              return Object.assign({ name: n.name + (gr ? ({ ok: ' ✓', auflage: ' ✓ (Auflage)', nein: ' ✗', bestanden: ' ✓', nicht: ' ✗' })[gr.r || gr] || '' : ''), dragMove: this.ganttStart(n.id, 'move'), dragDur: this.ganttStart(n.id, 'end'), dragStartH: this.ganttStart(n.id, 'start'), over: this.ganttOver(), drop: this.ganttDrop(GS), canResize: !point, endLeft: pct((dd(G0, b1) + 1) / GS * 100),
+              return Object.assign({ de: this.dateEdit(n, canP), name: n.name + (gr ? ({ ok: ' ✓', auflage: ' ✓ (Auflage)', nein: ' ✗', bestanden: ' ✓', nicht: ' ✗' })[gr.r || gr] || '' : ''), dragMove: this.ganttStart(n.id, 'move'), dragDur: this.ganttStart(n.id, 'end'), dragStartH: this.ganttStart(n.id, 'start'), over: this.ganttOver(), drop: this.ganttDrop(GS), canResize: !point, endLeft: pct((dd(G0, b1) + 1) / GS * 100),
                 fw: n.type === 'phase' ? 700 : 500, indent: (8 + depth * 22) + 'px', dates: point ? fmt(b1) : fmt(a1) + ' – ' + fmt(b1),
                 hasKids, noKids: !hasKids, expanded: op ? 'true' : 'false', chev: op ? 'rotate(90deg)' : 'none', toggleLabel: (op ? 'Zuklappen: ' : 'Aufklappen: ') + n.name,
                 toggle: () => this.setState({ pnExp: Object.assign({}, ex, { [n.id]: !op }) }),
@@ -2917,20 +2974,25 @@ class Component extends DCLogic {
             left: pct(Math.max(0, dd(D(p0), a0) / span * 100)), width: isPt ? '14px' : pct(Math.max(1.5, (dd(a0, b0) + 1) / span * 100)), h: isPt ? '14px' : (d ? '12px' : '18px'), mt: isPt ? '-7px' : (d ? '-6px' : '-9px'), tf: isPt ? 'translateX(-50%) rotate(45deg)' : 'none', rad: isPt ? '3px' : '5px',
             bar: st === 'erledigt' ? GREEN : (st === 'ueberfaellig' ? RED : (isG ? '#5B2D90' : (n.type === 'phase' && !d ? (ups.color || u.color) : accent))), open: () => this.setState({ panel: { kind: 'node', id: n.id, from: 'pn' }, pSub: 'details', akMsg: '' }) }; }),
         addKinds: [['phase', '▭ Phase'], ['ms', '◆ Meilenstein'], ['gate', '◈ Quality Gate']].map(([k, l]) => ({ label: l, pressed: (s.upAddK || 'phase') === k ? 'true' : 'false', ring: (s.upAddK || 'phase') === k ? accent : t.border, bg: (s.upAddK || 'phase') === k ? t.soft : t.surface, go: () => this.setState({ upAddK: k }) })),
-        addIsPhase: (s.upAddK || 'phase') === 'phase', addPh: ({ phase: 'z. B. Montage und Verdrahtung', ms: 'z. B. Schaltschrank geliefert', gate: 'z. B. Abnahme FAT' })[s.upAddK || 'phase'], addDateLabel: (s.upAddK || 'phase') === 'phase' ? 'Beginn' : 'Termin',
-        durs: [[14, '2 Wo.'], [28, '4 Wo.'], [56, '8 Wo.']].map(([d0, l]) => ({ label: l, pressed: (s.upDur || 28) === d0 ? 'true' : 'false', ring: (s.upDur || 28) === d0 ? accent : t.border, bg: (s.upDur || 28) === d0 ? t.soft : t.surface, go: () => this.setState({ upDur: d0 }) })),
+        addIsPhase: (s.upAddK || 'phase') === 'phase', addNotPhase: (s.upAddK || 'phase') !== 'phase',
+        msEnd: s.upMsE || addDays(s.upMsD || addDays(u.start, 30), s.upDur || 28), setMsEnd: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) this.setState({ upMsE: v, upDur: 0 }); },
+        addPars: [['', 'automatisch nach Termin']].concat((u.tree || []).filter(q => q.type === 'phase').map(q => [q.id, q.name + ' (' + fmt(D(q.start)) + '–' + fmt(D(q.end)) + ')'])).concat([['__top', 'keine (oberste Ebene)']]).map(([k, l]) => ({ label: l, pressed: (s.upPar || '') === k ? 'true' : 'false', ring: (s.upPar || '') === k ? accent : t.border, bg: (s.upPar || '') === k ? t.soft : t.surface, go: () => this.setState({ upPar: k }) })),
+        addPh: ({ phase: 'z. B. Montage und Verdrahtung', ms: 'z. B. Schaltschrank geliefert', gate: 'z. B. Abnahme FAT' })[s.upAddK || 'phase'], addDateLabel: ({ phase: 'Beginn', ms: 'Termin', gate: 'Fällig am' })[s.upAddK || 'phase'],
+        durs: [[14, '2 Wo.'], [28, '4 Wo.'], [56, '8 Wo.']].map(([d0, l]) => ({ label: l, pressed: (s.upDur || 28) === d0 ? 'true' : 'false', ring: (s.upDur || 28) === d0 ? accent : t.border, bg: (s.upDur || 28) === d0 ? t.soft : t.surface, go: () => this.setState({ upDur: d0, upMsE: addDays(s.upMsD || addDays(u.start, 30), d0) }) })),
         addBtn: ({ phase: 'Phase anlegen', ms: 'Meilenstein anlegen', gate: 'Gate anlegen' })[s.upAddK || 'phase'],
-        addNote: (s.upAddK || 'phase') === 'phase' ? 'Neue Phasen stehen auf oberster Ebene. Arbeitspakete legst du im Detail einer Phase an.' : 'Liegt der Termin in einer Phase, landet das Element dort; sonst auf oberster Ebene.',
-        addNode: () => { const k = s.upAddK || 'phase', nm2 = (s.upMsN || '').trim(), d2 = s.upMsD || addDays(u.start, 30); if (!nm2) return this.setState({ pnMsg: 'Erst einen Namen eingeben.' });
-          const id = u.key + 'x' + Object.keys(NODE).length, n = k === 'phase' ? { id, name: nm2, type: 'phase', start: d2, end: addDays(d2, s.upDur || 28), children: [], owner: 'Du', tasks: [], kindLabel: 'Phase' }
+        addNote: (s.upAddK || 'phase') === 'phase' ? 'Eine Phase hat Beginn und Ende. Meilensteine und Gates ordnest du danach einer Phase zu; Arbeitspakete legst du im Detail einer Phase an.' : ((s.upAddK === 'gate' ? 'Ein Quality Gate hat einen Fälligkeitstermin und eine Checkliste. ' : 'Ein Meilenstein ist ein Termin ohne Dauer. ') + 'Liegt er außerhalb der gewählten Phase, wird die Phase verlängert. Termine änderst du später direkt in der Spalte „Termin“.'),
+        addNode: () => { const k = s.upAddK || 'phase', nm2 = (s.upMsN || '').trim(), d2 = s.upMsD || addDays(u.start, 30), e2 = s.upMsE || addDays(d2, s.upDur || 28); if (!nm2) return this.setState({ pnMsg: 'Erst einen Namen eingeben.' });
+          if (k === 'phase' && e2 < d2) return this.setState({ pnMsg: 'Das Ende liegt vor dem Beginn. Bitte Ende ändern.' });
+          const id = u.key + 'x' + Object.keys(NODE).length, n = k === 'phase' ? { id, name: nm2, type: 'phase', start: d2, end: e2, children: [], owner: 'Du', tasks: [], kindLabel: 'Phase' }
             : { id, name: nm2, type: 'gate', start: d2, end: d2, owner: 'Du', tasks: [], msPoint: k === 'ms', kindLabel: k === 'ms' ? 'Meilenstein' : 'Quality Gate', checks: k === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
-          const par = k === 'phase' ? null : (u.tree || []).find(q => q.type === 'phase' && d2 >= q.start && d2 <= q.end);
+          const phs = (u.tree || []).filter(q => q.type === 'phase'), selP = s.upPar || '', par = k === 'phase' || selP === '__top' ? null : (selP ? phs.find(q => q.id === selP) : phs.find(q => d2 >= q.start && d2 <= q.end)) || null;
+          let ext = ''; if (par && d2 < par.start) { par.start = d2; ext = ' Die Phase beginnt jetzt am ' + fmt(D(d2)) + '.'; } else if (par && d2 > par.end) { par.end = d2; ext = ' Die Phase reicht jetzt bis ' + fmt(D(d2)) + '.'; }
           if (par) par.children = (par.children || []).concat([n]); else u.tree.push(n); NODE[id] = n; PARENT[id] = par ? par.id : null; u.tree.sort((x, y) => (x.start < y.start ? -1 : 1));
-          this.setState({ rev: (s.rev || 0) + 1, upMsN: '', pnMsg: n.kindLabel + ' „' + nm2 + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (k === 'phase' ? fmt(D(n.start)) + ' – ' + fmt(D(n.end)) : fmt(D(d2))) + ' Klick auf die Zeile öffnet das Detail.' }); },
+          this.setState({ rev: (s.rev || 0) + 1, upMsN: '', upMsE: null, upPar: '', pnMsg: n.kindLabel + ' „' + nm2 + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (k === 'phase' ? fmt(D(n.start)) + ' – ' + fmt(D(n.end)) : (k === 'gate' ? 'fällig am ' : '') + fmt(D(d2))) + '.' + ext + ' Klick auf die Zeile öffnet das Detail.' }); },
         gates: [].map(n => { const r = gres[n.id], isG = n.type === 'gate', late = !r && n.end < '2026-11-13'; const ST = { bestanden: ['Bestanden', GREEN], auflage: ['Mit Auflage', '#C19C00'], nicht: ['Nicht bestanden', RED] };
           const setR = v => () => { if (v === 'auflage') this.quickTask({ title: 'Auflage aus ' + n.name + ' erfüllen', proj: u.name, due: addDays(n.end, 14) }); this.setState({ upGate: Object.assign({}, this.state.upGate, { [n.id]: v }), pnMsg: n.name + ': ' + ST[v][0] + '.' + (v === 'auflage' ? ' Die Auflage steht als Aufgabe im Backlog, fällig in 14 Tagen.' : (v === 'nicht' ? ' Die Phase bleibt offen, bis das Gate erneut bewertet ist.' : '')) }); };
           return { icon: isG ? '◈' : '◆', name: n.name, sub: fmt(D(n.end)) + (isG && n.checks ? ' · Checkliste: ' + n.checks.join(', ') : ''), status: r ? ST[r][0] : (late ? 'überfällig' : 'geplant'), stBg: r ? ST[r][1] : (late ? RED : t.strong), canDecide: isG && !r, pass: setR('bestanden'), cond: setR('auflage'), fail: setR('nicht') }; }),
-        msName: s.upMsN || '', setMsName: e => this.setState({ upMsN: e && e.target ? e.target.value : '' }), msDate: s.upMsD || addDays(u.start, 30), setMsDate: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) this.setState({ upMsD: v }); },
+        msName: s.upMsN || '', setMsName: e => this.setState({ upMsN: e && e.target ? e.target.value : '' }), msDate: s.upMsD || addDays(u.start, 30), setMsDate: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) this.setState({ upMsD: v, upMsE: (s.upDur || 0) ? addDays(v, s.upDur) : (s.upMsE && s.upMsE >= v ? s.upMsE : addDays(v, 28)) }); },
         addMs: () => { const nm2 = (s.upMsN || '').trim() || 'Neuer Meilenstein', d2 = s.upMsD || addDays(u.start, 30); updU(x => ({ nodes: x.nodes.concat([{ id: u.key + 'm' + x.nodes.length, name: nm2, type: 'ms', start: d2, end: d2 }]) }), '◆ „' + nm2 + '“ am ' + fmt(D(d2)) + ' angelegt.'); this.setState({ upMsN: '' }); },
         addGate: () => { const nm2 = (s.upMsN || '').trim() || 'Neues Quality Gate', d2 = s.upMsD || addDays(u.start, 30); updU(x => ({ nodes: x.nodes.concat([{ id: u.key + 'q' + x.nodes.length, name: nm2, type: 'gate', start: d2, end: d2, checks: ['Checkliste vollständig', 'Dokumente freigegeben'] }]) }), '◈ „' + nm2 + '“ am ' + fmt(D(d2)) + ' angelegt.'); this.setState({ upMsN: '' }); },
         addPhase: () => { const nm2 = (s.upMsN || '').trim() || 'Neue Phase', d2 = s.upMsD || u.start; updU(x => ({ nodes: x.nodes.concat([{ id: u.key + 'h' + x.nodes.length, name: nm2, type: 'phase', start: d2, end: addDays(d2, 28) }]) }), 'Phase „' + nm2 + '“ ab ' + fmt(D(d2)) + ' für 4 Wochen angelegt.'); this.setState({ upMsN: '' }); },
@@ -2988,8 +3050,41 @@ class Component extends DCLogic {
               return { bars: [['Budget (Plan)', B0, '#0F6CBD'], ['Ist (gebuchte Kosten)', costSum, '#5C5C5C'], ['Nachträge genehmigt', obl, '#8A3707'], ['Prognose', prog, B0 && prog > B0 ? RED : GREEN]].map(([l, v, c]) => ({ label: l, value: fE(v), w: pct(v / mx * 100), color: c })),
                 sum: !B0 ? 'Noch kein Budget eingetragen.' : (prog > B0 ? '! Prognose ' + Math.round((prog / B0 - 1) * 100) + ' % über Budget' : '✓ Prognose im Budget (' + Math.round(prog / B0 * 100) + ' %)'), sumBg: !B0 ? t.strong : (prog > B0 ? RED : GREEN),
                 open: offen ? fE(offen) + ' in offenen Change Requests (noch nicht genehmigt)' : '', hasOpen: offen > 0, hours: hrs ? (Math.round(hrs * 10) / 10).toLocaleString('de-DE') + ' h gebucht (aus Zeiterfassung)' : '', hasHours: hrs > 0,
-                nach: nach.map(([n0, t0]) => ({ text: n0 + ' · ' + t0 })), hasNach: nach.length > 0 }; })(),
+                nach: nach.filter(([n0]) => /Nachtrag/.test(n0)).map(([n0, t0]) => ({ text: n0 + ' · ' + t0 })), hasNach: nach.some(([n0]) => /Nachtrag/.test(n0)) }; })(),
             mbr: this.memberUI(u.key, t, accent, on('raci')), raciOn: on('raci'), raciOff: !on('raci'), raciCols: '220px repeat(' + u.members.length + ', minmax(60px, 1fr))', raciHead: u.members.map(m => (m === 'Du' ? 'ich' : m)),
+            inv: (() => { const list = (s.pInv || {})[u.key] || [], F = Object.assign({ sup: '', amt: '', kind: 'Material', where: '', beleg: '' }, (s.pInvF || {})[u.key] || {}), open = s.pInvOpen === u.key, fE2 = v => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+              const myRole = ((PMEMBERS[u.key] || []).find(x => x[0] === 'Du') || [])[1], am = (s.mbrAkv || {})[u.key] || {}, myLim = am.Du !== undefined ? am.Du : (myRole === 'Owner' ? 5000 : 0);
+              const setF = patch => this.setState({ pInvF: Object.assign({}, this.state.pInvF, { [u.key]: Object.assign({}, F, (this.state.pInvF || {})[u.key] || {}, patch) }) }), val = e => (e && e.target ? e.target.value : '');
+              const num = parseFloat(String(F.amt || '').replace(/\s|€/g, '').replace(/\./g, '').replace(',', '.')) || 0, setL = (fn, msg) => this.setState({ pInv: Object.assign({}, this.state.pInv, { [u.key]: fn(((this.state.pInv || {})[u.key] || []).slice()) }), pInvMsg: msg, pInvMsgK: u.key });
+              const appr = num > 5000 ? 'H. Lorenz' : (num <= myLim ? 'Du' : 'Projektleitung');
+              const wh = [['', 'Projekt allgemein']].concat(flat.map(f0 => [f0.n.id, (f0.n.type === 'phase' ? '▭ ' : (f0.n.msPoint ? '◆ ' : '◈ ')) + f0.n.name]).slice(0, 10));
+              const sumOk = list.filter(i0 => i0.status === 'freigegeben').reduce((a2, i0) => a2 + i0.amt, 0);
+              return { open, openA: open ? 'true' : 'false', btn: open ? '✕ Schließen' : '+ Rechnung einreichen', toggle: () => this.setState({ pInvOpen: open ? null : u.key, pInvMsg: '' }),
+                sum: list.length ? list.length + (list.length === 1 ? ' Rechnung' : ' Rechnungen') + ' · ' + fE2(sumOk) + ' freigegeben' : '',
+                hasMsg: !!s.pInvMsg && s.pInvMsgK === u.key, msg: s.pInvMsg || '', empty: !list.length && !open,
+                sup: F.sup, setSup: e => setF({ sup: val(e) }), amt: F.amt, setAmt: e => setF({ amt: val(e) }),
+                kinds: ['Material', 'Dienstleistung', 'Reisekosten', 'Werkzeug'].map(k0 => ({ label: k0, pressed: F.kind === k0 ? 'true' : 'false', ring: F.kind === k0 ? accent : t.border, bg: F.kind === k0 ? t.soft : t.surface, go: () => setF({ kind: k0 }) })),
+                wheres: wh.map(([k0, l0]) => ({ label: l0, pressed: F.where === k0 ? 'true' : 'false', ring: F.where === k0 ? accent : t.border, bg: F.where === k0 ? t.soft : t.surface, go: () => setF({ where: k0 }) })),
+                pick: e => { const f = e && e.target && e.target.files && e.target.files[0]; if (!f) return; try { if (typeof URL !== 'undefined' && URL.createObjectURL) FILE_URL[f.name] = URL.createObjectURL(f); } catch (er) {} setF({ beleg: f.name }); },
+                belegText: F.beleg ? '✓ ' + F.beleg : 'Beleg ist Pflicht', belegColor: F.beleg ? GREEN : t.muted,
+                rule: 'Freigabe nach AKV: bis zu deiner Grenze (' + (myLim ? myLim.toLocaleString('de-DE') + ' €' : '0 €') + ') gibst du selbst frei, bis 5.000 € die Projektleitung, darüber H. Lorenz. Freigegebene Rechnungen zählen ins Ist.' + (num ? ' Dieser Betrag: ' + (appr === 'Du' ? 'gibst du selbst frei.' : 'Freigabe durch ' + appr + '.') : ''),
+                submit: () => { if (!F.sup.trim()) return this.setState({ pInvMsg: 'Bitte den Lieferanten eintragen.', pInvMsgK: u.key }); if (!(num > 0)) return this.setState({ pInvMsg: 'Bitte den Betrag eintragen, z. B. 1.480,00.', pInvMsgK: u.key }); if (!F.beleg) return this.setState({ pInvMsg: 'Bitte den Beleg anhängen: Foto oder PDF der Rechnung.', pInvMsgK: u.key });
+                  const whN = F.where && NODE[F.where] ? NODE[F.where].name : 'Projekt allgemein', it = { id: 'iv' + Date.now().toString(36), sup: F.sup.trim(), amt: num, kind: F.kind, where: whN, beleg: F.beleg, status: appr === 'Du' ? 'freigegeben' : 'bei ' + appr, appr, date: fmt(TODAY) };
+                  setL(l0 => l0.concat([it]), 'Rechnung über ' + fE2(num) + ' eingereicht' + (appr === 'Du' ? ' und von dir freigegeben. Sie zählt jetzt ins Ist und geht an die Buchhaltung.' : '. Sie wartet auf die Freigabe durch ' + appr + '.'));
+                  this.setState({ pInvOpen: null, pInvF: Object.assign({}, this.state.pInvF, { [u.key]: { kind: F.kind } }) }); },
+                items: list.slice().reverse().map(i0 => ({ sup: i0.sup, kind: i0.kind, amount: fE2(i0.amt), sub: i0.where + ' · eingereicht ' + i0.date + ' · Beleg: ' + i0.beleg, status: i0.status, stBg: i0.status === 'freigegeben' ? GREEN : (i0.status === 'abgelehnt' ? RED : '#8764B8'),
+                  canDecide: /^bei /.test(i0.status), who: i0.appr === 'Projektleitung' ? 'Projektleitung' : i0.appr,
+                  ok: () => setL(l0 => l0.map(z => (z.id === i0.id ? Object.assign({}, z, { status: 'freigegeben' }) : z)), 'Freigegeben durch ' + i0.appr + ' (im Entwurf simuliert). ' + fE2(i0.amt) + ' zählen jetzt ins Ist.'),
+                  no: () => setL(l0 => l0.map(z => (z.id === i0.id ? Object.assign({}, z, { status: 'abgelehnt' }) : z)), 'Rechnung abgelehnt. Sie zählt nicht ins Ist.') })) }; })(),
+            akv: (() => { const L = (PMEMBERS[u.key] || u.members.map(m => [m, m === 'Du' ? 'Owner' : 'Bearbeiter'])).filter(x => !x[4]), am = (s.mbrAkv || {})[u.key] || {}, tx = (s.akvTx || {})[u.key] || {};
+              const DEF = { Owner: ['Projekt leiten, planen, Team steuern', 'Termine und Umfang ändern, Aufgaben vergeben', 'Termin, Kosten und Projektziel'], Bearbeiter: ['Arbeitspakete bearbeiten, Aufgaben erledigen', 'Fachliche Entscheidungen im eigenen Arbeitspaket', 'Ergebnis der eigenen Arbeitspakete'], Mitwirkender: ['Zuarbeit zu Aufgaben', 'Eigene Aufgaben ändern und kommentieren', 'Eigene Aufgaben termingerecht'], Leser: ['Sich informieren', '–', '–'], Gast: ['Zulieferung von außen', 'Freigegebenes sehen', 'Eigene Lieferung'] };
+              const rows = L.map(x => { const n = x[0], r = x[1], d = DEF[r] || DEF.Bearbeiter, own = tx[n] || {}, lim = am[n] !== undefined ? am[n] : (r === 'Owner' ? 5000 : 0);
+                const Rn = acts.filter(a => rc[a.id + '|' + n] === 'R').map(a => a.name), An = acts.filter(a => rc[a.id + '|' + n] === 'A').map(a => a.name), weak = An.length > 0 && ['Leser', 'Gast', 'Mitwirkender'].includes(r);
+                const set = f => e => { const v = e && e.target ? e.target.value : ''; const cur = (this.state.akvTx || {})[u.key] || {}; this.setState({ akvTx: Object.assign({}, this.state.akvTx, { [u.key]: Object.assign({}, cur, { [n]: Object.assign({}, cur[n] || {}, { [f]: v }) }) }) }); };
+                return { name: n === 'Du' ? 'Du (ich)' : n, role: r, limit: lim ? lim.toLocaleString('de-DE') + ' €' : '0 €', a: own.a !== undefined ? own.a : d[0], k: own.k !== undefined ? own.k : d[1], v: own.v !== undefined ? own.v : d[2], setA: set('a'), setK: set('k'), setV: set('v'),
+                  aAuto: Rn.length ? 'führt aus (R): ' + Rn.join(', ') : '', hasAAuto: Rn.length > 0, vAuto: An.length ? 'verantwortet (A): ' + An.join(', ') : '', hasVAuto: An.length > 0,
+                  kAuto: lim ? 'Rechnungen und Nachträge freigeben bis ' + lim.toLocaleString('de-DE') + ' €' : 'gibt keine Rechnungen frei', warn: weak }; });
+              return { rows, hasWarn: rows.some(r0 => r0.warn) }; })(),
             raciRows: acts.map(n => { const aCount = u.members.filter(m => rc[n.id + '|' + m] === 'A').length; return { name: (n.type === 'gate' ? (n.msPoint ? '◆ ' : '◈ ') : '') + n.name, warn: aCount === 0 ? 'noch kein A' : (aCount > 1 ? aCount + '× A, nur eines erlaubt' : ''), warnColor: aCount === 1 ? GREEN : '#A33F06',
               cells: u.members.map(m => { const v0 = rc[n.id + '|' + m] || ''; return { v: v0 || '·', bg: RC[v0][0], fg: RC[v0][1], aria: n.name + ', ' + m + ': ' + (v0 || 'leer'), go: () => setK('upRaci', n.id + '|' + m, cyc[v0]) }; }) }; }) }; })(),
         lbls: LABELS.map(([k, l, c]) => ({ c, name: this.lblName(u.key, k), rename: e => { const v = e && e.target ? e.target.value : ''; this.setState({ lblNames: Object.assign({}, s.lblNames, { [u.key]: Object.assign({}, (s.lblNames || {})[u.key] || {}, { [k]: v }) }) }); } })),
@@ -3382,6 +3477,7 @@ class Component extends DCLogic {
       submitInv: () => { if (!amtNum) return this.setState({ akMsg: 'Bitte den Betrag eintragen.' }); if (!s.akBeleg) return this.setState({ akMsg: 'Bitte den Beleg anhängen: Foto oder PDF der Rechnung.' });
         const pl = PL_OF[akPk], status = amtNum > 5000 ? 'bei H. Lorenz' : (pl === 'Du' ? 'freigegeben' : 'bei ' + pl), note = amtNum > 5000 ? 'über 5.000 €: Freigabe Bereichsleitung' : (pl === 'Du' ? 'von dir freigegeben, geht an die Buchhaltung' : 'Freigabe Projektleitung');
         const add = Object.assign({}, this.state.invAdd); add[akPk] = (add[akPk] || []).concat([[s.akSup + ' · ' + s.akKind, fmtE(amtNum) + ' · ' + akTitle, status === 'freigegeben' ? 'plan' : 'pruefung']]);
+        if ((s.uprojs || []).some(u0 => u0.key === akPk)) { const pi = Object.assign({}, this.state.pInv); pi[akPk] = (pi[akPk] || []).concat([{ id: 'iv' + Date.now().toString(36), sup: s.akSup, amt: amtNum, kind: s.akKind, where: akTitle, beleg: 'Rechnung_' + s.akSup.replace(/\s/g, '') + '.pdf', status: status === 'freigegeben' ? 'freigegeben' : status, appr: amtNum > 5000 ? 'H. Lorenz' : (pl === 'Du' ? 'Du' : pl), date: fmt(TODAY) }]); this.setState({ pInv: pi }); }
         setAk('inv', [s.akSup, amtNum, s.akKind, status, note], 'Rechnung über ' + fmtE(amtNum) + ' eingereicht: ' + note + '. Steht auch unter Projekt › Finanzen.', { akAmt: '', akBeleg: false, invAdd: add }); },
       // Beteiligte am Meilenstein
       nOwn: akKind === 'node' ? memA.concat(['Geschäftsführung', 'Kunde']).map(n2 => pk3(akObj.owner === n2, n2, () => { akObj.owner = n2; this.setState({ rev: (s.rev || 0) + 1, akMsg: n2 + ' ist jetzt verantwortlich für „' + akTitle + '“.' }); })) : [],
@@ -3612,8 +3708,8 @@ class Component extends DCLogic {
       months, monthLines, todayLeft, rows, legend, toggleAll, toggleAllLabel: allOpen ? 'Alle zuklappen' : 'Alle aufklappen',
       stacey, staceyZone, staceyRec,
       pj, pjPlaceholder, goPlanung: () => this.setState({ ptab: mainTab }),
-      zy, ring, sprintStrip, kbHead, kbLanes, laneBtns, kbKpis, kbMsg, cfd,
-      scrumViews, sv, backlog, planLeft, planRight, plan, capacity, sboard, burn, boardMsg, goalBtns, reviewRows, review, retro, moodBtns, moodAvg, velocity, scrumKpis,
+      zy, ring, sprintStrip, kbHead, kbLanes, laneBtns, kbKpis, kbMsg, cfd, kbGrid, kbMinW, kbAddCol, kbAdd, kbReport,
+      scrumViews, sv, backlog, planLeft, planRight, plan, capacity, sboard, burn, boardMsg, goalBtns, reviewRows, review, retro, retroInfo, sp5, moodBtns, moodAvg, velocity, scrumKpis,
       vnodes, vlinks,
       mv, fo, dash, paletteItems, mo, dashHasMsg: !!s.dashMsg, dashMsg: s.dashMsg,
       openMobil: () => this.setState({ screen: 'mobil', panel: null, moScreen: 'list', moMsg: '' }),

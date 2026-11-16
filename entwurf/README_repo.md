@@ -18,6 +18,16 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 
 Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
 
+## Neu nach der ersten Testrunde (16.11.2026)
+
+- **Termine direkt ändern:** In der Planung stehen Beginn, Ende und Termin als Datumsfelder in der Spalte „Termin“ (für Owner und Bearbeiter). Fälligkeiten in der Aufgabenliste ebenso.
+- **Zeitstrahl:** beginnt einen Monat vor dem frühesten Termin; „‹ früher“ und „später ›“ blättern weiter.
+- **Anlegen in der Planung:** Phase mit Beginn und Ende, Meilenstein mit Termin, Quality Gate mit „Fällig am“; Zuordnung zur Phase wählbar, die Phase verlängert sich bei Bedarf.
+- **AKV** im Reiter Team (eigene Projekte): Aufgaben, Kompetenzen, Verantwortung je Person, verknüpft mit RACI und Freigabegrenze.
+- **Rechnungen** im Reiter Finanzen: einreichen mit Beleg, Freigabe nach AKV (bis zur eigenen Grenze selbst, darüber Projektleitung bzw. H. Lorenz), freigegebene Rechnungen zählen ins Ist.
+- **Scrum (Retrofit Linie 2):** „Sprint 5 starten“ funktioniert; die Retrospektive ist erklärt, Karten und Maßnahmen lassen sich anlegen, Maßnahmen werden Aufgaben.
+- **Kanban (Instandhaltung Halle 2):** „+ Auftrag“ in jeder Spalte, „Störung melden“, Karte anklicken zum Bearbeiten, Spalten anlegen, umbenennen, verschieben, löschen, WIP-Limit per Klick auf die Zahl.
+
 ## Ordner
 
 | Ordner / Datei | Inhalt |

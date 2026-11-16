@@ -2041,8 +2041,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                   <button onClick="{{toggleAll}}" style="height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font-size: 13px; cursor: pointer">{{toggleAllLabel}}</button>
                 </div>
                 <div style="overflow-x: auto; border-radius: 12px; border: 1px solid {{t.border}}; background: {{t.surface}}">
-                  <div style="min-width: 980px">
-                    <div style="display: grid; grid-template-columns: 320px 120px minmax(0, 1fr); align-items: stretch; height: 40px; background: {{t.surface2}}; border-bottom: 1px solid {{t.border}}; font-size: 12px; font-weight: 600; color: {{t.muted}}">
+                  <div style="min-width: 1100px">
+                    <div style="display: grid; grid-template-columns: 290px 236px minmax(0, 1fr); align-items: stretch; height: 40px; background: {{t.surface2}}; border-bottom: 1px solid {{t.border}}; font-size: 12px; font-weight: 600; color: {{t.muted}}">
                       <span style="display: flex; align-items: center; padding: 0 12px">Phase / Meilenstein</span>
                       <span style="display: flex; align-items: center">Termin</span>
                       <span style="position: relative; display: flex">
@@ -2053,7 +2053,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                       </span>
                     </div>
                     <sc-for list="{{rows}}" as="row" hint-placeholder-count="6">
-                      <div style="display: grid; grid-template-columns: 320px 120px minmax(0, 1fr); align-items: stretch; min-height: 44px; border-bottom: 1px solid {{t.border}}; background: {{row.rowBg}}">
+                      <div style="display: grid; grid-template-columns: 290px 236px minmax(0, 1fr); align-items: stretch; min-height: 44px; border-bottom: 1px solid {{t.border}}; background: {{row.rowBg}}">
                         <span style="display: flex; align-items: center; gap: 4px; padding-left: {{row.indent}}">
                           <sc-if value="{{row.hasKids}}" hint-placeholder-val="{{true}}">
                             <button onClick="{{row.toggle}}" aria-label="{{row.toggleLabel}}" aria-expanded="{{row.expanded}}" style="width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; color: {{t.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center">
@@ -2066,7 +2066,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                             <span title="Überfällige Unterelemente" style="margin-right: 8px; padding: 1px 7px; border-radius: 999px; background: #C50F1F; color: #FFFFFF; font-size: 11px; font-weight: 700; white-space: nowrap">! {{row.hint}}</span>
                           </sc-if>
                         </span>
-                        <span style="display: flex; flex-direction: column; justify-content: center; font-size: 12px; color: {{t.muted}}">{{row.dates}}<sc-if value="{{row.hasDev}}" hint-placeholder-val="{{false}}"><span title="{{row.devTitle}}" style="font-size: 11px; font-weight: 700; color: {{row.devColor}}">{{row.dev}}</span></sc-if></span>
+                        <span style="display: flex; flex-direction: column; justify-content: center; font-size: 12px; color: {{t.muted}}"><sc-if value="{{row.de.ro}}" hint-placeholder-val="{{false}}"><span title="{{row.de.roTitle}}">{{row.dates}}</span></sc-if><sc-if value="{{row.de.edit}}" hint-placeholder-val="{{true}}"><span style="display: flex; align-items: center; gap: 3px"><sc-if value="{{row.de.range}}" hint-placeholder-val="{{true}}"><input type="date" aria-label="{{row.de.aLabel}}" title="Beginn ändern" value="{{row.de.a}}" onChange="{{row.de.setA}}" style="width: 108px; height: 28px; padding: 0 3px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; box-sizing: border-box"><span>–</span></sc-if><input type="date" aria-label="{{row.de.bLabel}}" title="{{row.de.bTitle}}" value="{{row.de.b}}" onChange="{{row.de.setB}}" style="width: 108px; height: 28px; padding: 0 3px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; box-sizing: border-box"></span></sc-if><sc-if value="{{row.hasDev}}" hint-placeholder-val="{{false}}"><span title="{{row.devTitle}}" style="font-size: 11px; font-weight: 700; color: {{row.devColor}}">{{row.dev}}</span></sc-if></span>
                         <span onDragOver="{{row.over}}" onDrop="{{row.drop}}" style="position: relative; display: block">
                           <sc-if value="{{row.blShow}}" hint-placeholder-val="{{false}}"><span title="{{row.devTitle}}" style="position: absolute; top: calc(50% + 11px); left: {{row.blLeft}}; width: {{row.blWidth}}; height: 5px; border-radius: 3px; background: {{t.strong}}; opacity: 0.55"></span></sc-if>
                           <sc-for list="{{monthLines}}" as="ml" hint-placeholder-count="4">
@@ -2618,7 +2618,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                     </sc-for>
                   </div>
                   <span style="flex: 1"></span>
-                  <span style="padding: 4px 12px; border-radius: 999px; background: {{accent}}; color: #FFFFFF; font-size: 12px; font-weight: 600">Sprint 4 · 02.11.–13.11. · endet heute</span>
+                  <span style="padding: 4px 12px; border-radius: 999px; background: {{accent}}; color: #FFFFFF; font-size: 12px; font-weight: 600">{{sp5.chip}}</span>
                 </div>
 
                 <!-- 0 Überblick: Scrum-Zyklus grafisch -->
@@ -2776,7 +2776,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                       <div>
                         <h2 style="margin: 0; font-size: 16px">Sprint 5 · 16.11.–27.11.</h2>
                         <label for="sprintziel" style="display: block; margin-top: 10px; font-size: 12px; font-weight: 600; color: {{t.muted}}">Sprintziel (Pflicht)</label>
-                        <input id="sprintziel" type="text" value="Safety-Zuhaltung und Rezeptverwaltung abnahmebereit" style="width: 100%; box-sizing: border-box; height: 40px; margin-top: 4px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit">
+                        <input id="sprintziel" type="text" value="{{sp5.goal}}" onInput="{{sp5.setGoal}}" placeholder="Was soll am Ende des Sprints erreicht sein? Ein Satz." style="width: 100%; box-sizing: border-box; height: 40px; margin-top: 4px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit">
                       </div>
                       <div style="padding: 12px; border-radius: 10px; background: {{t.surface2}}; border: 1px solid {{t.border}}">
                         <div style="font-weight: 700">Kapazität aus planbarer Zeit, Projektanteilen und Abwesenheiten</div>
@@ -2804,7 +2804,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                         </sc-for>
                         <sc-if value="{{plan.empty}}" hint-placeholder-val="{{false}}"><div style="padding: 16px; text-align: center; color: {{t.muted}}; border: 1px dashed {{t.strong}}; border-radius: 10px">Noch keine Stories eingeplant</div></sc-if>
                       </div>
-                      <button style="align-self: flex-start; height: 40px; padding: 0 16px; border: 0; border-radius: 8px; background: {{accent}}; color: #FFFFFF; font-weight: 600; cursor: pointer">Sprint 5 starten</button>
+                      <sc-if value="{{sp5.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 10px 14px; border-radius: 10px; border-left: 4px solid {{sp5.msgColor}}; background: {{t.surface2}}; font-size: 13px; font-weight: 600">{{sp5.msg}}</div></sc-if>
+                      <sc-if value="{{sp5.notStarted}}" hint-placeholder-val="{{true}}"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><button onClick="{{sp5.start}}" style="height: 40px; padding: 0 16px; border: 0; border-radius: 8px; background: {{accent}}; color: #FFFFFF; font-weight: 600; cursor: pointer">Sprint 5 starten</button><span style="font-size: 12px; color: {{t.muted}}">Braucht ein Sprintziel und mindestens eine Story, höchstens bis zur Kapazität.</span></div></sc-if>
+                      <sc-if value="{{sp5.started}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><span style="padding: 6px 12px; border-radius: 999px; background: #107C10; color: #FFFFFF; font-size: 13px; font-weight: 700">✓ Sprint 5 läuft seit 16.11.</span><button onClick="{{sp5.goBoard}}" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-weight: 600; cursor: pointer">Zum Sprint-Board ›</button></div></sc-if>
                     </section>
                   </div>
                 </sc-if>
@@ -2813,8 +2815,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                 <sc-if value="{{sv.board}}" hint-placeholder-val="{{false}}">
                   <div style="display: flex; flex-direction: column; gap: 12px">
                     <div style="padding: 12px 16px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}">
-                      <span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Sprintziel Sprint 4</span>
-                      <div style="font-weight: 700">HMI-Grundbedienung und Not-Halt über Safety-SPS lauffähig</div>
+                      <span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Sprintziel {{sp5.boardName}}</span>
+                      <div style="font-weight: 700">{{sp5.boardGoal}}</div>
                     </div>
                     <sc-if value="{{boardMsg.show}}" hint-placeholder-val="{{false}}">
                       <div role="status" style="padding: 10px 14px; border-radius: 10px; background: #FDE7E9; color: #A4262C; font-weight: 600">{{boardMsg.text}}</div>
@@ -2846,17 +2848,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                         </div>
                       </div>
                       <section style="flex: 1 1 320px; padding: 16px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}">
-                        <h2 style="margin: 0 0 4px; font-size: 15px">Burndown Sprint 4</h2>
-                        <div style="font-size: 12px; color: {{t.muted}}; margin-bottom: 8px">Rest: {{burn.rest}} von 26 SP</div>
+                        <h2 style="margin: 0 0 4px; font-size: 15px">Burndown {{sp5.boardName}}</h2>
+                        <div style="font-size: 12px; color: {{t.muted}}; margin-bottom: 8px">Rest: {{burn.rest}} von {{burn.total}} SP</div>
                         <svg viewBox="0 0 300 170" role="img" aria-label="{{burn.aria}}" style="width: 100%; height: auto; display: block">
                           <line x1="24" y1="20" x2="24" y2="140" stroke="{{t.border}}" stroke-width="1"></line>
                           <line x1="24" y1="140" x2="294" y2="140" stroke="{{t.border}}" stroke-width="1"></line>
                           <polyline points="{{burn.ideal}}" fill="none" stroke="{{t.strong}}" stroke-width="2" stroke-dasharray="5 4"></polyline>
                           <polyline points="{{burn.actual}}" fill="none" stroke="{{accent}}" stroke-width="3" stroke-linejoin="round"></polyline>
-                          <text x="4" y="24" font-size="10" fill="{{t.muted}}">26</text>
+                          <text x="4" y="24" font-size="10" fill="{{t.muted}}">{{burn.total}}</text>
                           <text x="10" y="143" font-size="10" fill="{{t.muted}}">0</text>
-                          <text x="24" y="158" font-size="10" fill="{{t.muted}}">02.11.</text>
-                          <text x="262" y="158" font-size="10" fill="{{t.muted}}">13.11.</text>
+                          <text x="24" y="158" font-size="10" fill="{{t.muted}}">{{burn.from}}</text>
+                          <text x="262" y="158" font-size="10" fill="{{t.muted}}">{{burn.to}}</text>
                         </svg>
                         <div style="display: flex; gap: 12px; font-size: 12px; color: {{t.muted}}"><span>– – Ideal</span><span style="color: {{accentText}}; font-weight: 600">— Ist</span></div>
                       </section>
@@ -2898,15 +2900,22 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                       </div>
                     </section>
                     <section style="padding: 16px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}">
-                      <h2 style="margin: 0 0 12px; font-size: 16px">Retrospektive</h2>
+                      <h2 style="margin: 0 0 6px; font-size: 16px">Retrospektive</h2>
+                      <div style="font-size: 13px; color: {{t.muted}}; margin-bottom: 12px; line-height: 1.5">Die Retrospektive ist das letzte Treffen im Sprint, etwa 45 Minuten, nur das Team. Es geht nicht ums Produkt (das war das Review), sondern um die Zusammenarbeit. <b style="color: {{t.text}}">1.</b> Jeder schreibt Karten zu „Lief gut“ und „Verbessern“. <b style="color: {{t.text}}">2.</b> Das Team wählt ein bis zwei Punkte aus „Verbessern“ (Knopf „→ Maßnahme“). <b style="color: {{t.text}}">3.</b> Jede Maßnahme bekommt eine verantwortliche Person und wird automatisch eine Aufgabe im nächsten Sprint. In der nächsten Retro schaut ihr, ob sie gewirkt hat.</div>
+                      <sc-if value="{{retroInfo.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; margin-bottom: 10px; border-radius: 8px; background: {{t.soft}}; border: 1px solid {{accent}}; font-size: 13px; font-weight: 600">{{retroInfo.msg}}</div></sc-if>
                       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
                         <sc-for list="{{retro}}" as="rc" hint-placeholder-count="3">
                           <div style="border-radius: 10px; background: {{rc.bg}}; padding: 12px; display: flex; flex-direction: column; gap: 8px">
                             <div style="font-weight: 700; color: {{rc.fg}}">{{rc.title}}</div>
                             <sc-for list="{{rc.items}}" as="ri" hint-placeholder-count="2">
-                              <div style="padding: 10px; border-radius: 8px; background: #FFFFFF; color: #242424; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.08)">{{ri.text}}<sc-if value="{{ri.hasOwner}}" hint-placeholder-val="{{false}}"><span style="display: block; margin-top: 6px; font-size: 12px; color: #107C10; font-weight: 600">✓ Task angelegt · {{ri.owner}}</span></sc-if></div>
+                              <div style="padding: 10px; border-radius: 8px; background: #FFFFFF; color: #242424; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.08)">{{ri.text}}<sc-if value="{{ri.hasOwner}}" hint-placeholder-val="{{false}}"><span style="display: block; margin-top: 6px; font-size: 12px; color: #107C10; font-weight: 600">✓ Aufgabe angelegt · {{ri.owner}}</span></sc-if><sc-if value="{{ri.canPromote}}" hint-placeholder-val="{{false}}"><button onClick="{{ri.promote}}" title="Daraus eine Maßnahme mit verantwortlicher Person machen" style="display: block; margin-top: 6px; height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid #5C4300; background: #FFFFFF; color: #5C4300; font-size: 12px; font-weight: 600; cursor: pointer">→ Maßnahme</button></sc-if></div>
                             </sc-for>
-                            <button style="height: 34px; border-radius: 8px; border: 1px dashed {{rc.fg}}; background: transparent; color: {{rc.fg}}; font-weight: 600; cursor: pointer">+ Karte</button>
+                            <sc-if value="{{rc.adding}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 8px; background: #FFFFFF">
+                              <input type="text" aria-label="{{rc.ph}}" value="{{rc.text}}" onInput="{{rc.setText}}" onKeyDown="{{rc.key}}" placeholder="{{rc.ph}}" style="height: 34px; padding: 0 8px; border-radius: 6px; border: 1px solid #8A8A8A; background: #FFFFFF; color: #242424; font: inherit; box-sizing: border-box; width: 100%">
+                              <sc-if value="{{rc.isMass}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px"><span style="font-size: 12px; font-weight: 600; color: #424242">Wer kümmert sich?</span><sc-for list="{{rc.whos}}" as="rw" hint-placeholder-count="4"><button onClick="{{rw.go}}" aria-pressed="{{rw.pressed}}" style="padding: 3px 8px; border-radius: 999px; border: 2px solid {{rw.ring}}; background: #FFFFFF; color: #242424; font-size: 12px; font-weight: 600; cursor: pointer">{{rw.label}}</button></sc-for></div></sc-if>
+                              <div style="display: flex; gap: 6px"><button onClick="{{rc.save}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: {{rc.fg}}; color: #FFFFFF; font-weight: 700; cursor: pointer">{{rc.saveLabel}}</button><button onClick="{{rc.cancel}}" style="height: 32px; padding: 0 10px; border-radius: 6px; border: 1px solid #8A8A8A; background: #FFFFFF; color: #242424; font-weight: 600; cursor: pointer">Abbrechen</button></div>
+                            </div></sc-if>
+                            <sc-if value="{{rc.notAdding}}" hint-placeholder-val="{{true}}"><button onClick="{{rc.add}}" style="height: 34px; border-radius: 8px; border: 1px dashed {{rc.fg}}; background: transparent; color: {{rc.fg}}; font-weight: 600; cursor: pointer">{{rc.addLabel}}</button></sc-if>
                           </div>
                         </sc-for>
                       </div>
@@ -3303,20 +3312,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                   <span style="flex: 1"></span>
                   <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: {{t.muted}}"><span style="width: 12px; height: 12px; border-radius: 3px; background: #FFF4CE; border: 1px solid #C19C00"></span>ab 5 Tagen in der Spalte</span>
                   <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: {{t.muted}}"><span style="width: 12px; height: 12px; border-radius: 3px; background: #FDE7E9; border: 1px solid #C50F1F"></span>ab 8 Tagen</span>
-                  <button style="height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: #C50F1F; color: #FFFFFF; font-weight: 600; cursor: pointer">Störung melden</button>
+                  <button onClick="{{kbAddCol}}" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-weight: 600; cursor: pointer">+ Spalte</button>
+                  <button onClick="{{kbReport}}" style="height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: #C50F1F; color: #FFFFFF; font-weight: 600; cursor: pointer">Störung melden</button>
                 </div>
                 <sc-if value="{{kbMsg.show}}" hint-placeholder-val="{{false}}">
-                  <div role="status" style="padding: 10px 14px; border-radius: 10px; background: #FDE7E9; color: #A4262C; font-weight: 600">{{kbMsg.text}}</div>
+                  <div role="status" style="padding: 10px 14px; border-radius: 10px; background: {{kbMsg.bg}}; color: {{kbMsg.fg}}; border: 1px solid {{kbMsg.bd}}; font-weight: 600">{{kbMsg.text}}</div>
                 </sc-if>
                 <div style="overflow-x: auto">
-                  <div style="min-width: 1100px; display: flex; flex-direction: column; gap: 8px">
-                    <div style="display: grid; grid-template-columns: repeat(5, minmax(200px, 1fr)); gap: 8px">
+                  <div style="min-width: {{kbMinW}}; display: flex; flex-direction: column; gap: 8px">
+                    <div style="display: grid; grid-template-columns: {{kbGrid}}; gap: 8px">
                       <sc-for list="{{kbHead}}" as="kh" hint-placeholder-count="5">
-                        <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: {{kh.bg}}; border: 1px solid {{kh.bd}}">
-                          <span style="width: 10px; height: 10px; border-radius: 3px; background: {{kh.color}}"></span>
-                          <span style="font-weight: 700; flex: 1">{{kh.name}}</span>
-                          <span style="padding: 1px 8px; border-radius: 999px; background: {{kh.limBg}}; color: {{kh.limFg}}; font-size: 12px; font-weight: 700">{{kh.lim}}</span>
-                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; border-radius: 10px; background: {{kh.bg}}; border: 1px solid {{kh.bd}}; border-top: 4px solid {{kh.color}}"><div style="display: flex; align-items: center; gap: 4px"><input type="text" aria-label="Name der Spalte" value="{{kh.name}}" onInput="{{kh.rename}}" title="Umbenennen: einfach tippen" style="flex: 1; min-width: 0; height: 28px; padding: 0 4px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: {{t.text}}; font: inherit; font-weight: 700"><button onClick="{{kh.cycleLim}}" title="{{kh.limTitle}}" style="padding: 1px 8px; border: 0; border-radius: 999px; background: {{kh.limBg}}; color: {{kh.limFg}}; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap">{{kh.lim}}</button></div><div style="display: flex; justify-content: flex-end; gap: 3px"><button onClick="{{kh.left}}" aria-label="{{kh.leftLabel}}" title="Spalte nach links" style="width: 24px; height: 24px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface2}}; color: {{t.text}}; font-size: 10px; cursor: pointer; flex-shrink: 0">◀</button>
+                          <button onClick="{{kh.right}}" aria-label="{{kh.rightLabel}}" title="Spalte nach rechts" style="width: 24px; height: 24px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface2}}; color: {{t.text}}; font-size: 10px; cursor: pointer; flex-shrink: 0">▶</button>
+                          <button onClick="{{kh.del}}" aria-label="{{kh.delLabel}}" title="Spalte löschen" style="width: 24px; height: 24px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface2}}; color: {{t.text}}; font-size: 11px; cursor: pointer; flex-shrink: 0">🗑</button></div></div>
                       </sc-for>
                     </div>
                     <sc-for list="{{kbLanes}}" as="ln" hint-placeholder-count="1">
@@ -3324,7 +3332,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                         <sc-if value="{{ln.showTitle}}" hint-placeholder-val="{{false}}">
                           <div style="display: flex; align-items: center; gap: 8px; padding: 4px 4px 0; font-weight: 700; color: {{ln.color}}"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{ln.color}}"></span>{{ln.title}} <span style="color: {{t.muted}}; font-weight: 600">{{ln.count}}</span></div>
                         </sc-if>
-                        <div style="display: grid; grid-template-columns: repeat(5, minmax(200px, 1fr)); gap: 8px">
+                        <div style="display: grid; grid-template-columns: {{kbGrid}}; gap: 8px">
                           <sc-for list="{{ln.cells}}" as="cl" hint-placeholder-count="5">
                             <div onDragOver="{{cl.over}}" onDrop="{{cl.drop}}" style="display: flex; flex-direction: column; gap: 8px; min-height: 80px; padding: 8px; border-radius: 10px; background: {{cl.bg}}; border: 2px {{cl.bdStyle}} {{cl.bd}}">
                               <sc-for list="{{cl.cards}}" as="kc" hint-placeholder-count="1">
@@ -3335,7 +3343,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                                     <span style="flex: 1"></span>
                                     <span style="font-size: 11px; color: {{t.muted}}">{{kc.anlage}}</span>
                                   </span>
-                                  <span style="font-weight: 600; font-size: 13px">{{kc.title}}</span>
+                                  <button onClick="{{kc.open}}" title="Details öffnen und bearbeiten" style="border: 0; background: transparent; padding: 0; color: {{t.text}}; font: inherit; font-weight: 600; font-size: 13px; text-align: left; cursor: pointer">{{kc.title}}</button>
                                   <span style="display: flex; align-items: center; gap: 6px">
                                     <span style="width: 24px; height: 24px; border-radius: 50%; background: {{kc.avColor}}; color: #FFFFFF; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{kc.ini}}</span>
                                     <span style="flex: 1; font-size: 11px; font-weight: 600; color: {{kc.ageColor}}">{{kc.age}}</span>
@@ -3344,6 +3352,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                                   </span>
                                 </div>
                               </sc-for>
+                              <sc-if value="{{cl.adding}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 10px; border: 2px solid {{accent}}; background: {{t.surface}}">
+                                <input type="text" aria-label="Titel des Auftrags" value="{{kbAdd.title}}" onInput="{{kbAdd.setTitle}}" onKeyDown="{{kbAdd.key}}" placeholder="Was ist zu tun? z. B. Presse 2: Leckage" style="height: 32px; padding: 0 8px; border-radius: 6px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box; width: 100%">
+                                <input type="text" aria-label="Anlage" value="{{kbAdd.anlage}}" onInput="{{kbAdd.setAnlage}}" onKeyDown="{{kbAdd.key}}" placeholder="Anlage, z. B. PR-02 (optional)" style="height: 30px; padding: 0 8px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; box-sizing: border-box; width: 100%">
+                                <div style="display: flex; flex-wrap: wrap; gap: 3px"><sc-for list="{{kbAdd.types}}" as="kat" hint-placeholder-count="3"><button onClick="{{kat.go}}" aria-pressed="{{kat.pressed}}" style="padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid {{t.border}}; background: {{kat.bg}}; color: {{kat.fg}}">{{kat.label}}</button></sc-for><button onClick="{{kbAdd.exp}}" style="padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; border: 2px solid {{kbAdd.expRing}}; background: {{t.surface}}; color: {{t.text}}">{{kbAdd.expLabel}}</button></div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 3px"><sc-for list="{{kbAdd.owners}}" as="kao" hint-placeholder-count="4"><button onClick="{{kao.go}}" aria-pressed="{{kao.pressed}}" style="padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; border: 2px solid {{kao.ring}}; background: {{kao.bg}}; color: {{t.text}}">{{kao.label}}</button></sc-for></div>
+                                <div style="display: flex; gap: 6px"><button onClick="{{kbAdd.save}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: {{accent}}; color: #FFFFFF; font-weight: 700; cursor: pointer">Anlegen</button><button onClick="{{kbAdd.cancel}}" style="height: 32px; padding: 0 10px; border-radius: 6px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-weight: 600; cursor: pointer">Abbrechen</button></div>
+                              </div></sc-if>
+                              <sc-if value="{{cl.notAdding}}" hint-placeholder-val="{{true}}"><button onClick="{{cl.add}}" style="height: 32px; border-radius: 8px; border: 1px dashed {{t.strong}}; background: transparent; color: {{t.muted}}; font-weight: 600; cursor: pointer">+ Auftrag</button></sc-if>
                             </div>
                           </sc-for>
                         </div>
@@ -4610,7 +4626,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
               <sc-if value="{{pn.isList}}" hint-placeholder-val="{{false}}">
                 <section style="border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; overflow: hidden">
                   <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid {{t.border}}; background: {{t.surface2}}"><span aria-hidden="true" style="color: {{t.muted}}">+</span><input type="text" aria-label="Neue Aufgabe" value="{{pn.qaText}}" onInput="{{pn.setQa}}" placeholder="Aufgabe hinzufügen" style="flex: 1 1 220px; height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box; border-color: transparent; background: transparent"><div role="group" aria-label="Wer" style="display: flex; flex-wrap: wrap; gap: 3px"><sc-for list="{{pn.qaWho}}" as="pqw" hint-placeholder-count="3"><button onClick="{{pqw.go}}" aria-pressed="{{pqw.pressed}}" title="{{pqw.name}}" style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid {{pqw.ring}}; background: {{pqw.av}}; color: #FFFFFF; font-size: 9px; font-weight: 700; cursor: pointer">{{pqw.ini}}</button></sc-for></div><input type="date" aria-label="Fällig" value="{{pn.qaDue}}" onInput="{{pn.setQaDue}}" style="height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box"><button onClick="{{pn.listAdd}}" style="height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: {{accent}}; color: #FFFFFF; font-weight: 700; cursor: pointer">Hinzufügen</button></div>
-                  <sc-for list="{{pn.rows}}" as="pnr" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid {{t.border}}"><button onClick="{{pnr.toggle}}" role="checkbox" aria-checked="{{pnr.checked}}" aria-label="{{pnr.title}} erledigt" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid {{pnr.ring}}; background: {{pnr.fill}}; color: #FFFFFF; font-size: 11px; padding: 0; cursor: pointer">{{pnr.mark}}</button><button onClick="{{pnr.open}}" style="flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; font: inherit; cursor: pointer; text-decoration: {{pnr.strike}}">{{pnr.title}}</button><span style="font-size: 12px; color: {{t.muted}}">{{pnr.bucket}}</span><span title="{{pnr.owner}}" style="width: 22px; height: 22px; border-radius: 50%; background: {{pnr.av}}; color: #FFFFFF; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{pnr.ini}}</span><span style="font-size: 12px; min-width: 52px; text-align: right">{{pnr.due}}</span></div></sc-for>
+                  <sc-for list="{{pn.rows}}" as="pnr" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid {{t.border}}"><button onClick="{{pnr.toggle}}" role="checkbox" aria-checked="{{pnr.checked}}" aria-label="{{pnr.title}} erledigt" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid {{pnr.ring}}; background: {{pnr.fill}}; color: #FFFFFF; font-size: 11px; padding: 0; cursor: pointer">{{pnr.mark}}</button><button onClick="{{pnr.open}}" style="flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; font: inherit; cursor: pointer; text-decoration: {{pnr.strike}}">{{pnr.title}}</button><span style="font-size: 12px; color: {{t.muted}}">{{pnr.bucket}}</span><span title="{{pnr.owner}}" style="width: 22px; height: 22px; border-radius: 50%; background: {{pnr.av}}; color: #FFFFFF; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{pnr.ini}}</span><input type="date" aria-label="Fällig: {{pnr.title}}" title="Fälligkeit ändern" value="{{pnr.dueIso}}" onChange="{{pnr.setDue}}" style="width: 120px; height: 28px; padding: 0 4px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; box-sizing: border-box"></div></sc-for>
                 </section>
               </sc-if>
             </sc-if>
@@ -4660,6 +4676,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                 </section>
               </sc-if>
                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+                  <div role="group" aria-label="Zeitraum" style="display: flex; align-items: center; gap: 4px"><button onClick="{{pn.gEarlier}}" title="Zeitstrahl einen Monat früher beginnen" style="height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font-size: 13px; cursor: pointer">‹ früher</button><button onClick="{{pn.gLater}}" title="Zeitstrahl einen Monat länger" style="height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font-size: 13px; cursor: pointer">später ›</button><sc-if value="{{pn.gShifted}}" hint-placeholder-val="{{false}}"><button onClick="{{pn.gReset}}" style="height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.muted}}; font-size: 13px; cursor: pointer">Zeitraum zurücksetzen</button></sc-if></div>
                   <span style="flex: 1"></span>
                   <span style="font-size: 13px; color: {{t.muted}}">Legende filtert:</span>
                   <sc-for list="{{pn.gLegend}}" as="pgl" hint-placeholder-count="4">
@@ -4670,8 +4687,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                   <button onClick="{{pn.gToggleAll}}" style="height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font-size: 13px; cursor: pointer">{{pn.gToggleLabel}}</button>
                 </div>
                 <div style="overflow-x: auto; border-radius: 12px; border: 1px solid {{t.border}}; background: {{t.surface}}">
-                  <div style="min-width: 980px">
-                    <div style="display: grid; grid-template-columns: 320px 120px minmax(0, 1fr); align-items: stretch; height: 40px; background: {{t.surface2}}; border-bottom: 1px solid {{t.border}}; font-size: 12px; font-weight: 600; color: {{t.muted}}">
+                  <div style="min-width: 1100px">
+                    <div style="display: grid; grid-template-columns: 290px 236px minmax(0, 1fr); align-items: stretch; height: 40px; background: {{t.surface2}}; border-bottom: 1px solid {{t.border}}; font-size: 12px; font-weight: 600; color: {{t.muted}}">
                       <span style="display: flex; align-items: center; padding: 0 12px">Phase / Meilenstein</span>
                       <span style="display: flex; align-items: center">Termin</span>
                       <span style="position: relative; display: flex">
@@ -4682,7 +4699,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                       </span>
                     </div>
                     <sc-for list="{{pn.gRows}}" as="pgr" hint-placeholder-count="5">
-                      <div style="display: grid; grid-template-columns: 320px 120px minmax(0, 1fr); align-items: stretch; min-height: 44px; border-bottom: 1px solid {{t.border}}; background: {{pgr.rowBg}}">
+                      <div style="display: grid; grid-template-columns: 290px 236px minmax(0, 1fr); align-items: stretch; min-height: 44px; border-bottom: 1px solid {{t.border}}; background: {{pgr.rowBg}}">
                         <span style="display: flex; align-items: center; gap: 4px; padding-left: {{pgr.indent}}">
                           <sc-if value="{{pgr.hasKids}}" hint-placeholder-val="{{true}}">
                             <button onClick="{{pgr.toggle}}" aria-label="{{pgr.toggleLabel}}" aria-expanded="{{pgr.expanded}}" style="width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; color: {{t.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center">
@@ -4695,7 +4712,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                             <span title="Überfällige Unterelemente" style="margin-right: 8px; padding: 1px 7px; border-radius: 999px; background: #C50F1F; color: #FFFFFF; font-size: 11px; font-weight: 700; white-space: nowrap">! {{pgr.hint}}</span>
                           </sc-if>
                         </span>
-                        <span style="display: flex; flex-direction: column; justify-content: center; font-size: 12px; color: {{t.muted}}">{{pgr.dates}}<sc-if value="{{pgr.hasDev}}" hint-placeholder-val="{{false}}"><span title="{{pgr.devTitle}}" style="font-size: 11px; font-weight: 700; color: {{pgr.devColor}}">{{pgr.dev}}</span></sc-if></span>
+                        <span style="display: flex; flex-direction: column; justify-content: center; font-size: 12px; color: {{t.muted}}"><sc-if value="{{pgr.de.ro}}" hint-placeholder-val="{{false}}"><span title="{{pgr.de.roTitle}}">{{pgr.dates}}</span></sc-if><sc-if value="{{pgr.de.edit}}" hint-placeholder-val="{{true}}"><span style="display: flex; align-items: center; gap: 3px"><sc-if value="{{pgr.de.range}}" hint-placeholder-val="{{true}}"><input type="date" aria-label="{{pgr.de.aLabel}}" title="Beginn ändern" value="{{pgr.de.a}}" onChange="{{pgr.de.setA}}" style="width: 108px; height: 28px; padding: 0 3px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; box-sizing: border-box"><span>–</span></sc-if><input type="date" aria-label="{{pgr.de.bLabel}}" title="{{pgr.de.bTitle}}" value="{{pgr.de.b}}" onChange="{{pgr.de.setB}}" style="width: 108px; height: 28px; padding: 0 3px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; box-sizing: border-box"></span></sc-if><sc-if value="{{pgr.hasDev}}" hint-placeholder-val="{{false}}"><span title="{{pgr.devTitle}}" style="font-size: 11px; font-weight: 700; color: {{pgr.devColor}}">{{pgr.dev}}</span></sc-if></span>
                         <span onDragOver="{{pgr.over}}" onDrop="{{pgr.drop}}" style="position: relative; display: block">
                           <sc-if value="{{pgr.blShow}}" hint-placeholder-val="{{false}}"><span title="{{pgr.devTitle}}" style="position: absolute; top: calc(50% + 11px); left: {{pgr.blLeft}}; width: {{pgr.blWidth}}; height: 5px; border-radius: 3px; background: {{t.strong}}; opacity: 0.55"></span></sc-if>
                           <sc-for list="{{pn.gLines}}" as="pgx" hint-placeholder-count="3">
@@ -4716,10 +4733,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; ">
                   <div role="group" aria-label="Was anlegen" style="display: flex; gap: 3px"><sc-for list="{{pn.addKinds}}" as="pak" hint-placeholder-count="3"><button onClick="{{pak.go}}" aria-pressed="{{pak.pressed}}" style="padding: 4px 10px; border-radius: 999px; border: 2px solid {{pak.ring}}; background: {{pak.bg}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{pak.label}}</button></sc-for></div>
                   <input type="text" aria-label="Name" value="{{pn.msName}}" onInput="{{pn.setMsName}}" placeholder="{{pn.addPh}}" style="flex: 1 1 200px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box; min-width: 0">
-                  <input type="date" aria-label="{{pn.addDateLabel}}" value="{{pn.msDate}}" onInput="{{pn.setMsDate}}" style="height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box; min-width: 0">
-                  <sc-if value="{{pn.addIsPhase}}" hint-placeholder-val="{{false}}"><div style="display: flex; gap: 3px"><sc-for list="{{pn.durs}}" as="pdu" hint-placeholder-count="3"><button onClick="{{pdu.go}}" aria-pressed="{{pdu.pressed}}" style="padding: 4px 10px; border-radius: 999px; border: 2px solid {{pdu.ring}}; background: {{pdu.bg}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{pdu.label}}</button></sc-for></div></sc-if>
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: {{t.muted}}">{{pn.addDateLabel}}<input type="date" aria-label="{{pn.addDateLabel}}" value="{{pn.msDate}}" onChange="{{pn.setMsDate}}" style="height: 34px; padding: 0 8px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-weight: 400; box-sizing: border-box; min-width: 0"></label>
+                  <sc-if value="{{pn.addIsPhase}}" hint-placeholder-val="{{false}}"><label style="display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: {{t.muted}}">Ende<input type="date" aria-label="Ende der Phase" value="{{pn.msEnd}}" onChange="{{pn.setMsEnd}}" style="height: 34px; padding: 0 8px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-weight: 400; box-sizing: border-box; min-width: 0"></label><div style="display: flex; gap: 3px" title="Ende schnell setzen"><sc-for list="{{pn.durs}}" as="pdu" hint-placeholder-count="3"><button onClick="{{pdu.go}}" aria-pressed="{{pdu.pressed}}" style="padding: 4px 10px; border-radius: 999px; border: 2px solid {{pdu.ring}}; background: {{pdu.bg}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{pdu.label}}</button></sc-for></div></sc-if>
                   <button onClick="{{pn.addNode}}" style="height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: {{accent}}; color: #FFFFFF; font-weight: 700; cursor: pointer">{{pn.addBtn}}</button>
                 </div>
+                <sc-if value="{{pn.addNotPhase}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px"><span style="font-size: 12px; font-weight: 600; color: {{t.muted}}; min-width: 70px">In Phase</span><sc-for list="{{pn.addPars}}" as="ppa" hint-placeholder-count="3"><button onClick="{{ppa.go}}" aria-pressed="{{ppa.pressed}}" style="padding: 4px 10px; border-radius: 999px; border: 2px solid {{ppa.ring}}; background: {{ppa.bg}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{ppa.label}}</button></sc-for></div></sc-if>
                 <div style="font-size: 12px; color: {{t.muted}}">{{pn.addNote}}</div>
                 </section>
               </div>
@@ -4781,7 +4799,23 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                 </div></div>
               </section>
               </sc-if>
-              <sc-if value="{{pn.raciOff}}" hint-placeholder-val="{{false}}"><div style="padding: 10px 14px; border-radius: 10px; border: 1px dashed {{t.strong}}; font-size: 13px">RACI-Matrix ist für dieses Projekt aus. Einschalten: ⚙ oben rechts › Stufe und Module › „RACI / AKV“.</div></sc-if>
+              <sc-if value="{{pn.raciOn}}" hint-placeholder-val="{{true}}">
+              <section aria-label="AKV" style="padding: 16px 18px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px"><h2 style="margin: 0; font-size: 16px; flex: 1">AKV: Aufgaben, Kompetenzen, Verantwortung</h2><span style="font-size: 12px; color: {{t.muted}}">Je Person: was sie tut, was sie entscheiden darf, wofür sie geradesteht. Felder direkt ändern.</span></div>
+                <div style="font-size: 12px; color: {{t.muted}}">Grau darunter steht, was automatisch dazukommt: R aus der RACI-Matrix bei den Aufgaben, A bei der Verantwortung, die Freigabegrenze (Mitglieder › ✎) bei den Kompetenzen. Verantwortung braucht passende Kompetenz, sonst warnt das Cockpit.</div>
+                <sc-if value="{{pn.akv.hasWarn}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; border-radius: 8px; border-left: 4px solid #C50F1F; background: {{t.surface2}}; font-size: 13px">Mindestens eine Person trägt Verantwortung, ohne entscheiden zu dürfen. Rolle anheben oder das A in der RACI-Matrix an jemand anderen geben.</div></sc-if>
+                <div style="overflow-x: auto"><div style="min-width: 860px">
+                  <div style="display: grid; grid-template-columns: 170px repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0 8px; height: 32px; align-items: center; font-size: 12px; font-weight: 600; color: {{t.muted}}; background: {{t.surface2}}; border-radius: 8px"><span>Person</span><span>Aufgaben</span><span>Kompetenzen</span><span>Verantwortung</span></div>
+                  <sc-for list="{{pn.akv.rows}}" as="pav" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: 170px repeat(3, minmax(0, 1fr)); gap: 8px; padding: 8px; border-bottom: 1px solid {{t.border}}; align-items: start; font-size: 13px">
+                    <span><b style="display: block">{{pav.name}}</b><span style="display: block; font-size: 11px; color: {{t.muted}}">{{pav.role}} · Freigabe bis {{pav.limit}}</span><sc-if value="{{pav.warn}}" hint-placeholder-val="{{false}}"><span style="display: block; margin-top: 4px; font-size: 11px; font-weight: 700; color: #C50F1F">! Verantwortung ohne Kompetenz</span></sc-if></span>
+                    <span><textarea aria-label="Aufgaben von {{pav.name}}" rows="2" value="{{pav.a}}" onInput="{{pav.setA}}" style="width: 100%; padding: 6px 8px; resize: vertical; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box"></textarea><sc-if value="{{pav.hasAAuto}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; color: {{t.muted}}; margin-top: 2px">{{pav.aAuto}}</span></sc-if></span>
+                    <span><textarea aria-label="Kompetenzen von {{pav.name}}" rows="2" value="{{pav.k}}" onInput="{{pav.setK}}" style="width: 100%; padding: 6px 8px; resize: vertical; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box"></textarea><span style="display: block; font-size: 11px; color: {{t.muted}}; margin-top: 2px">{{pav.kAuto}}</span></span>
+                    <span><textarea aria-label="Verantwortung von {{pav.name}}" rows="2" value="{{pav.v}}" onInput="{{pav.setV}}" style="width: 100%; padding: 6px 8px; resize: vertical; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box"></textarea><sc-if value="{{pav.hasVAuto}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; color: {{t.muted}}; margin-top: 2px">{{pav.vAuto}}</span></sc-if></span>
+                  </div></sc-for>
+                </div></div>
+              </section>
+              </sc-if>
+              <sc-if value="{{pn.raciOff}}" hint-placeholder-val="{{false}}"><div style="padding: 10px 14px; border-radius: 10px; border: 1px dashed {{t.strong}}; font-size: 13px">RACI-Matrix und AKV sind für dieses Projekt aus. Einschalten: ⚙ oben rechts › Stufe und Module › „RACI / AKV“.</div></sc-if>
             </sc-if>
 
             <sc-if value="{{pn.is.risiken}}" hint-placeholder-val="{{false}}">
@@ -4800,7 +4834,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
                 <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px"><sc-for list="{{pn.fin.bars}}" as="pfb" hint-placeholder-count="4"><div style="display: grid; grid-template-columns: 180px 1fr 110px; align-items: center; gap: 8px; font-size: 13px"><span>{{pfb.label}}</span><span style="height: 12px; border-radius: 6px; background: {{t.track}}"><span style="display: block; height: 12px; border-radius: 6px; width: {{pfb.w}}; background: {{pfb.color}}"></span></span><b style="text-align: right">{{pfb.value}}</b></div></sc-for></div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px"><span style="padding: 4px 12px; border-radius: 999px; background: {{pn.fin.sumBg}}; color: #FFFFFF; font-size: 12px; font-weight: 700">{{pn.fin.sum}}</span><sc-if value="{{pn.fin.hasOpen}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #8A3707; font-weight: 600">{{pn.fin.open}}</span></sc-if><sc-if value="{{pn.fin.hasHours}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: {{t.muted}}">{{pn.fin.hours}}</span></sc-if></div>
                 <sc-if value="{{pn.fin.hasNach}}" hint-placeholder-val="{{false}}"><div style="font-size: 12px; font-weight: 700; color: {{t.muted}}; text-transform: uppercase; letter-spacing: .04em; margin: 6px 0 2px">Nachträge aus Change Requests</div><sc-for list="{{pn.fin.nach}}" as="pfn" hint-placeholder-count="1"><div style="padding: 6px 0; border-top: 1px solid {{t.border}}; font-size: 13px">{{pfn.text}}</div></sc-for></sc-if>
-                <div style="font-size: 12px; font-weight: 700; color: {{t.muted}}; text-transform: uppercase; letter-spacing: .04em; margin: 10px 0 2px">Budget und Kosten</div>
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0 4px"><div style="flex: 1; font-size: 12px; font-weight: 700; color: {{t.muted}}; text-transform: uppercase; letter-spacing: .04em">Rechnungen</div><span style="font-size: 12px; color: {{t.muted}}">{{pn.inv.sum}}</span><button onClick="{{pn.inv.toggle}}" aria-expanded="{{pn.inv.openA}}" style="height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: {{accent}}; color: #FFFFFF; font-weight: 700; cursor: pointer">{{pn.inv.btn}}</button></div>
+                <sc-if value="{{pn.inv.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; border-radius: 8px; background: {{t.soft}}; border: 1px solid {{accent}}; font-size: 13px; font-weight: 600; margin-bottom: 6px">{{pn.inv.msg}}</div></sc-if>
+                <sc-if value="{{pn.inv.open}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; margin-bottom: 8px; border-radius: 10px; border: 2px solid {{accent}}; background: {{t.surface2}}">
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px"><input type="text" aria-label="Lieferant" value="{{pn.inv.sup}}" onInput="{{pn.inv.setSup}}" placeholder="Lieferant, z. B. Würth" style="flex: 1 1 200px; height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box"><input type="text" inputmode="decimal" aria-label="Betrag brutto in Euro" value="{{pn.inv.amt}}" onInput="{{pn.inv.setAmt}}" placeholder="Betrag brutto €, z. B. 1.480,00" style="width: 210px; height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box"></div>
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px"><span style="font-size: 12px; font-weight: 600; color: {{t.muted}}; min-width: 80px">Kostenart</span><sc-for list="{{pn.inv.kinds}}" as="pik" hint-placeholder-count="4"><button onClick="{{pik.go}}" aria-pressed="{{pik.pressed}}" style="padding: 4px 10px; border-radius: 999px; border: 2px solid {{pik.ring}}; background: {{pik.bg}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{pik.label}}</button></sc-for></div>
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px"><span style="font-size: 12px; font-weight: 600; color: {{t.muted}}; min-width: 80px">Gehört zu</span><sc-for list="{{pn.inv.wheres}}" as="piw" hint-placeholder-count="3"><button onClick="{{piw.go}}" aria-pressed="{{piw.pressed}}" style="padding: 4px 10px; border-radius: 999px; border: 2px solid {{piw.ring}}; background: {{piw.bg}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{piw.label}}</button></sc-for></div>
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><label style="height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center">📎 Beleg wählen (Foto oder PDF)<input type="file" accept="image/*,application/pdf" onInput="{{pn.inv.pick}}" class="sr"></label><span style="font-size: 12px; font-weight: 600; color: {{pn.inv.belegColor}}">{{pn.inv.belegText}}</span></div>
+                  <div style="font-size: 12px; color: {{t.muted}}">{{pn.inv.rule}}</div>
+                  <div style="display: flex; gap: 8px"><button onClick="{{pn.inv.submit}}" style="height: 38px; padding: 0 16px; border: 0; border-radius: 8px; background: {{accent}}; color: #FFFFFF; font-weight: 700; cursor: pointer">Rechnung einreichen</button><button onClick="{{pn.inv.toggle}}" style="height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-weight: 600; cursor: pointer">Abbrechen</button></div>
+                </div></sc-if>
+                <sc-if value="{{pn.inv.empty}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; color: {{t.muted}}; padding: 4px 0 8px">Noch keine Rechnungen. „+ Rechnung einreichen“ legt eine an. Rechnungen, die an einer Aufgabe oder einem Meilenstein eingereicht werden (Detail › Kosten), erscheinen ebenfalls hier.</div></sc-if>
+                <sc-for list="{{pn.inv.items}}" as="piv" hint-placeholder-count="2"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid {{t.border}}; font-size: 13px"><span style="flex: 1 1 220px"><b>{{piv.sup}}</b> · {{piv.kind}}<span style="display: block; font-size: 11px; color: {{t.muted}}">{{piv.sub}}</span></span><b>{{piv.amount}}</b><span style="padding: 2px 8px; border-radius: 999px; background: {{piv.stBg}}; color: #FFFFFF; font-size: 11px; font-weight: 700">{{piv.status}}</span><sc-if value="{{piv.canDecide}}" hint-placeholder-val="{{false}}"><button onClick="{{piv.ok}}" title="Im Entwurf simuliert" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #107C10; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">✓ {{piv.who}} gibt frei</button><button onClick="{{piv.no}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #C50F1F; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">✗ ablehnen</button></sc-if></div></sc-for>
+                <div style="font-size: 12px; font-weight: 700; color: {{t.muted}}; text-transform: uppercase; letter-spacing: .04em; margin: 14px 0 2px">Weitere Kosten ohne Rechnung (z. B. interne Leistung)</div>
 
                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><label for="pn-bud" style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Budget in €</label><input id="pn-bud" type="text" inputmode="numeric" value="{{pn.budget}}" onInput="{{pn.setBudget}}" style="width: 140px; height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; box-sizing: border-box"><span style="font-size: 13px; font-weight: 700; color: {{pn.budColor}}">{{pn.budText}}</span></div>
                 <div style="height: 10px; border-radius: 5px; background: {{t.track}}; margin: 10px 0"><div style="height: 10px; border-radius: 5px; width: {{pn.budW}}; background: {{pn.budColor}}"></div></div>
@@ -5629,14 +5675,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
   </main>
 </div>
 </template>
-<script src="dc-runtime.js?v=16.11.2026_1500"></script>
-<script src="app.js?v=16.11.2026_1500"></script>
+<script src="dc-runtime.js?v=16.11.2026_1558"></script>
+<script src="app.js?v=16.11.2026_1558"></script>
 <script>
 (function () {
   var props = {"accent": "#0F6CBD", "dark": false, "density": "normal"};
   var app = document.getElementById('app'); app.innerHTML = '';
   dcMount(window.__dcComponent, props, document.getElementById('dc-template'), app);
-  if (/[?&]selftest/.test(location.search)) { var t = document.createElement('script'); t.src = 'selftest.js'; document.body.appendChild(t); }
+  if (/[?&]selftest/.test(location.search)) { var t = document.createElement('script'); t.src = 'entwurf/selftest.js'; document.body.appendChild(t); }
 })();
 </script>
 </body>

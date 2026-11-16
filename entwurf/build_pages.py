@@ -53,7 +53,7 @@ html = '''<!doctype html>
   var props = ''' + json.dumps(props) + ''';
   var app = document.getElementById('app'); app.innerHTML = '';
   dcMount(window.__dcComponent, props, document.getElementById('dc-template'), app);
-  if (/[?&]selftest/.test(location.search)) { var t = document.createElement('script'); t.src = 'selftest.js'; document.body.appendChild(t); }
+  if (/[?&]selftest/.test(location.search)) { var t = document.createElement('script'); t.src = 'entwurf/selftest.js'; document.body.appendChild(t); }
 })();
 </script>
 </body>
