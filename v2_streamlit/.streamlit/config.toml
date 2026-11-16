@@ -1,0 +1,10 @@
+[server]
+enableCORS = false
+enableXsrfProtection = false
+
+[runner]
+# Verhindert dass Streamlit HTML in st.markdown blockiert  
+fastReruns = true
+
+[client]
+toolbarMode = "minimal"

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Engineering Cockpit – Handbuch &amp; Test-Skript</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --primary: #4461D7; --primary-dark: #2f45a8; --primary-light: #EEF1FC;
+    --header: #1B1F3B; --sidebar-bg: #1B1F3B; --sidebar-hover: #262c50;
+    --text: #1E2235; --text-muted: #5B6488; --text-faint: #9099BE;
+    --border: #E2E5F0; --bg: #F4F5FA; --white: #FFFFFF;
+    --green: #16A34A; --green-bg: #F0FDF4; --green-bd:#BBF7D0;
+    --yellow: #D97706; --yellow-bg: #FFFBEB;
+    --red: #DC2626; --red-bg: #FEF2F2;
+    --purple: #7C3AED;
+    --mono: 'Fira Code', 'Consolas', monospace;
+    --sans: 'Segoe UI', 'Nunito Sans', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: var(--sans); color: var(--text); background: var(--bg);
+    display: flex; min-height: 100vh;
+  }
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  #sidebar {
+    width: 300px; flex-shrink: 0; background: var(--sidebar-bg); color: #E2E5F0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 20px 0 40px;
+  }
+  #sidebar .brand { padding: 0 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 12px; }
+  #sidebar .brand-title { font-weight: 800; font-size: 1.05rem; color: #fff; }
+  #sidebar .brand-sub { font-family: var(--mono); font-size: 0.68rem; color: var(--primary); margin-top: 3px; letter-spacing: 0.04em; }
+  #sidebar .progress-box { margin: 0 20px 16px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; }
+  #sidebar .progress-box .label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin-bottom: 6px; }
+  #sidebar .progress-bar-bg { background: rgba(255,255,255,0.12); border-radius: 6px; height: 8px; overflow: hidden; }
+  #sidebar .progress-bar-fg { background: var(--primary); height: 100%; width: 0%; transition: width .2s; }
+  #sidebar .progress-count { font-family: var(--mono); font-size: 0.72rem; color: #fff; margin-top: 6px; }
+  #sidebar nav a {
+    display: block; padding: 7px 20px; font-size: 0.82rem; color: #C7CBE8; text-decoration: none;
+    border-left: 3px solid transparent;
+  }
+  #sidebar nav a:hover { background: var(--sidebar-hover); color: #fff; }
+  #sidebar nav a.h1 { font-weight: 800; color: #fff; margin-top: 10px; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.06em; border-left-color: var(--primary); }
+  #sidebar nav a.h2 { padding-left: 34px; font-size: 0.78rem; }
+  #sidebar .reset-btn {
+    margin: 16px 20px 0; display:block; width: calc(100% - 40px); text-align:center;
+    background: rgba(255,255,255,0.08); color:#E2E5F0; border:1px solid rgba(255,255,255,0.15);
+    border-radius:6px; padding:8px; font-size:0.75rem; cursor:pointer; font-family: var(--sans);
+  }
+  #sidebar .reset-btn:hover { background: rgba(255,255,255,0.15); }
+
+  /* ── Main content ────────────────────────────────────────── */
+  main { flex: 1; max-width: 980px; margin: 0 auto; padding: 40px 48px 120px; }
+  h1.doc-title { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+  .doc-sub { color: var(--text-muted); font-size: 1rem; margin-bottom: 28px; }
+  .intro-box {
+    background: var(--primary-light); border: 1px solid #C7D2F5; border-left: 4px solid var(--primary);
+    border-radius: 10px; padding: 18px 22px; margin-bottom: 32px; font-size: 0.92rem; line-height: 1.7;
+  }
+  .intro-box b { color: var(--primary-dark); }
+
+  section.chapter { margin-bottom: 8px; padding-top: 20px; }
+  section.chapter > h2 {
+    font-size: 1.5rem; font-weight: 800; padding: 14px 18px; background: var(--header); color: #fff;
+    border-radius: 10px; margin-bottom: 4px; scroll-margin-top: 20px;
+  }
+  section.chapter > .where {
+    font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); background: var(--white);
+    border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; padding: 10px 18px 12px;
+    margin-bottom: 18px;
+  }
+  section.chapter > .where b { color: var(--primary-dark); }
+
+  h3.feature {
+    font-size: 1.1rem; font-weight: 800; color: var(--text); margin: 26px 0 4px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--border); scroll-margin-top: 20px;
+  }
+  h4.sub { font-size: 0.95rem; font-weight: 800; color: var(--primary-dark); margin: 16px 0 6px; }
+  p.desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.65; margin: 4px 0 10px; }
+  .role-note {
+    display:inline-block; background:#F3EEFF; color:var(--purple); border-radius:20px; padding:2px 10px;
+    font-size:0.7rem; font-weight:700; margin-left:8px; vertical-align: middle;
+  }
+
+  ul.checklist { list-style: none; padding: 0; margin: 8px 0 18px; }
+  ul.checklist li {
+    display: flex; align-items: flex-start; gap: 10px; padding: 7px 10px; border-radius: 6px;
+    font-size: 0.88rem; line-height: 1.5;
+  }
+  ul.checklist li:hover { background: var(--white); }
+  ul.checklist input[type=checkbox] { margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--primary); cursor: pointer; }
+  ul.checklist li.done label { text-decoration: line-through; color: var(--text-faint); }
+  ul.checklist label { cursor: pointer; }
+  ul.checklist .step-detail { display:block; color: var(--text-faint); font-size: 0.8rem; margin-top: 2px; }
+
+  code { background: #ECEEF5; color: var(--primary-dark); padding: 1px 6px; border-radius: 4px; font-family: var(--mono); font-size: 0.85em; }
+  .badge { display:inline-block; padding: 2px 9px; border-radius: 20px; font-size: 0.68rem; font-weight: 700; margin-right:4px;}
+  .badge.new { background:#DCFCE7; color:#16A34A; }
+  .badge.ai { background:#F3EEFF; color:#7C3AED; }
+  .badge.optional { background:#ECEEF5; color:#9099BE; }
+  .note {
+    background: var(--yellow-bg); border-left: 3px solid var(--yellow); border-radius: 6px;
+    padding: 10px 14px; margin: 10px 0; font-size: 0.85rem; color: #78350F;
+  }
+  .tip {
+    background: var(--green-bg); border-left: 3px solid var(--green); border-radius: 6px;
+    padding: 10px 14px; margin: 10px 0; font-size: 0.85rem; color: #14532D;
+  }
+  table.datamap { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0 20px; }
+  table.datamap th { background: var(--header); color: #fff; text-align: left; padding: 8px 12px; }
+  table.datamap td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+  table.datamap tr:nth-child(even) td { background: var(--white); }
+  hr.sep { border: none; border-top: 1px solid var(--border); margin: 30px 0; }
+  .toc-hint { font-size: 0.8rem; color: var(--text-faint); margin-top: 30px; }
+  @media print {
+    #sidebar { display: none; }
+    main { max-width: 100%; }
+    section.chapter { break-before: page; }
+  }
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="brand">
+    <div class="brand-title">⚙️ Engineering Cockpit</div>
+    <div class="brand-sub">HANDBUCH &amp; TEST-SKRIPT</div>
+  </div>
+  <div class="progress-box">
+    <div class="label">Testfortschritt</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fg" id="progressBar"></div></div>
+    <div class="progress-count" id="progressCount">0 / 0 erledigt</div>
+  </div>
+  <nav>
+    <a class="h1" href="#einleitung">Einleitung</a>
+    <a class="h1" href="#login">1. Login &amp; Accounts</a>
+    <a class="h1" href="#navigation">2. Navigation im Überblick</a>
+    <a class="h1" href="#dashboard">3. Dashboard</a>
+    <a class="h1" href="#meine-tasks">4. Meine Tasks</a>
+    <a class="h1" href="#kanban">5. Kanban Board</a>
+    <a class="h1" href="#projekte">6. Projekte</a>
+    <a class="h2" href="#projekte-liste">6.1 Projektliste &amp; Anlegen</a>
+    <a class="h2" href="#projekte-tasks">6.2 Tab: Tasks</a>
+    <a class="h2" href="#projekte-logbuch">6.3 Tab: Logbuch</a>
+    <a class="h2" href="#projekte-bearbeiten">6.4 Tab: Projekt bearbeiten</a>
+    <a class="h2" href="#projekte-ressourcen">6.5 Tab: Ressourcen</a>
+    <a class="h2" href="#projekte-init">6.6 Tab: Initialisierung</a>
+    <a class="h2" href="#projekte-risiko">6.7 Tab: Risiko &amp; RACI</a>
+    <a class="h2" href="#projekte-dokumente">6.8 Tab: Dokumente</a>
+    <a class="h2" href="#projekte-budget">6.9 Tab: Budget</a>
+    <a class="h2" href="#projekte-rechnung">6.10 Tab: Rechnung &amp; Nachweise</a>
+    <a class="h2" href="#projekte-scrum">6.11 Tab: Scrum-Board</a>
+    <a class="h1" href="#projekt-einreichen">7. Projekt einreichen</a>
+    <a class="h1" href="#genehmigung">8. Genehmigung</a>
+    <a class="h1" href="#gedaechtnis">9. Technik-Gedächtnis</a>
+    <a class="h1" href="#stakeholder">10. Stakeholder</a>
+    <a class="h1" href="#mein-profil">11. Mein Profil</a>
+    <a class="h1" href="#ki-assistent">12. KI-Assistent</a>
+    <a class="h1" href="#gantt">13. Gantt &amp; Zeitplan</a>
+    <a class="h1" href="#automation">14. Automation</a>
+    <a class="h1" href="#wochenbericht">15. Wochenbericht &amp; Tools</a>
+    <a class="h2" href="#wb-bericht">15.1 Wochenbericht-Export</a>
+    <a class="h2" href="#wb-zeit">15.2 Zeiterfassung</a>
+    <a class="h2" href="#wb-wiederkehrend">15.3 Wiederkehrend</a>
+    <a class="h2" href="#wb-benachrichtigung">15.4 Benachrichtigungen</a>
+    <a class="h1" href="#einstellungen">16. Einstellungen</a>
+    <a class="h2" href="#es-db">16.1 Datenbank</a>
+    <a class="h2" href="#es-kap">16.2 Kapazitäten</a>
+    <a class="h2" href="#es-ki">16.3 KI-Backend</a>
+    <a class="h2" href="#es-roadmap">16.4 Roadmap</a>
+    <a class="h2" href="#es-rollen">16.5 Rollensätze</a>
+    <a class="h2" href="#es-sso">16.6 SSO (Azure AD)</a>
+    <a class="h1" href="#rollen">17. Rollen &amp; Rechte</a>
+    <a class="h1" href="#testszenario">18. Empfohlener Testablauf (roter Faden)</a>
+  </nav>
+  <button class="reset-btn" onclick="if(confirm('Alle Häkchen zurücksetzen?')){localStorage.removeItem('ecHandbuchChecks');document.querySelectorAll('.checklist input[type=checkbox]').forEach(function(cb){cb.checked=false;cb.closest('li').classList.remove('done');});updateProgress();}">↺ Alle Häkchen zurücksetzen</button>
+</aside>
+
+<main>
+
+<h1 class="doc-title">Engineering Cockpit — Handbuch &amp; Test-Skript</h1>
+<div class="doc-sub">Vollständige Funktionsübersicht, Stand: alle Phasen A–K umgesetzt, Phase J-SSO vorbereitet</div>
+
+<div class="intro-box" id="einleitung">
+  <b>Wie du dieses Dokument benutzt:</b> Dies ist gleichzeitig Handbuch (was macht die App, wo finde ich was)
+  und Test-Skript (roter Faden, um die App durchzuklicken und die Funktionstüchtigkeit zu prüfen). Jeder Abschnitt
+  entspricht genau einem Navigationspunkt oder Tab in der App. Jede Checkliste kannst du direkt hier im Browser
+  abhaken — die Häkchen werden lokal in deinem Browser gespeichert (<code>localStorage</code>), bleiben also auch
+  nach einem Neuladen der Seite erhalten. Öffne die App parallel in einem zweiten Fenster und arbeite Kapitel für
+  Kapitel durch. Kapitel 18 am Ende schlägt eine sinnvolle Reihenfolge für einen zusammenhängenden End-to-End-Test vor.
+</div>
+
+<!-- ══════════════════════════════ 1. LOGIN ══════════════════════════════ -->
+<section class="chapter" id="login">
+  <h2>1. Login &amp; Accounts</h2>
+  <div class="where">Erste Seite der App, bevor du eingeloggt bist. Kein Navigationspunkt — Zugangstor.</div>
+
+  <p class="desc">Dunkler Anmeldebildschirm mit E-Mail/Passwort-Formular. Nutzer werden in der <code>users</code>-Tabelle
+  verwaltet (Passwort als Argon2-Hash), Sessions laufen 14 Tage über einen Cookie (<code>ec_session</code>).
+  Zusätzlich existiert ein optionaler <b>"🔑 Mit Microsoft anmelden"</b>-Button, der nur erscheint, wenn SSO in den
+  Einstellungen konfiguriert ist (siehe Kapitel 16.6) — ohne Konfiguration ist ausschließlich der normale Login aktiv.</p>
+
+  <h4 class="sub">Rollen (wirken sich auf Sichtbarkeit von Seiten aus, siehe Kapitel 17)</h4>
+  <table class="datamap">
+    <tr><th>Rolle</th><th>Code</th><th>Besonderheit</th></tr>
+    <tr><td>Mitarbeiter</td><td><code>mitarbeiter</code></td><td>Standard-Zugriff auf alle normalen Seiten</td></tr>
+    <tr><td>Projektleiter</td><td><code>projektleiter</code></td><td>Wie Mitarbeiter, keine zusätzliche Sperre in der UI</td></tr>
+    <tr><td>Geschäftsführung</td><td><code>geschaeftsfuehrung</code></td><td>Sieht zusätzlich "✅ Genehmigung" in der Navigation</td></tr>
+    <tr><td>Administrator</td><td><code>admin</code></td><td>Wie Geschäftsführung — sieht ebenfalls "Genehmigung"</td></tr>
+  </table>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Login mit korrekten Zugangsdaten funktioniert, Weiterleitung zum Dashboard</label></li>
+    <li><input type="checkbox"><label>Login mit falschem Passwort zeigt Fehlermeldung "E-Mail oder Passwort ist falsch."</label></li>
+    <li><input type="checkbox"><label>Nach Login: Browser neu laden → man bleibt eingeloggt (Cookie funktioniert)</label></li>
+    <li><input type="checkbox"><label>"🚪 Abmelden" oben in der Sidebar loggt aus und zeigt wieder die Login-Seite</label></li>
+    <li><input type="checkbox"><label>Ohne SSO-Konfiguration: kein "Mit Microsoft anmelden"-Button sichtbar</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 2. NAVIGATION ══════════════════════════════ -->
+<section class="chapter" id="navigation">
+  <h2>2. Navigation im Überblick</h2>
+  <div class="where">Linke Sidebar, in <b>jeder</b> Seite sichtbar (dunkelblau).</div>
+  <p class="desc">Von oben nach unten: Logo/Version, angemeldeter Nutzer + Abmelden-Button, die Navigationsliste
+  (Radio-Buttons, ein Klick wechselt die Seite), darunter eine "Heute"-Box mit Live-Zahlen (Im Fokus, Warten auf,
+  Eskaliert, Quick-Wins, Projekte) und ganz unten eine globale Schnellsuche.</p>
+  <h4 class="sub">Vollständige Navigationsliste (in dieser Reihenfolge)</h4>
+  <table class="datamap">
+    <tr><th>Icon &amp; Name</th><th>Sichtbar für</th><th>Kapitel hier</th></tr>
+    <tr><td>🏠 Dashboard</td><td>alle</td><td>3</td></tr>
+    <tr><td>📋 Meine Tasks</td><td>alle</td><td>4</td></tr>
+    <tr><td>🗂️ Kanban Board</td><td>alle</td><td>5</td></tr>
+    <tr><td>📁 Projekte</td><td>alle</td><td>6</td></tr>
+    <tr><td>📤 Projekt einreichen</td><td>alle</td><td>7</td></tr>
+    <tr><td>✅ Genehmigung</td><td>nur Geschäftsführung/Admin</td><td>8</td></tr>
+    <tr><td>🔍 Technik-Gedächtnis</td><td>alle</td><td>9</td></tr>
+    <tr><td>👥 Stakeholder</td><td>alle</td><td>10</td></tr>
+    <tr><td>🧑‍💼 Mein Profil</td><td>alle</td><td>11</td></tr>
+    <tr><td>🤖 KI-Assistent</td><td>alle</td><td>12</td></tr>
+    <tr><td>📅 Gantt &amp; Zeitplan</td><td>alle</td><td>13</td></tr>
+    <tr><td>⚙ Automation</td><td>alle</td><td>14</td></tr>
+    <tr><td>📊 Wochenbericht</td><td>alle</td><td>15</td></tr>
+    <tr><td>⚙️ Einstellungen</td><td>alle</td><td>16</td></tr>
+  </table>
+  <p class="desc">Die <b>Schnellsuche</b> unten in der Sidebar (Feld "🔍 Task, Projekt, Lösung...") durchsucht ab 2
+  eingegebenen Zeichen sofort Tasks und Logbuch-Einträge und zeigt Live-Vorschläge direkt unter dem Suchfeld —
+  unabhängig davon, welche Seite gerade offen ist.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Alle Navigationspunkte lassen sich anklicken, jede Seite lädt ohne Fehlermeldung</label></li>
+    <li><input type="checkbox"><label>Als normaler Mitarbeiter-Account: "Genehmigung" ist NICHT in der Liste sichtbar</label></li>
+    <li><input type="checkbox"><label>Sidebar-"Heute"-Zahlen ändern sich, wenn man z.B. einen Task in Fokus schiebt</label></li>
+    <li><input type="checkbox"><label>Schnellsuche mit einem bekannten Task-Stichwort zeigt Live-Treffer</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 3. DASHBOARD ══════════════════════════════ -->
+<section class="chapter" id="dashboard">
+  <h2>3. Dashboard</h2>
+  <div class="where">Navigation → <b>🏠 Dashboard</b> (Startseite nach Login)</div>
+  <p class="desc">Zentrale Übersichtsseite. Oben ein aufklappbarer <b>Daily-Log</b>-Bereich, darunter 5 Kennzahlen-Kacheln,
+  danach ein Eskalations-Alert (falls vorhanden) und ein 2-Spalten-Layout mit Fokus-Tasks/Quick-Wins/Wartend links
+  und Stakeholder-Radar/Aktive Projekte/Letzte Aktivitäten rechts.</p>
+
+  <h4 class="sub">📓 Daily-Log — Was habe ich heute gemacht? <span class="badge ai">KI</span></h4>
+  <p class="desc">Aufklappbares Feld oben. Freitext eingeben (z.B. "Heute mit Hendrik über Maschine 3 gesprochen...")
+  und auf <b>"✨ Analysieren &amp; zuordnen"</b> klicken (nur aktiv wenn KI-Backend verfügbar, siehe Kapitel 16.3).
+  Die KI ordnet den Text automatisch bestehenden aktiven Projekten zu, schätzt Fortschritt ein (🟢 gut / 🟡 neutral /
+  🔴 verzögert) und schlägt neue Tasks vor. Jeder Treffer hat einen eigenen <b>"💾 Speichern"</b>-Button (legt einen
+  Logbuch-Eintrag vom Typ "Tagesrueckblick" an) bzw. <b>"➕ Anlegen"</b> für Task-Vorschläge.</p>
+
+  <h4 class="sub">Kennzahlen-Kacheln</h4>
+  <p class="desc">Aktive Projekte, Im Fokus, Warten auf, 🚨 Eskaliert, ⚡ Quick-Wins — reine Live-Zahlen, keine Interaktion.</p>
+
+  <h4 class="sub">Linke Spalte</h4>
+  <p class="desc"><b>Im Fokus</b>: alle Tasks mit Status "Fokus", je Karte Buttons "✅ Erledigt" und "↩ Backlog".<br>
+  <b>⚡ Quick-Wins</b>: bis zu 5 Backlog-Tasks mit Aufwandsklasse 2 Min oder 15 Min, Button "▶ In Fokus".<br>
+  <b>⏳ Warten auf Rückmeldung</b>: bis zu 5 Tasks mit Status "Warten_auf" (nur Anzeige, Bearbeitung über Kanban/Stakeholder).</p>
+
+  <h4 class="sub">Rechte Spalte</h4>
+  <p class="desc"><b>👥 Stakeholder-Radar</b>: Personen mit offenen "Warten auf"-Anfragen, Eskalationsfarbe nach Alter.<br>
+  <b>📁 Aktive Projekte</b>: Fortschrittsbalken je aktivem Projekt (Fokus/Warten/offen/%).<br>
+  <b>🕐 Letzte Aktivitäten</b>: die letzten 6 Logbuch-Einträge über alle Projekte.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Daily-Log: Text eingeben, "Analysieren &amp; zuordnen" liefert plausible Projekt-Zuordnung(en)</label></li>
+    <li><input type="checkbox"><label>Daily-Log: "💾 Speichern" bei einem Treffer legt Eintrag an (in Projekt-Logbuch prüfbar, Kapitel 6.3)</label></li>
+    <li><input type="checkbox"><label>Daily-Log: "➕ Anlegen" bei Task-Vorschlag legt neuen Task an (in Kanban/Meine Tasks prüfbar)</label></li>
+    <li><input type="checkbox"><label>Kennzahlen-Kacheln stimmen mit tatsächlicher Task-Anzahl überein</label></li>
+    <li><input type="checkbox"><label>"✅ Erledigt" / "↩ Backlog" / "▶ In Fokus" auf einer Karte ändert sofort Status (Seite lädt neu)</label></li>
+    <li><input type="checkbox"><label>Stakeholder-Radar zeigt echte offene "Warten auf"-Fälle korrekt an</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 4. MEINE TASKS ══════════════════════════════ -->
+<section class="chapter" id="meine-tasks">
+  <h2>4. Meine Tasks</h2>
+  <div class="where">Navigation → <b>📋 Meine Tasks</b></div>
+  <p class="desc">Listenansicht (kein Board) über <b>alle</b> Tasks aller Projekte, nicht auf den eingeloggten Nutzer
+  gefiltert — der Name bezieht sich auf die persönliche Arbeitsliste im Sinne von "meine Aufgabenliste als Ingenieur",
+  nicht auf eine harte Benutzer-Zuordnung (diese gibt es separat über "Mein Profil → Eigene Aufgaben", Kapitel 11).</p>
+  <h4 class="sub">Aufbau</h4>
+  <p class="desc">Aufklappbares "➕ Neuen Task anlegen" (nur Titel, ohne Projekt), Filterleiste (Status-Dropdown,
+  Priorität-Mehrfachauswahl, Checkbox "Nur Kritisch"), darunter die gefilterte Task-Liste mit Prio-/Status-Badges.
+  Je Karte ein aufklappbarer Bereich "Details &amp; Aktionen" mit "✅ Erledigt" und "🗑 Löschen".</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Neuen Task ohne Projekt anlegen funktioniert</label></li>
+    <li><input type="checkbox"><label>Statusfilter (Backlog/Fokus/Warten_auf/Erledigt) filtert die Liste korrekt</label></li>
+    <li><input type="checkbox"><label>Prioritätsfilter (Hoch/Mittel/Niedrig) funktioniert, auch kombiniert mit Status</label></li>
+    <li><input type="checkbox"><label>"Nur Kritisch" zeigt nur Tasks mit kritischem Pfad</label></li>
+    <li><input type="checkbox"><label>"✅ Erledigt" und "🗑 Löschen" in Details &amp; Aktionen funktionieren</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 5. KANBAN ══════════════════════════════ -->
+<section class="chapter" id="kanban">
+  <h2>5. Kanban Board</h2>
+  <div class="where">Navigation → <b>🗂️ Kanban Board</b></div>
+  <p class="desc">4-Spalten-Board (Backlog / Fokus / Warten auf / Erledigt) über alle Projekte gemeinsam, mit
+  Toolbar zum Filtern nach Projekt, Person ("Warten auf"), Aufwandsklasse und kritischem Pfad, sowie einem
+  "➕ Task"-Schnell-Anlage-Formular (Titel, Projekt, Aufwand, Priorität).</p>
+  <h4 class="sub">Task-Karte → "···" aufklappen</h4>
+  <p class="desc">Je nach aktueller Spalte erscheinen passende Status-Wechsel-Buttons (z.B. aus Backlog: "▶ Fokus"
+  oder "⏳ Warten"). Darunter: <b>Person setzen</b> — Dropdown mit allen echten Mitarbeiter:innen (Login-Nutzern)
+  <i>und</i> externen Stakeholder-Kontakten, setzt bei Auswahl automatisch Status auf "Warten_auf" und startet die
+  Eskalations-Uhr. Darunter eine <b>Schnellnotiz</b> (Typ Notiz/Loesung/Mail/Snippet) direkt am Task, die letzten
+  2 Einträge werden angezeigt. Ganz unten "🗑 Löschen".</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Projekt-Filter zeigt nur Tasks des gewählten Projekts</label></li>
+    <li><input type="checkbox"><label>Person-Filter (Warten auf) filtert korrekt</label></li>
+    <li><input type="checkbox"><label>Aufwand-Mehrfachfilter funktioniert</label></li>
+    <li><input type="checkbox"><label>"➕ Task"-Schnellformular legt Task in korrekter Spalte/Projekt an</label></li>
+    <li><input type="checkbox"><label>Status-Wechsel-Buttons in "···" verschieben Task in die richtige Spalte</label></li>
+    <li><input type="checkbox"><label>"Person setzen" mit einem echten Nutzer verschiebt Task nach "Warten auf" und zeigt Tage-Zähler auf der Karte</label></li>
+    <li><input type="checkbox"><label>Schnellnotiz speichern funktioniert, letzte Einträge erscheinen unter dem Formular</label></li>
+    <li><input type="checkbox"><label>"🗑 Löschen" entfernt den Task endgültig</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 6. PROJEKTE ══════════════════════════════ -->
+<section class="chapter" id="projekte">
+  <h2>6. Projekte</h2>
+  <div class="where">Navigation → <b>📁 Projekte</b> — das größte und zentrale Modul der App</div>
+  <p class="desc">Zwei Ansichten: <b>Liste</b> (alle Projekte, Filter nach Status) und <b>Detail</b> (ein Projekt,
+  per "🔍 Details"-Button aus der Liste erreichbar, mit "← Zurück" wieder verlassbar). Die Detailansicht hat
+  bis zu 11 Tabs (10 fest + "Scrum-Board" nur wenn ein agiles Vorgehensmodell gewählt wurde) — das ist der Kern
+  des gesamten Projektmanagements in dieser App.</p>
+</section>
+
+<section id="projekte-liste">
+  <h3 class="feature">6.1 Projektliste &amp; Neues Projekt anlegen</h3>
+  <p class="desc">Oben ein aufklappbares Formular <b>"➕ Neues Projekt anlegen"</b>: Name, Kostenstelle, Start-/
+  Enddatum, Farbe, Status, Budget-Cap (€), Ordnerpfad, Beschreibung. Darunter Statusfilter (Alle/Aktiv/Pausiert/
+  Archiv) und die Liste als Karten mit Fortschrittsbalken, Meta-Infos und "🔍 Details"-Button.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Neues Projekt mit allen Feldern anlegen, erscheint sofort in der Liste</label></li>
+    <li><input type="checkbox"><label>Statusfilter Aktiv/Pausiert/Archiv funktionieren</label></li>
+    <li><input type="checkbox"><label>"🔍 Details" öffnet die Projekt-Detailansicht mit allen Tabs</label></li>
+    <li><input type="checkbox"><label>"← Zurück" in der Detailansicht führt zur Liste zurück</label></li>
+  </ul>
+</section>
+
+<section id="projekte-tasks">
+  <h3 class="feature">6.2 Tab: 📋 Tasks</h3>
+  <p class="desc">Projekt-eigene Task-Liste, gruppiert nach Status (Fokus/Warten/Backlog/Erledigt), mit
+  Schnell-Anlage-Formular oben (Titel, Aufwand, Prio, kritischer Pfad). Je Task ein Status-Weiterschalte-Button
+  und "🗑 Löschen".</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Task im Projekt anlegen, erscheint in Backlog-Gruppe</label></li>
+    <li><input type="checkbox"><label>Status-Button schaltet Task in nächste Gruppe (Backlog→Fokus→Erledigt)</label></li>
+    <li><input type="checkbox"><label>Kritischer-Pfad-Kennzeichnung (🔗) wird bei Erstellung korrekt übernommen</label></li>
+  </ul>
+</section>
+
+<section id="projekte-logbuch">
+  <h3 class="feature">6.3 Tab: 📝 Logbuch</h3>
+  <p class="desc">Projekt-eigenes Technik-Gedächtnis: Formular für neuen Eintrag (Text, Typ Notiz/Mail/Loesung/
+  Snippet/Call, Person, Tags), darunter die letzten 30 Einträge chronologisch. Hier landen auch automatisch die
+  über das Dashboard-Daily-Log gespeicherten Einträge (Typ "Tagesrueckblick").</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Neuer Logbuch-Eintrag mit Tags/Person speichern und in der Liste sehen</label></li>
+    <li><input type="checkbox"><label>Ein vom Dashboard-Daily-Log gespeicherter Eintrag taucht hier im richtigen Projekt auf</label></li>
+  </ul>
+</section>
+
+<section id="projekte-bearbeiten">
+  <h3 class="feature">6.4 Tab: ⚙ Projekt bearbeiten</h3>
+  <p class="desc">Stammdaten-Formular (Name, Kostenstelle, Status, Ordnerpfad, Budget €, Farbe, Beschreibung).
+  Wird Status auf <b>"Archiv"</b> gesetzt, erscheint zusätzlich ein Feld <b>"Abschlussbewertung"</b>
+  (erfolgreich/gescheitert/neutral) — das ist die Grundlage für die KI-Lessons-Learned-Analyse künftiger Projekte
+  (Kapitel 6.6). Ganz unten: <b>"🗑 Projekt löschen (unwiderruflich)"</b> — löscht das komplette Projekt inkl. aller
+  Tasks/Logbuch/Risiken/etc. per Kaskade.</p>
+  <div class="note">⚠ Das Löschen ist unwiderruflich und kaskadiert auf alle Unterobjekte. Für den Test am besten ein
+  eigens angelegtes Test-Projekt löschen, kein echtes.</div>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Stammdaten ändern (z.B. Budget) und speichern, Änderung ist in der Liste sichtbar</label></li>
+    <li><input type="checkbox"><label>Status auf "Archiv" setzen zeigt Abschlussbewertungs-Feld, speichern funktioniert</label></li>
+    <li><input type="checkbox"><label>(mit Test-Projekt) "Projekt löschen" entfernt es vollständig aus der Liste</label></li>
+  </ul>
+</section>
+
+<section id="projekte-ressourcen">
+  <h3 class="feature">6.5 Tab: 👥 Ressourcen</h3>
+  <p class="desc">Zeigt, wer mit welchem Zeitanteil (%) diesem Projekt zugeordnet ist ("GF-zugewiesen" bei
+  Genehmigung durch die Geschäftsführung, sonst "Selbst gewählt"). Formular unten zum Hinzufügen/Ändern eines
+  Anteils. Warnt, wenn eine Person dadurch projektübergreifend über 100% Auslastung kommt.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Eigenen Zeitanteil (z.B. 50%) hinzufügen, erscheint in der Liste</label></li>
+    <li><input type="checkbox"><label>Zweiten Anteil in einem anderen Projekt hinzufügen, der die 100%-Grenze überschreitet → Warnung erscheint</label></li>
+  </ul>
+</section>
+
+<section id="projekte-init">
+  <h3 class="feature">6.6 Tab: 🎯 Initialisierung</h3>
+  <p class="desc">Das "Straubel-Vorgehen": sechs aufklappbare Abschnitte (C.1–C.6), die schrittweise die
+  Projektinitialisierung dokumentieren. Kein Einmal-Assistent — jederzeit editierbar.</p>
+
+  <h4 class="sub">🎯 Ziele, Erfolgskriterien &amp; kritische Erfolgsfaktoren <span class="badge ai">KI</span></h4>
+  <p class="desc">"✨ KI-Vorschlag aus Projektbeschreibung" generiert einen Vorschlag zum manuellen Übernehmen in
+  die drei Textfelder darunter (Ziele / Erfolgskriterien / Kritische Erfolgsfaktoren).</p>
+
+  <h4 class="sub">📚 Lessons Learned <span class="badge ai">KI</span></h4>
+  <p class="desc">Zeigt abgeschlossene/pausierte Alt-Projekte als Vergleichsbasis. "✨ KI-Analyse Alt-Projekte"
+  fasst deren Erfolg/Misserfolg zusammen und leitet Empfehlungen ab. Eigenes Notizfeld darunter.</p>
+
+  <h4 class="sub">🏷 Projektart &amp; Komplexität (Einstufung)</h4>
+  <p class="desc">Formular mit Mehrere-Fachbereiche-Checkbox, Ressourcenbindung %, Budget (TEUR), Dauer (Wochen),
+  strategischer Priorität (1-10), Abhängigkeiten-Checkbox, Komplexität (gering/Aufgabe/Problem/komplexes Problem)
+  und Risikoklasse (A/B/C). <b>"🧮 Einstufen &amp; Speichern"</b> berechnet automatisch eine Einstufung
+  (ASTA / Massnahme / EPM) nach dem Straubel-Kriterienkatalog.</p>
+
+  <h4 class="sub">🌐 Scope, Kontext &amp; Umfeld-Analyse <span class="badge ai">KI</span></h4>
+  <p class="desc">Formular "Im Scope enthalten" / "Explizit ausgeschlossen". Darunter eine Liste von
+  Umfeldfaktoren (sachlich/sozial, intern/extern, Wichtigkeit 1-3) mit KI-Analyse-Button, der aus Beschreibung,
+  Zielen, Logbuch, Stakeholdern und User-Stories automatisch Faktoren + eine Stacy-Matrix-Einschätzung ableitet.
+  Jeder Faktor ist einzeln editierbar/löschbar, neue Faktoren auch manuell anlegbar.</p>
+
+  <h4 class="sub">🧭 Vorgehensmodell-Wahl (Stacy-Matrix) <span class="badge ai">KI</span></h4>
+  <p class="desc">Anforderungsklarheit + Lösungsklarheit (je klar/unklar) → automatische Empfehlung
+  (Wasserfall/V-Modell/Scrum/Inkrementell/Hybrid), manuell überschreibbar und zu speichern. <b>Danach:</b>
+  <b>"✨ Struktur generieren"</b> — die KI leitet aus Zielen/Scope/User-Stories eine komplette Meilenstein-/
+  Sprint-Struktur samt Tasks ab und legt sie direkt an (sichtbar in Gantt &amp; Zeitplan, bei Scrum/Inkrementell/
+  Hybrid zusätzlich im Scrum-Board-Tab). Erneutes Generieren fügt hinzu statt zu ersetzen.</p>
+
+  <h4 class="sub">📐 Projektdesign</h4>
+  <p class="desc">Freitextfelder Scope/Abgrenzung und Rahmenbedingungen.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>KI-Vorschlag für Ziele/Erfolgskriterien generieren und übernehmen</label></li>
+    <li><input type="checkbox"><label>Projektart/Komplexität ausfüllen, "Einstufen &amp; Speichern" zeigt plausible Einstufung (ASTA/Massnahme/EPM)</label></li>
+    <li><input type="checkbox"><label>Scope-Felder speichern, mind. einen Umfeldfaktor manuell anlegen</label></li>
+    <li><input type="checkbox"><label>"✨ KI-Analyse erstellen" bei Scope/Kontext liefert zusätzliche Umfeldfaktoren + Stacy-Einschätzung</label></li>
+    <li><input type="checkbox"><label>Vorgehensmodell wählen (z.B. Scrum) und speichern</label></li>
+    <li><input type="checkbox"><label>"✨ Struktur generieren" legt Meilensteine/Sprints + Tasks an — danach in Gantt &amp; Zeitplan (Kapitel 13) sichtbar</label></li>
+    <li><input type="checkbox"><label>Bei Scrum/Inkrementell/Hybrid: nach Struktur-Generierung erscheint der Tab "🏉 Scrum-Board" (Kapitel 6.11)</label></li>
+  </ul>
+</section>
+
+<section id="projekte-risiko">
+  <h3 class="feature">6.7 Tab: ⚠ Risiko &amp; RACI</h3>
+  <h4 class="sub">⚠️ Risikoregister</h4>
+  <p class="desc">Klassisches Schema: Eintrittswahrscheinlichkeit × Tragweite = Risikopriorität (farblich markiert),
+  Maßnahmenklasse (vermeiden/vermindern/verlagern/begrenzen/akzeptieren), Maßnahme + Kosten, Status, und optional
+  EW/TW <i>nach</i> der Maßnahme → automatisch berechnetes Restrisiko. "➕ Neues Risiko" zum Anlegen.</p>
+
+  <h4 class="sub">🧩 RACI/AKV-Matrix</h4>
+  <p class="desc">Arbeitspaket × Person × Rolle (R=Responsible, A=Accountable, C=Consulted, I=Informed).
+  "➕ RACI-Zuordnung hinzufügen" legt neue Zeilen an.</p>
+
+  <h4 class="sub">📅 Terminplanung <span class="badge ai">KI</span> <span class="badge new">Phase H</span></h4>
+  <p class="desc">Braucht mindestens eine RACI-Zuordnung oben. Anlass eingeben, <b>"✨ Terminvorschlag erstellen"</b>
+  klicken — die KI liest die RACI-Matrix und entscheidet je Person zwischen <b>vor Ort</b> (i.d.R. R/A-Rollen) und
+  <b>online/nur zur Information</b> (i.d.R. C/I-Rollen), inklusive fertiger Einladungstexte für beide Gruppen.</p>
+  <div class="note">Bekannte weiche Schwäche: die KI kann gelegentlich eine "Accountable"-Person fälschlich als
+  "online" statt "vor Ort" einstufen. Kein technischer Fehler — die Zuordnung ist trotzdem editierbar/nur eine
+  Empfehlung, prüfe sie beim Testen bewusst gegen die RACI-Matrix.</div>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Neues Risiko anlegen, Priorität wird korrekt berechnet (EW×TW)</label></li>
+    <li><input type="checkbox"><label>Maßnahme + EW/TW nach Maßnahme eintragen → Restrisiko wird berechnet und angezeigt</label></li>
+    <li><input type="checkbox"><label>RACI-Zuordnung für ein Arbeitspaket mit mind. 2 Personen/Rollen anlegen</label></li>
+    <li><input type="checkbox"><label>Terminvorschlag erstellen: Vor-Ort/Online-Aufteilung stimmt sinnvoll mit R/A/C/I überein</label></li>
+    <li><input type="checkbox"><label>Einladungstexte (Vor-Ort und Online) sind vorhanden und lesbar</label></li>
+  </ul>
+</section>
+
+<section id="projekte-dokumente">
+  <h3 class="feature">6.8 Tab: 📄 Dokumente</h3>
+  <h4 class="sub">📊 Status-Zusammenfassung <span class="badge ai">KI</span></h4>
+  <p class="desc">"✨ Status jetzt aktualisieren" fasst Task-Zahlen, Meilenstein-Fortschritt und jüngste Logbuch-
+  Einträge zu einer Ampel-Status-Zusammenfassung zusammen (Gesamtstatus/was ist passiert/aktueller Fokus/Risiken/
+  nächste Schritte) — ersetzt den manuellen Wochenbericht auf Projektebene.</p>
+  <p class="desc"><b>"⬇ Projektstand als Präsentationsseite (HTML) exportieren"</b> <span class="badge new">Phase H</span>:
+  Ein-Klick-Download einer eigenständigen HTML-Seite mit Zielen, KI-Statuszusammenfassung, Meilenstein-Fortschritt
+  und Risiko-Tabelle — offline in jedem Browser anzeigbar, gut für Jour-fixe/Präsentationen.</p>
+
+  <h4 class="sub">📄 Lastenheft &amp; Pflichtenheft <span class="badge ai">KI</span></h4>
+  <p class="desc">Zwei Spalten. Lastenheft (WAS &amp; WOFÜR) per KI-Entwurf aus Zielen/Anforderungen/Scope/Risiken,
+  danach editierbar + als .txt herunterladbar. Pflichtenheft (WIE) baut auf dem fertigen Lastenheft auf (Button
+  erst aktiv, wenn Lastenheft existiert). Beide haben einen Status "entwurf"/"final".</p>
+
+  <h4 class="sub">💶 Kostenbeschreibung &amp; Stückliste</h4>
+  <p class="desc">Positionsliste (Material/Dienstleistung/Personal/Sonstiges) mit Menge, Einheit, Einzelpreis →
+  automatisches Gesamtpreis je Position und Summe gegen das Projekt-Budget. Export als CSV oder Excel. Diese
+  Liste ist gleichzeitig die <b>Grundbetrag-Basis</b> für die Rechnungskalkulation in Kapitel 6.10.</p>
+
+  <h4 class="sub">💬 User-Story-Interview <span class="badge ai">KI</span></h4>
+  <p class="desc">Chat-Oberfläche: Anforderung in eigenen Worten eingeben, die KI fragt wie in einem echten
+  Interview so lange nach, bis Rolle/Ziel/Nutzen/Akzeptanzkriterien vollständig sind. Ist die Story komplett,
+  erscheint ein Bestätigungsformular (inkl. MoSCoW-Priorität) zum Speichern oder Verwerfen. "🔄 Interview
+  zurücksetzen" leert den Chat. Gespeicherte Stories erscheinen darunter als Liste, editierbar/löschbar.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Status-Zusammenfassung generieren, Ampel-Status ist plausibel</label></li>
+    <li><input type="checkbox"><label>Projektstand als HTML exportieren, Datei öffnet sich offline korrekt im Browser</label></li>
+    <li><input type="checkbox"><label>Lastenheft-Entwurf generieren, editieren, speichern, als .txt herunterladen</label></li>
+    <li><input type="checkbox"><label>Pflichtenheft-Entwurf generieren (erst nach Lastenheft möglich)</label></li>
+    <li><input type="checkbox"><label>Mind. 2 Positionen in der Stückliste anlegen, Summe/Budget-Vergleich stimmt</label></li>
+    <li><input type="checkbox"><label>Stückliste als CSV und als Excel exportieren, beide Dateien öffnen sich korrekt</label></li>
+    <li><input type="checkbox"><label>User-Story-Interview führen bis "Story bereit zur Bestätigung" erscheint, speichern</label></li>
+  </ul>
+</section>
+
+<section id="projekte-budget">
+  <h3 class="feature">6.9 Tab: 💰 Budget <span class="badge new">Phase K</span></h3>
+  <p class="desc">Zeigt Plan-Budget (aus Kapitel 6.4) gegen Ist-Kosten aus <b>zwei</b> Quellen: Zeiterfassung ×
+  Rollen-Stundensatz (Kapitel 16.5) und Belege. Balken mit Ampelfarbe (grün &lt;80%, gelb 80-99%, rot ≥100%),
+  Warnung bei Buchungen ohne konfigurierten Stundensatz, Aufschlüsselung nach Rolle.</p>
+
+  <h4 class="sub">📎 Belege <span class="badge new">Phase K Slice 2</span></h4>
+  <p class="desc">Material, Dienstleistung, Bewirtung, Kilometer, Hotel, Sonstiges — je Beleg Kategorie, Betrag,
+  Beschreibung, Datum und optionaler Datei-Upload (PDF/JPG/PNG, direkt in der Datenbank abgelegt). Liste mit
+  Download- und Löschen-Button je Beleg.</p>
+
+  <h4 class="sub">📋 Tätigkeitsnachweis <span class="badge new">Phase K</span></h4>
+  <p class="desc">Nach Person gruppierte Aufklapp-Liste: je abgeschlossener Zeitbuchung Datum, Rolle, Stunden und
+  die eingetragene <b>Tätigkeit</b> (was genau gemacht wurde, z.B. "SPS programmiert"). Direkt darunter
+  <b>"⬇ Tätigkeitsnachweis als Excel exportieren"</b> — eine Excel-Datei mit allen Buchungen plus Stunden-Summe je
+  Person, gedacht für Förder-/Forschungsprojekt-Nachweise. Die eigentliche Zeiterfassung mit Rolle/Tätigkeit/Person
+  passiert in Kapitel 15.2.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Ohne Plan-Budget: Hinweis "Kein Plan-Budget hinterlegt" erscheint korrekt</label></li>
+    <li><input type="checkbox"><label>Mit Plan-Budget + mind. einer Zeitbuchung: Zeitkosten/Belege/Auslastung-Kacheln zeigen plausible Werte</label></li>
+    <li><input type="checkbox"><label>Rollensatz fehlt für eine Buchung → gelbe Warnung "X h ohne konfigurierten Stundensatz"</label></li>
+    <li><input type="checkbox"><label>Beleg anlegen (mit Datei), erscheint in der Liste, Datei-Download funktioniert</label></li>
+    <li><input type="checkbox"><label>Beleg löschen entfernt ihn aus Liste und Budget-Summe</label></li>
+    <li><input type="checkbox"><label>Tätigkeitsnachweis zeigt die richtige Person/Rolle/Stunden/Tätigkeit je Buchung</label></li>
+    <li><input type="checkbox"><label>Tätigkeitsnachweis-Excel herunterladen, öffnet sich korrekt mit Summenzeile je Person</label></li>
+  </ul>
+</section>
+
+<section id="projekte-rechnung">
+  <h3 class="feature">6.10 Tab: 🧾 Rechnung &amp; Nachweise <span class="badge new">Phase K Slice 3-5</span></h3>
+
+  <h4 class="sub">🧮 Kostenkalkulation &amp; Rechnungsstellung</h4>
+  <p class="desc">Getrennt für <b>Vorrechnung</b> und <b>Endrechnung</b>: Grundbetrag (vorbefüllt aus der Summe der
+  Positionen/Stückliste, Kapitel 6.8, aber frei überschreibbar), Gewinn/Rabatt/Skonto jeweils in %.
+  "💾 ... berechnen &amp; speichern" berechnet den Endbetrag automatisch
+  (Grundbetrag × (1+Gewinn%) × (1−Rabatt%) × (1−Skonto%)) <b>und</b> erzeugt einen Rechnungstext-Entwurf
+  (bewusst ohne KI, per festem Template, damit bei Finanzbeträgen nichts halluziniert werden kann). Der Entwurf ist
+  in einem Textfeld <b>händisch nachbearbeitbar</b> und als .txt herunterladbar.</p>
+
+  <h4 class="sub">📅 Zwischenberichte &amp; Nachweise</h4>
+  <p class="desc">Berichtspflichten mit Rhythmus (einmalig/quartalsweise/halbjährlich/jährlich) je Projekt anlegen
+  (z.B. "Zwischenbericht Fördergeber XY"). Die App berechnet daraus automatisch alle Fälligkeitstermine bis heute
+  plus den nächsten kommenden. Je Fälligkeit: ✅ grün wenn ein Nachweis (Datei-Upload) eingereicht wurde, 🔴 rot wenn
+  überfällig, ⏳ sonst offen. Eingereichte Nachweis-Dateien sind herunterladbar.</p>
+
+  <h4 class="sub">📐 Schätzverfahren</h4>
+  <p class="desc">Drei Methoden zur Auswahl: <b>2-Punkt-Schätzung</b> ((Optimistisch+Pessimistisch)/2),
+  <b>3-Punkt-Schätzung/PERT</b> ((Optimistisch+4×Wahrscheinlich+Pessimistisch)/6, gewichtet den wahrscheinlichsten
+  Wert vierfach) und <b>Story Points</b> (freie relative Zahl für agile Vorgehensmodelle, kein Zeitbezug). Jede
+  Schätzung wird mit Bezeichnung, Methode und berechnetem Ergebnis gespeichert, löschbar.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Vorrechnung berechnen (Grundbetrag aus Positionen vorbefüllt), Endbetrag stimmt rechnerisch</label></li>
+    <li><input type="checkbox"><label>Rechnungstext-Entwurf ist lesbar, im Textfeld editieren + speichern funktioniert</label></li>
+    <li><input type="checkbox"><label>Rechnungstext als .txt herunterladen</label></li>
+    <li><input type="checkbox"><label>Endrechnung unabhängig von der Vorrechnung separat berechnen</label></li>
+    <li><input type="checkbox"><label>Berichtspflicht "quartalsweise" mit Startdatum in der Vergangenheit anlegen → mehrere Fälligkeiten erscheinen</label></li>
+    <li><input type="checkbox"><label>Nachweis für eine offene Fälligkeit einreichen (mit Datei) → wird grün/✅, Download funktioniert</label></li>
+    <li><input type="checkbox"><label>2-Punkt-Schätzung anlegen, Ergebnis = (Optimistisch+Pessimistisch)/2</label></li>
+    <li><input type="checkbox"><label>3-Punkt-Schätzung (PERT) anlegen, Ergebnis rechnerisch korrekt (o+4w+p)/6</label></li>
+    <li><input type="checkbox"><label>Story-Points-Schätzung anlegen, Einheit zeigt "SP" statt Stunden/Tage</label></li>
+  </ul>
+</section>
+
+<section id="projekte-scrum">
+  <h3 class="feature">6.11 Tab: 🏉 Scrum-Board <span class="role-note">nur bei Scrum/Inkrementell/Hybrid</span></h3>
+  <p class="desc">Erscheint nur, wenn in Kapitel 6.6 (C.5) eines dieser drei Vorgehensmodelle gewählt wurde.
+  Sprint-Auswahl oben (🟢 markiert den zeitlich aktuellen Sprint), darunter ein grafisches Scrum-Zyklus-Diagramm,
+  editierbares Sprint-Ziel, ein 4-Spalten-Sprint-Board (To Do/In Progress/Review/Done), ein Product Backlog
+  (Tasks ohne Sprint-Zuordnung, per Klick einem Sprint zuweisbar) und Sprint-Review/Retro-Notizen.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Tab ist nur sichtbar, wenn Vorgehensmodell = Scrum/Inkrementell/Hybrid</label></li>
+    <li><input type="checkbox"><label>Sprint-Auswahl zeigt korrekt den "🟢 Aktuell" markierten Sprint</label></li>
+    <li><input type="checkbox"><label>Sprint-Ziel bearbeiten und speichern</label></li>
+    <li><input type="checkbox"><label>Task im Sprint-Board zwischen To Do/In Progress/Review/Done verschieben</label></li>
+    <li><input type="checkbox"><label>Neuen Task im Product Backlog anlegen, dann einem Sprint zuweisen</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 7. PROJEKT EINREICHEN ══════════════════════════════ -->
+<section class="chapter" id="projekt-einreichen">
+  <h2>7. Projekt einreichen</h2>
+  <div class="where">Navigation → <b>📤 Projekt einreichen</b></div>
+  <p class="desc">Jede:r kann eine Idee/ein Vorhaben einreichen, ohne selbst ein Projekt anlegen zu müssen. Formular
+  mit Titel + Beschreibung, "📤 Einreichen" legt einen Antrag an. Darunter die eigenen eingereichten Anträge mit
+  Status-Badge (⏳ Eingereicht / ✅ Genehmigt / ❌ Abgelehnt / ⏸ Wartend / 🗄 Archiviert) und, sobald entschieden,
+  wer entschieden hat und mit welchem Kommentar.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Antrag mit Titel + Beschreibung einreichen</label></li>
+    <li><input type="checkbox"><label>Antrag erscheint in "Meine eingereichten Anträge" mit Status "⏳ Eingereicht"</label></li>
+    <li><input type="checkbox"><label>Nach Entscheidung durch Geschäftsführung (Kapitel 8): Status/Kommentar aktualisiert sich hier</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 8. GENEHMIGUNG ══════════════════════════════ -->
+<section class="chapter" id="genehmigung">
+  <h2>8. Genehmigung <span class="role-note">nur Geschäftsführung/Admin</span></h2>
+  <div class="where">Navigation → <b>✅ Genehmigung</b> (nur sichtbar mit passender Rolle, sonst Fehlermeldung beim Direktaufruf)</div>
+  <p class="desc">Queue aller offenen Anträge (Eingereicht/Wartend). Je Antrag: Kommentarfeld plus drei schnelle
+  Aktionen (❌ Ablehnen / ⏸ Auf Warten setzen / 🗄 Archivieren) sowie ein vollständiges
+  <b>"✅ Genehmigen"</b>-Formular: Projektname (vorbefüllt mit Antragstitel), Projektleitung (Dropdown aller
+  Nutzer), Zeitanteil %. <b>"✅ Genehmigen &amp; Projekt anlegen"</b> legt in einem Schritt ein echtes Projekt an
+  und setzt die gewählte Person mit ihrem Zeitanteil als Ressource. Unten: Liste der letzten 20 entschiedenen
+  Anträge.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Als Mitarbeiter-Account (ohne GF/Admin-Rolle): Seite zeigt Fehlermeldung "nur für Geschäftsführung/Admin"</label></li>
+    <li><input type="checkbox"><label>Als GF/Admin: offener Antrag aus Kapitel 7 erscheint hier in der Queue</label></li>
+    <li><input type="checkbox"><label>"❌ Ablehnen" mit Kommentar setzt Status korrekt, verschwindet aus der offenen Queue</label></li>
+    <li><input type="checkbox"><label>"✅ Genehmigen &amp; Projekt anlegen" erzeugt ein echtes neues Projekt (in Kapitel 6 sichtbar) mit korrekter Projektleitung/Zeitanteil</label></li>
+    <li><input type="checkbox"><label>Entschiedene Anträge erscheinen unten in der Liste der letzten 20</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 9. TECHNIK-GEDÄCHTNIS ══════════════════════════════ -->
+<section class="chapter" id="gedaechtnis">
+  <h2>9. Technik-Gedächtnis</h2>
+  <div class="where">Navigation → <b>🔍 Technik-Gedächtnis</b></div>
+  <p class="desc">Volltextsuche über <b>alle</b> Projekte/Tasks/Logbuch-Einträge gleichzeitig — die zentrale
+  Wissensdatenbank. Oben ein aufklappbarer <b>"📧 Schnell erfassen"</b>-Bereich zum sofortigen Archivieren von
+  Mail-Inhalten/Notizen/Lösungen (Text, Projekt, Typ, Person, Tags). Darunter die Deep-Search-Leiste mit
+  Schnell-Tags (SPS, E-Plan, Siemens, Frequenzumrichter, TIA Portal, Power App, SharePoint, Maschine 1).</p>
+  <p class="desc">Suchergebnisse sind in vier Blöcke gegliedert: 💡 Gefundene Lösungen (Typ "Loesung", grün
+  hervorgehoben, erscheinen zuerst), 📋 Tasks, 📝 Logbuch-Einträge, 📁 Projekte.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Schnell erfassen: Text mit Typ "Loesung" archivieren</label></li>
+    <li><input type="checkbox"><label>Suche nach einem bekannten Stichwort findet die soeben archivierte Lösung im Block "💡 Gefundene Lösungen"</label></li>
+    <li><input type="checkbox"><label>Ein Schnell-Tag (z.B. "SPS") anklicken löst automatisch eine Suche aus</label></li>
+    <li><input type="checkbox"><label>Suche ohne Treffer zeigt "Keine Treffer"-Hinweis statt leerer Seite</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 10. STAKEHOLDER ══════════════════════════════ -->
+<section class="chapter" id="stakeholder">
+  <h2>10. Stakeholder</h2>
+  <div class="where">Navigation → <b>👥 Stakeholder</b>, drei Tabs</div>
+
+  <h4 class="sub">📊 Anfragen</h4>
+  <p class="desc">Alle Personen mit offenen "Warten auf"-Tasks, gruppiert je Person, mit Eskalationsstufe und
+  Wartezeit in Tagen. "✅ Erhalten" schließt die Wartezeit ab. Ab Eskalationsstufe 2 erscheint ein fertiger
+  Follow-Up-Mail-Entwurf zum Kopieren.</p>
+
+  <h4 class="sub">👤 Adressbuch</h4>
+  <p class="desc">Durchsuchbares Kontaktverzeichnis (Name/E-Mail/Rolle/Firma), manuell erweiterbar über
+  "➕ Neuen Stakeholder manuell anlegen".</p>
+
+  <h4 class="sub">🏢 AD-Import</h4>
+  <p class="desc">Import von Kontakten aus dem Active Directory des Unternehmens (braucht <code>ldap3</code>-Paket
+  und Firmennetz-Zugriff) inkl. Verbindungstest und Vorschau vor dem eigentlichen Import. Alternativ: CSV-Import
+  mit automatischer Spalten-Erkennung (Name/E-Mail/Rolle/Abteilung) als Fallback, falls kein direkter AD-Zugriff
+  möglich ist.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Neuen Stakeholder manuell anlegen, erscheint im Adressbuch</label></li>
+    <li><input type="checkbox"><label>Adressbuch-Suche nach Name/Firma filtert korrekt</label></li>
+    <li><input type="checkbox"><label>Im Kanban Board (Kapitel 5) jemanden auf "Warten auf" setzen → Person erscheint hier im Tab "Anfragen"</label></li>
+    <li><input type="checkbox"><label>CSV-Import: Test-CSV hochladen, Spalten-Zuordnung korrekt vorschlagen lassen, importieren</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 11. MEIN PROFIL ══════════════════════════════ -->
+<section class="chapter" id="mein-profil">
+  <h2>11. Mein Profil <span class="badge new">Phase I</span></h2>
+  <div class="where">Navigation → <b>🧑‍💼 Mein Profil</b>, zwei Tabs</div>
+
+  <h4 class="sub">👤 Mein Profil</h4>
+  <p class="desc"><b>Stammdaten</b>: Name (nur Anzeige), Abteilung, Kompetenzen (manuell als Freitext gepflegt).<br>
+  <b>🤖 KI-Kompetenzprofil</b> <span class="badge ai">KI</span>: wird <i>nicht</i> manuell gepflegt, sondern per
+  "✨ Kompetenzprofil aktualisieren" aus den tatsächlich per <code>bearbeiter_user_id</code> zugeordneten eigenen
+  Aufgaben (Titel, Tags, Projekt) abgeleitet — z.B. "arbeitet häufig an SPS-Themen".<br>
+  <b>📋 Eigene Aufgaben</b>: eigener Task-Bereich getrennt von Kanban/Meine Tasks — hier landen nur Aufgaben mit
+  echter Bearbeiter-Zuordnung zu dir. "➕ Neue eigene Aufgabe" mit optionalem Projekt und Tags, Aufgaben
+  abhakbar/löschbar.</p>
+
+  <h4 class="sub">🧑‍🤝‍🧑 Team-Übersicht</h4>
+  <p class="desc">Durchsuchbare, reine Lese-Ansicht aller Kolleg:innen mit Abteilung sowie manuellen und
+  KI-abgeleiteten Kompetenzen — praktisch, um herauszufinden, wer sich mit einem bestimmten Thema auskennt.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Abteilung + manuelle Kompetenzen eintragen und speichern</label></li>
+    <li><input type="checkbox"><label>Eigene Aufgabe mit Tags (z.B. "SPS, Automatisierung") anlegen</label></li>
+    <li><input type="checkbox"><label>"✨ Kompetenzprofil aktualisieren" liefert plausible, zu den Tags passende Stichpunkte</label></li>
+    <li><input type="checkbox"><label>Team-Übersicht: eigenes Profil mit den gerade gepflegten Daten erscheint korrekt in der Liste</label></li>
+    <li><input type="checkbox"><label>Team-Übersicht-Suche nach Abteilung/Kompetenz-Stichwort filtert korrekt</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 12. KI-ASSISTENT ══════════════════════════════ -->
+<section class="chapter" id="ki-assistent">
+  <h2>12. KI-Assistent</h2>
+  <div class="where">Navigation → <b>🤖 KI-Assistent</b>, drei Tabs — Status-Badge oben zeigt ob KI aktiv ist</div>
+
+  <h4 class="sub">🌅 Fokus-Check <span class="badge ai">KI</span></h4>
+  <p class="desc">Kennzahlen-Übersicht (Im Fokus/Warten/Eskaliert/Quick-Wins), Button "🌅 Fokus-Check starten"
+  analysiert alle aktiven Tasks/Eskalationen und liefert eine priorisierte Tagesempfehlung mit Top-3-Vorschlägen
+  und einem Quick-Win-Tipp, jeweils direkt per Button in Fokus schiebbar.</p>
+
+  <h4 class="sub">📧 Mail-Parser <span class="badge ai">KI</span></h4>
+  <p class="desc">E-Mail/Text einfügen (Textfeld mit Beispiel-Platzhalter), "🔍 KI analysieren" erkennt darin
+  Tasks (mit Aufwandsklasse/Priorität), erwähnte Personen, Deadlines, Wer-muss-antworten sowie Tags — je erkannter
+  Task ein "➕ Task anlegen"-Button, plus "💾 Im Gedächtnis speichern" für den ganzen Text.</p>
+
+  <h4 class="sub">🔄 Context-Switch</h4>
+  <p class="desc">Manueller Tracker: Klick auf ein aktives Projekt registriert "ich arbeite jetzt hieran", zeigt
+  Ampel-Status (zu viele Wechsel = Warnung) und die Kette der zuletzt bearbeiteten Projekte. "🔄 Tracker
+  zurücksetzen" leert den Verlauf.</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Ohne KI-Backend: Warnhinweis zu fehlendem Anthropic-Key erscheint, Buttons sind deaktiviert</label></li>
+    <li><input type="checkbox"><label>Fokus-Check starten liefert plausible Top-3-Empfehlung, "▶ In Fokus" verschiebt Task korrekt</label></li>
+    <li><input type="checkbox"><label>Mail-Parser mit Beispieltext analysieren, erkannte Tasks/Personen/Deadlines sind plausibel</label></li>
+    <li><input type="checkbox"><label>"➕ Task anlegen" bei einem erkannten Mail-Task legt ihn wirklich an</label></li>
+    <li><input type="checkbox"><label>Context-Switch: zwei verschiedene Projekte nacheinander starten, Wechsel-Kette wird angezeigt</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 13. GANTT ══════════════════════════════ -->
+<section class="chapter" id="gantt">
+  <h2>13. Gantt &amp; Zeitplan</h2>
+  <div class="where">Navigation → <b>📅 Gantt &amp; Zeitplan</b> — 3-Ebenen-Drilldown mit Breadcrumb + "← Zurück"</div>
+
+  <h4 class="sub">Ebene 1: Alle Projekte</h4>
+  <p class="desc">Statusfilter (Alle/Aktiv/Pausiert/Archiv), je Projekt Fortschrittsbalken, Anzahl Meilensteine/
+  Tasks, "🔍 Öffnen" führt in die Projekt-Ebene.</p>
+
+  <h4 class="sub">Ebene 2: Ein Projekt</h4>
+  <p class="desc">Grafische Plotly-Timeline (echtes Gantt-Diagramm) aus allen Meilensteinen mit Start-/Enddatum,
+  farblich nach Status. Liste der Top-Level-Meilensteine darunter, je Meilenstein "🔍 Öffnen" für Ebene 3, sowie
+  Bearbeiten/Löschen.</p>
+
+  <h4 class="sub">Ebene 3: Ein Meilenstein — drei Tabs</h4>
+  <p class="desc"><b>📋 Tasks</b>: alle Tasks dieses Meilensteins, Schnell-Anlage inkl. Aufwand/Prio.<br>
+  <b>📍 Untermeilensteine</b>: Kind-Meilensteine (z.B. Sprints unter einer Phase), einzeln öffenbar.<br>
+  <b>⚙ Einstellungen</b>: Meilenstein-Status/Termine bearbeiten, Meilenstein löschen (Tasks bleiben erhalten,
+  werden nur "meilensteinlos").</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Ebene 1 → 2 → 3 Drilldown funktioniert, Breadcrumb zeigt korrekten Pfad</label></li>
+    <li><input type="checkbox"><label>"← Zurück" navigiert eine Ebene zurück, nicht komplett zur Startebene</label></li>
+    <li><input type="checkbox"><label>Grafische Timeline zeigt die per "Struktur generieren" (Kapitel 6.6) angelegten Meilensteine korrekt mit Datum</label></li>
+    <li><input type="checkbox"><label>In Ebene 3: Task anlegen, Meilenstein-Status ändern, Untermeilenstein öffnen</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 14. AUTOMATION ══════════════════════════════ -->
+<section class="chapter" id="automation">
+  <h2>14. Automation</h2>
+  <div class="where">Navigation → <b>⚙ Automation</b>, drei Tabs — Status-Leiste oben zeigt welche optionalen Pakete aktiv sind</div>
+
+  <h4 class="sub">📁 Smart Folder</h4>
+  <p class="desc">Legt beim Anlegen eines Projekts automatisch eine komplette Ordnerstruktur an (Anforderungen,
+  Planung, Elektro/SPS, Protokolle, ...) inkl. Vorlagen. Projekt wählen, Basis-Pfad angeben (Netzlaufwerk oder
+  lokal), optional mit Kostenstelle im Ordnernamen und Struktur-Vorschau, dann "📁 Ordnerstruktur anlegen".
+  Darunter: Übersicht aller Projektordner und ein Datei-Browser.</p>
+
+  <h4 class="sub">👁 File-Watcher</h4>
+  <p class="desc">Überwacht Projektordner auf neue Dateien (braucht <code>watchdog</code>-Paket). Watcher
+  starten/stoppen je Projekt, erkannte neue Dateien werden gelistet.</p>
+
+  <h4 class="sub">📅 Outlook-Sync</h4>
+  <p class="desc">Nur unter Windows mit <code>pywin32</code> verfügbar. Drei Unter-Tabs: <b>Termin anlegen</b>
+  (direkt in Outlook), <b>Follow-Up Mail</b> (Entwurf für ausstehende Antworten), <b>Heutige Termine</b>
+  (Kalenderübersicht + freie Zeitblöcke).</p>
+
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Status-Leiste zeigt korrekt an, welche optionalen Pakete (watchdog/pywin32) installiert sind</label></li>
+    <li><input type="checkbox"><label>Ordnerstruktur für ein Test-Projekt mit lokalem Pfad anlegen, Vorlagen werden kopiert</label></li>
+    <li><input type="checkbox"><label>Ordner-Übersicht zeigt den soeben angelegten Projektordner korrekt</label></li>
+    <li><input type="checkbox"><label>(falls watchdog installiert) Watcher für ein Projekt starten, neue Testdatei in den Ordner legen, wird erkannt</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 15. WOCHENBERICHT ══════════════════════════════ -->
+<section class="chapter" id="wochenbericht">
+  <h2>15. Wochenbericht &amp; Tools</h2>
+  <div class="where">Navigation → <b>📊 Wochenbericht</b>, vier Tabs</div>
+</section>
+
+<section id="wb-bericht">
+  <h3 class="feature">15.1 Tab: 📊 Wochenbericht-Export</h3>
+  <p class="desc">Generiert einen vollständigen Excel-Wochenbericht (Portfolio-Übersicht über alle Projekte/Tasks/
+  Eskalationen der aktuellen Kalenderwoche) zum Download, als Fallback auch ein einfacher HTML-Bericht wenn
+  <code>openpyxl</code> fehlt.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Excel-Wochenbericht herunterladen, öffnet sich korrekt mit KW-Kopf und KPI-Karten</label></li>
+  </ul>
+</section>
+
+<section id="wb-zeit">
+  <h3 class="feature">15.2 Tab: ⏱ Zeiterfassung <span class="badge new">Phase K</span></h3>
+  <p class="desc"><b>Live-Timer</b>: Task + Rolle wählen, "▶ Starten" — läuft in Echtzeit (Minuten-Anzeige),
+  "Tätigkeit (was genau wurde gemacht) *" eintragen und "⏹ Stoppen" beendet die Buchung inkl. berechneter Dauer.
+  Diese Rolle/Tätigkeit sind projektspezifisch — dieselbe Person kann in unterschiedlichen Projekten unterschiedliche
+  Rollen haben.</p>
+  <p class="desc"><b>📝 Zeit manuell nachtragen</b> <span class="badge new">Nachträglich ergänzt</span>: deckt ab,
+  was der Live-Timer nicht kann — Meetings inkl. Vor-/Nachbereitung <i>ohne</i> zugehörigen Kanban-Task, und Zeiten,
+  die man nachträglich <b>für eine andere Person</b> einträgt (Projekt, Person-Dropdown mit allen Nutzern, Rolle,
+  Datum, Dauer in Stunden, Tätigkeit).</p>
+  <p class="desc">Darunter: Ist-Aufwand je Projekt (Live-Statistik) und Plan-vs-Ist je Aufwandsklasse.</p>
+  <div class="note">Bekannte Eigenheit beim Testen (kein Bug, nur UI-Verhalten): Text- und Zahlenfelder außerhalb
+  eines Formulars (wie das Tätigkeits-Feld beim Live-Timer) übernehmen den eingegebenen Wert erst nach
+  <b>Enter drücken oder Klick auf ein anderes Element</b> — nicht schon beim reinen Eintippen.</div>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Live-Timer: Task + Rolle wählen, starten, Minuten-Anzeige läuft hoch</label></li>
+    <li><input type="checkbox"><label>Tätigkeit eintragen (Enter drücken oder wegklicken!), stoppen — Buchung erscheint korrekt (Kapitel 6.9 Tätigkeitsnachweis)</label></li>
+    <li><input type="checkbox"><label>Manuell nachtragen: Meeting-Zeit ohne Task für eine <b>andere</b> Person eintragen</label></li>
+    <li><input type="checkbox"><label>Diese manuelle Buchung erscheint korrekt im Tätigkeitsnachweis des gewählten Projekts (Kapitel 6.9)</label></li>
+    <li><input type="checkbox"><label>Ist-Aufwand je Projekt aktualisiert sich nach neuen Buchungen</label></li>
+  </ul>
+</section>
+
+<section id="wb-wiederkehrend">
+  <h3 class="feature">15.3 Tab: 🔄 Wiederkehrend</h3>
+  <p class="desc">Tasks als wiederkehrend markieren (Intervall), die App legt bei Fälligkeit automatisch eine neue
+  Instanz an.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Einen Task als wiederkehrend markieren und Intervall setzen</label></li>
+  </ul>
+</section>
+
+<section id="wb-benachrichtigung">
+  <h3 class="feature">15.4 Tab: 🔔 Benachrichtigungen</h3>
+  <p class="desc">Desktop-Benachrichtigungen (über <code>plyer</code>) für Eskalationen/Fälligkeiten, hier
+  konfigurierbar/testbar.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Test-Benachrichtigung auslösen, Desktop-Popup erscheint (falls Betriebssystem unterstützt)</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 16. EINSTELLUNGEN ══════════════════════════════ -->
+<section class="chapter" id="einstellungen">
+  <h2>16. Einstellungen</h2>
+  <div class="where">Navigation → <b>⚙️ Einstellungen</b>, sechs Tabs</div>
+</section>
+
+<section id="es-db">
+  <h3 class="feature">16.1 Tab: 🗄 Datenbank</h3>
+  <p class="desc">Reine Anzeige: Verbindungsstatus, Host/Port/Datenbank/Nutzer, sowie die vollständige
+  <code>.env</code>-Beispielkonfiguration als Code-Block zum Kopieren.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Zeigt "✓ PostgreSQL verbunden" und korrekte Verbindungsdetails</label></li>
+  </ul>
+</section>
+
+<section id="es-kap">
+  <h3 class="feature">16.2 Tab: ⏱ Kapazitäten</h3>
+  <p class="desc">Zwei Schieberegler (Projektarbeit % / Ad-hoc %, müssen zusammen 100% ergeben) plus
+  Follow-Up-Grenze in Tagen — steuert, ab wann eine "Warten auf"-Anfrage gelb/orange/rot eskaliert
+  (1×/2×/3× die Follow-Up-Grenze).</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Schieberegler auf Summe ≠ 100% stellen → Warnhinweis erscheint</label></li>
+    <li><input type="checkbox"><label>Gültige Werte speichern, Erfolgsbestätigung erscheint</label></li>
+  </ul>
+</section>
+
+<section id="es-ki">
+  <h3 class="feature">16.3 Tab: 🤖 KI-Backend</h3>
+  <p class="desc">Live-Status aller <b>drei</b> möglichen KI-Backends nebeneinander: Ollama (lokaler Dienst),
+  Anthropic Claude (Cloud, braucht API-Key) und <b>Lokales Modell</b> <span class="badge new">Phase J</span>
+  (läuft direkt im Python-Prozess über <code>llama-cpp-python</code>, kein Hintergrunddienst nötig). Auswahl-
+  Formular: Backend (auto/ollama/anthropic/lokal — auto bevorzugt Anthropic &gt; Ollama &gt; lokales Modell),
+  Ollama-Modell/-URL, Pfad zur lokalen GGUF-Modell-Datei. Je Backend ein eigener Live-Test-Button. Aufklappbare
+  Schritt-für-Schritt-Anleitungen für beide lokalen Optionen.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Alle drei Status-Karten zeigen den tatsächlichen Zustand korrekt (Ollama läuft? Anthropic-Key gesetzt? Modell-Datei gefunden?)</label></li>
+    <li><input type="checkbox"><label>Backend auf "lokal" umstellen, speichern, App neu starten, Live-Test liefert plausible deutsche Antwort</label></li>
+    <li><input type="checkbox"><label>Backend zurück auf "ollama" oder "auto" stellen, Live-Test funktioniert weiterhin</label></li>
+  </ul>
+</section>
+
+<section id="es-roadmap">
+  <h3 class="feature">16.4 Tab: 📋 Roadmap</h3>
+  <p class="desc">Reine Anzeige der ursprünglichen 3-Phasen-Grobplanung (historisch, aus der Frühphase des
+  Projekts) — nicht zu verwechseln mit der aktuellen Phasenplanung A–K in <code>docs/INITIALISIERUNG.md</code>.</p>
+</section>
+
+<section id="es-rollen">
+  <h3 class="feature">16.5 Tab: 💰 Rollensätze <span class="badge new">Phase K</span></h3>
+  <p class="desc">Stundensatz (€/h) je Einsatzrolle (Elektriker, Produktioner, Ingenieur, Programmierer,
+  Projektleiter, Geschäftsführer) — Grundlage für die Ist-Kosten-Berechnung in jedem Projekt-Budget-Tab
+  (Kapitel 6.9). Ohne gesetzten Satz fließen Buchungen dieser Rolle nicht in die Ist-Kosten ein, erscheinen aber
+  als Warnung.</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Stundensatz für eine Rolle setzen und speichern</label></li>
+    <li><input type="checkbox"><label>Danach in einem Projekt (Kapitel 6.9): Zeitbuchung mit dieser Rolle fließt korrekt in Ist-Kosten ein</label></li>
+  </ul>
+</section>
+
+<section id="es-sso">
+  <h3 class="feature">16.6 Tab: 🔐 SSO (Azure AD) <span class="badge new">Phase J vorbereitet</span></h3>
+  <p class="desc">Diese Seite ist explizit <b>für die IT</b> gedacht. Zeigt Status (konfiguriert/nicht konfiguriert),
+  eine aufklappbare Schritt-für-Schritt-Anleitung zur Azure-AD-App-Registration (App anlegen, Redirect-URI,
+  Client Secret erzeugen, API-Berechtigung <code>User.Read</code>) und ein Formular für Tenant-ID/Client-ID/
+  Client-Secret/Redirect-URI, das direkt in <code>.env</code> schreibt. Ohne gesetzte Werte bleibt der normale
+  E-Mail/Passwort-Login (Kapitel 1) unverändert der einzige Weg — SSO ist rein additiv.</p>
+  <div class="note">Die eigentliche Azure-AD-App-Registration kann <b>nur jemand mit Azure-AD-Admin-Rechten</b>
+  in eurem Tenant anlegen — das ist ein externer, blockierender Schritt außerhalb dieser App. Der komplette
+  OAuth-Redirect-Roundtrip lässt sich daher ohne echten Azure-Tenant nicht End-to-End testen.</div>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Ohne Konfiguration: Status zeigt "○ SSO noch nicht konfiguriert", Anleitung ist aufgeklappt</label></li>
+    <li><input type="checkbox"><label>Login-Seite (Kapitel 1) zeigt ohne Konfiguration korrekt keinen Microsoft-Button</label></li>
+    <li><input type="checkbox"><label>(nur mit echten Azure-Zugangsdaten) Werte eintragen, speichern, App neu starten → Microsoft-Button erscheint im Login</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 17. ROLLEN ══════════════════════════════ -->
+<section class="chapter" id="rollen">
+  <h2>17. Rollen &amp; Rechte — Zusammenfassung</h2>
+  <p class="desc">Rollen werden pro Nutzer in der Tabelle <code>user_roles</code> vergeben (mehrere Rollen pro
+  Person möglich). Aktuell wirkt sich das nur auf <b>eine</b> Stelle in der UI aus: die Sichtbarkeit von
+  "✅ Genehmigung" in der Navigation und der zugehörige Zugriffsschutz auf der Seite selbst.</p>
+  <table class="datamap">
+    <tr><th>Aktion</th><th>Wer darf es</th></tr>
+    <tr><td>Alle Standard-Funktionen (Tasks, Projekte, KI-Tools, ...)</td><td>Jede:r eingeloggte Nutzer:in</td></tr>
+    <tr><td>Projekt-Antrag genehmigen/ablehnen</td><td>Nur Rolle <code>geschaeftsfuehrung</code> oder <code>admin</code></td></tr>
+  </table>
+  <ul class="checklist">
+    <li><input type="checkbox"><label>Mitarbeiter-Account testen: "Genehmigung" nicht in Sidebar, Direktzugriff zeigt Fehlermeldung</label></li>
+    <li><input type="checkbox"><label>Admin/GF-Account testen: "Genehmigung" sichtbar und nutzbar</label></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════ 18. TESTABLAUF ══════════════════════════════ -->
+<section class="chapter" id="testszenario">
+  <h2>18. Empfohlener Testablauf (roter Faden)</h2>
+  <p class="desc">Ein zusammenhängender End-to-End-Durchlauf, der möglichst viele Module über echte Abhängigkeiten
+  miteinander verbindet, statt jedes Modul isoliert zu testen:</p>
+  <ul class="checklist">
+    <li><input type="checkbox"><label><b>1.</b> Login testen (Kap. 1), danach als Testperson "Projekt einreichen" (Kap. 7)</label></li>
+    <li><input type="checkbox"><label><b>2.</b> Mit einem GF/Admin-Account den Antrag genehmigen (Kap. 8) — Projekt entsteht automatisch</label></li>
+    <li><input type="checkbox"><label><b>3.</b> Im neuen Projekt: Initialisierung durchgehen (Kap. 6.6) inkl. Vorgehensmodell + "Struktur generieren"</label></li>
+    <li><input type="checkbox"><label><b>4.</b> Generierte Meilensteine/Sprints in Gantt &amp; Zeitplan prüfen (Kap. 13), bei Scrum zusätzlich im Scrum-Board (Kap. 6.11)</label></li>
+    <li><input type="checkbox"><label><b>5.</b> Risiken + RACI-Matrix anlegen, Terminvorschlag generieren (Kap. 6.7)</label></li>
+    <li><input type="checkbox"><label><b>6.</b> Lastenheft/Pflichtenheft + Stückliste anlegen (Kap. 6.8)</label></li>
+    <li><input type="checkbox"><label><b>7.</b> Plan-Budget setzen (Kap. 6.4), Rollensatz konfigurieren (Kap. 16.5)</label></li>
+    <li><input type="checkbox"><label><b>8.</b> Zeit auf einen Task des Projekts buchen inkl. Rolle + Tätigkeit (Kap. 15.2), zusätzlich eine Meeting-Zeit manuell für eine andere Person nachtragen</label></li>
+    <li><input type="checkbox"><label><b>9.</b> Beleg hinzufügen (Kap. 6.9), Budget-Tab prüfen (Zeitkosten + Belege korrekt kombiniert)</label></li>
+    <li><input type="checkbox"><label><b>10.</b> Tätigkeitsnachweis als Excel exportieren, Vorrechnung berechnen, Projektstand als HTML exportieren (Kap. 6.8/6.9/6.10)</label></li>
+    <li><input type="checkbox"><label><b>11.</b> Über Dashboard-Daily-Log (Kap. 3) einen Fortschritt zum Projekt eintragen, im Projekt-Logbuch (Kap. 6.3) verifizieren</label></li>
+    <li><input type="checkbox"><label><b>12.</b> Über Mein Profil (Kap. 11) eine eigene Aufgabe mit Tags anlegen, KI-Kompetenzprofil aktualisieren</label></li>
+    <li><input type="checkbox"><label><b>13.</b> Im Technik-Gedächtnis (Kap. 9) nach einem im Projekt verwendeten Stichwort suchen und die eigenen Einträge wiederfinden</label></li>
+    <li><input type="checkbox"><label><b>14.</b> Projekt am Ende auf "Archiv" setzen mit Abschlussbewertung (Kap. 6.4) — wird später als Lessons-Learned-Basis für neue Projekte sichtbar (Kap. 6.6)</label></li>
+  </ul>
+
+  <p class="toc-hint">Ende des Handbuchs. Bei gefundenen Abweichungen: Datum, betroffenes Kapitel und genaue
+  Beobachtung notieren, damit sie gezielt nachvollzogen werden können.</p>
+</section>
+
+</main>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'ecHandbuchChecks';
+  var boxes = document.querySelectorAll('.checklist input[type=checkbox]');
+
+  function idFor(cb, i) {
+    var li = cb.closest('li');
+    return (li.textContent || '').trim().slice(0, 60) + '__' + i;
+  }
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function updateProgress() {
+    var total = boxes.length, done = 0;
+    boxes.forEach(function (cb) { if (cb.checked) done++; });
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = done + ' / ' + total + ' erledigt (' + pct + '%)';
+  }
+  window.updateProgress = updateProgress;
+
+  var state = loadState();
+  boxes.forEach(function (cb, i) {
+    var key = idFor(cb, i);
+    if (state[key]) { cb.checked = true; cb.closest('li').classList.add('done'); }
+    cb.addEventListener('change', function () {
+      var s = loadState();
+      s[key] = cb.checked;
+      saveState(s);
+      cb.closest('li').classList.toggle('done', cb.checked);
+      updateProgress();
+    });
+  });
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

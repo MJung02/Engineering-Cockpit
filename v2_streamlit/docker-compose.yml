@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${EC_PG_DATABASE:-engineering_cockpit}
+      POSTGRES_USER: ${EC_PG_USER:-cockpit}
+      POSTGRES_PASSWORD: ${EC_PG_PASSWORD:-cockpit_dev_pw}
+    ports:
+      - "${EC_PG_PORT:-5432}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${EC_PG_USER:-cockpit} -d ${EC_PG_DATABASE:-engineering_cockpit}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pg_data:

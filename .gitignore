@@ -1,0 +1,12 @@
+# nie ins Repository
+.env
+*.gguf
+*.db
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+v2_export/
+cockpit_import.json
+entwurf/site_test/

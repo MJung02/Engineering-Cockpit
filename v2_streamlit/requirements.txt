@@ -1,0 +1,42 @@
+# ╔══════════════════════════════════════════════════════╗
+# ║   Engineering Cockpit – requirements.txt             ║
+# ║   Installation: pip install -r requirements.txt      ║
+# ╚══════════════════════════════════════════════════════╝
+
+# ── Core (immer benötigt) ─────────────────────────────
+streamlit>=1.32.0
+psycopg[binary,pool]>=3.1
+python-dotenv>=1.0.0
+plotly>=5.20.0
+
+# ── Auth (Phase A) ─────────────────────────────────────
+argon2-cffi>=23.1.0
+extra-streamlit-components>=0.1.60
+
+# ── KI Phase 2 (optional) ─────────────────────────────
+anthropic>=0.25.0
+
+# ── Lokales eingebettetes KI-Modell (Phase J, optional) ─
+# Laeuft direkt im Prozess (kein Ollama-Dienst noetig), GGUF-Modelldatei
+# separat besorgen (siehe .env.example: LOKAL_MODELL_PFAD).
+llama-cpp-python>=0.2.90
+
+# ── SSO ueber Microsoft Entra ID (Phase J, optional) ────
+# Braucht eine Azure-AD-App-Registration durch die IT (siehe Einstellungen
+# -> SSO in der App fuer die Anleitung); ohne gesetzte AZURE_*-Werte in .env
+# bleibt der bestehende E-Mail/Passwort-Login unveraendert aktiv.
+msal>=1.28.0
+
+# ── Phase 3 Automation ────────────────────────────────
+watchdog>=4.0.0
+pywin32>=306
+
+# ── Export & Benachrichtigungen ───────────────────────
+openpyxl>=3.1.0
+pandas>=2.0.0
+plyer>=2.1.0
+python-docx>=1.1.0
+python-pptx>=0.6.23
+
+# ── Schnellinstallation (ohne Outlook/Benachrichtigungen)
+# pip install streamlit psycopg[binary,pool] python-dotenv argon2-cffi extra-streamlit-components openpyxl watchdog anthropic
