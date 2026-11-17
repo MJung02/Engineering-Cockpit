@@ -20,6 +20,12 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
+- **Projektabschluss** (neues Modul ab Stufe 2, Reiter „Abschluss“), fünf Schritte:
+  1. **Abnahme:** Abnahmeprotokoll mit Datum, Abnehmer und Ergebnis. Restpunkte werden offene Punkte mit Frist.
+  2. **Was ist noch offen?** Aufgaben, offene Punkte, Change Requests und Risiken, mit Knöpfen zum Schließen oder Entscheiden.
+  3. **Lessons Learned:** Pflicht sind mindestens je eine „lief gut“ und „verbessern“. Sie landen automatisch unter Wissen.
+  4. **Abschlussbericht:** Plan gegen Ist für Termin und Kosten, Aufgaben, Nachträge, Entscheidungen.
+  5. **Abschließen und archivieren:** erst möglich, wenn Abnahme und Lessons Learned vorliegen. Wieder öffnen geht jederzeit.
 - **Offene Punkte und Entscheidungen** (neues Modul ab Stufe 2, Reiter „Offene Punkte“):
   - **Offene-Punkte-Liste:** wer, was, bis wann. Filter Offen, Überfällig, Alle. Abhaken, und mit einem Klick „→ Aufgabe“.
   - **Entscheidungslog:** was, warum, wer, wann. Einträge bleiben unverändert.
