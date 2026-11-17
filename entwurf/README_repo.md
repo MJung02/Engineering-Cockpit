@@ -20,6 +20,13 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
+- **Abhängigkeiten als Pfeile im Gantt** (wie bei monday.com): Vom Ende des Vorgängers zum Anfang des Nachfolgers, auf dem kritischen Pfad rot. Verlängert sich ein Vorgänger über den Puffer hinaus, rücken die Nachfolger nach. Jede Terminänderung steht im Verlauf.
+- **„Mehr ▾“ in der Reiterleiste:** Zeiten, Kapazität, Statusbericht, Offene Punkte, Change Requests, Abschluss und Verlauf stehen im Menü „Mehr“. Der gewählte Reiter bleibt sichtbar. Auf dem Handy bleiben alle in der Wischleiste.
+- **Was hat sich seit letzter Woche geändert?** Steht im Statusbericht und als Folie in der Präsentation, automatisch aus dem Verlauf: verschobene Termine, neue Risiken, Erledigtes, Entscheidungen. Platzhalter {{Aenderungen}}.
+- **Automatischer Versand:** Im Statusbericht „jeden Freitag 14:00“ per E-Mail oder in den Teams-Kanal, wahlweise mit Präsentation. Im Entwurf nur angedeutet.
+- **Gate-Unterlagen auf Knopfdruck:** Am Quality Gate erzeugt „📦 Gate-Unterlagen“ sechs Folien: Titel, Checkliste, Stand bis zum Gate, offene Punkte und Risiken, Entscheidungsvorlage mit Empfehlung, Protokollvorlage. Die Entscheidung kommt danach unter „Gate-Entscheidung“ ins Cockpit.
+- **Lenkungskreis-Deck** (Berichte): Portfolio-Übersicht, eine Folie je Projekt mit Ampel, Ressourcenkonflikte im Bereich, gesammelter Entscheidungsbedarf.
+- SM42: Phase Konstruktion endet jetzt am 10.11., damit Gate G2 innerhalb der Phase liegt.
 - **PowerPoint aus dem Projekt** (Export › „📽 Präsentation (PowerPoint)“):
   - **Foliensatz erzeugen:** Titel, Status mit Ampeln, Termine als Gantt, Meilensteine, offene Aufgaben, Team und Zuständigkeiten, Kosten als echtes PowerPoint-Diagramm, Risiken, offene Punkte und Entscheidungen, nächste Schritte. Folien einzeln an- und abwählbar.
   - **Eigene Vorlage (.pptx) hochladen:** Das Cockpit übernimmt Farben, Schriften und Logo. Enthält die Vorlage Platzhalter wie {{Projekt}}, {{Ampel}} oder {{OffeneAufgaben}}, füllt „Meine Vorlage ausfüllen“ sie direkt in den eigenen Folien aus. Eine Mustervorlage mit allen 24 Platzhaltern gibt es zum Herunterladen.
