@@ -20,6 +20,13 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
+- **Hinweise aus früheren Projekten (Lessons Learned):**
+  - **Beim Anlegen:** Der Assistent „Neues Projekt“ schlägt passend zu Name, Vorlage, Phasen und Startaufgaben Lessons Learned anderer Projekte vor. Mit „+ Beim Anlegen als Aufgabe“ wird daraus gleich eine Aufgabe.
+  - **Während des Projekts:** In der Übersicht stehen Hinweise passend zu den Phasen, Meilensteinen und Aufgaben der nächsten 60 Tage, mit Knöpfen „Als Aufgabe übernehmen“, „👍 hilfreich“ und „Nicht relevant“.
+  - Jeder Hinweis zeigt, woher er kommt und warum er passt („passt zu: Schutzzaun“). Lessons Learned aus dem eigenen Projekt werden nicht vorgeschlagen.
+- **Export** (Knopf „⤓ Export“ neben ⚙ im Projektkopf):
+  - Aufgaben, Termine/Gantt sowie offene Punkte und Entscheidungen als Excel-Datei (CSV mit Semikolon, öffnet direkt in Excel).
+  - Gantt als PDF über Drucken › „Als PDF sichern“. Navigation und Bedienelemente werden dabei ausgeblendet.
 - **Projektabschluss** (neues Modul ab Stufe 2, Reiter „Abschluss“), fünf Schritte:
   1. **Abnahme:** Abnahmeprotokoll mit Datum, Abnehmer und Ergebnis. Restpunkte werden offene Punkte mit Frist.
   2. **Was ist noch offen?** Aufgaben, offene Punkte, Change Requests und Risiken, mit Knöpfen zum Schließen oder Entscheiden.

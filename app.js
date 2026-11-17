@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 17.11.2026 15:08 */
+/* Engineering Cockpit – Entwurf, Stand 17.11.2026 15:18 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -296,7 +296,19 @@ const WISSEN = [
     reason: null },
   { id: 'w10', cat: 'Lessons Learned', kind: 'verbessern', title: 'Lieferantentermine wöchentlich prüfen', origin: 'Prüfstand Drehmoment', okey: 'pd', date: '20.10.2026', author: 'S. Keller', help: 4, tags: ['Einkauf', 'Termin'],
     f: [['Beobachtung', 'Verspätung des Messverstärkers wurde erst zwei Wochen vor dem Termin bekannt.'], ['Empfehlung', 'Automatisierung „Lieferant bestätigt Termin nicht → Erinnerung an Einkauf“ einschalten.']],
-    reason: null }
+    reason: null },
+  { id: 'w11', cat: 'Lessons Learned', kind: 'gut', title: 'FAT-Checkliste vier Wochen vorher mit dem Kunden abstimmen', origin: 'Montagezelle M7 (2025)', okey: 'm7', date: '12.06.2025', author: 'T. Brandt', help: 9, tags: ['Abnahme', 'Kunde', 'FAT'],
+    f: [['Beobachtung', 'Die FAT lief ohne Überraschungen, weil Prüfpunkte und Toleranzen vorab unterschrieben waren.'], ['Empfehlung', 'FAT-Checkliste spätestens vier Wochen vor dem Gate mit dem Kunden abstimmen und freigeben lassen.']], reason: null },
+  { id: 'w12', cat: 'Lessons Learned', kind: 'verbessern', title: 'Schutzzaun und Sicherheitskonzept früh mit der Sicherheitsfachkraft klären', origin: 'Montagezelle M7 (2025)', okey: 'm7', date: '12.06.2025', author: 'L. Wagner', help: 8, tags: ['Sicherheit', 'Schutzzaun', 'Abnahme'],
+    f: [['Beobachtung', 'Der Schutzzaun musste nach der Begehung umgebaut werden, zwei Wochen Verzug.'], ['Empfehlung', 'Sicherheitskonzept und Schutzzaun-Layout schon in der Konstruktion von der Sicherheitsfachkraft prüfen lassen.']], reason: null },
+  { id: 'w13', cat: 'Lessons Learned', kind: 'verbessern', title: 'Puffer für die Inbetriebnahme einplanen', origin: 'Prüfstand Bremse (2024)', okey: 'pb', date: '03.12.2024', author: 'S. Keller', help: 11, tags: ['Inbetriebnahme', 'Termin', 'SPS'],
+    f: [['Beobachtung', 'Die SPS-Inbetriebnahme dauerte 40 % länger als geplant, weil Signale vor Ort anders verdrahtet waren.'], ['Empfehlung', '20 % Puffer für die Inbetriebnahme einplanen und vorher einen Signaltest mit Simulation (PLCSIM) machen.']], reason: null },
+  { id: 'w14', cat: 'Lessons Learned', kind: 'gut', title: 'Stromlaufplan-Review vor dem Schaltschrankbau', origin: 'Prüfstand Bremse (2024)', okey: 'pb', date: '03.12.2024', author: 'T. Brandt', help: 6, tags: ['Elektro', 'Review', 'Stromlaufplan'],
+    f: [['Beobachtung', 'Ein Vier-Augen-Review des Stromlaufplans fand drei Fehler, bevor der Schaltschrank gebaut war.'], ['Empfehlung', 'Stromlaufplan immer im Review freigeben, bevor der Schaltschrankbau beauftragt wird.']], reason: null },
+  { id: 'w15', cat: 'Lessons Learned', kind: 'verbessern', title: 'Stillstandsfenster schriftlich mit der Produktion fixieren', origin: 'Retrofit Linie 1 (2025)', okey: 'rl1', date: '18.08.2025', author: 'Du', help: 7, tags: ['Retrofit', 'Stillstand', 'Produktion'],
+    f: [['Beobachtung', 'Das zugesagte Stillstandsfenster wurde kurzfristig um zwei Tage gekürzt.'], ['Empfehlung', 'Stillstandsfenster schriftlich mit Werkleitung und Schichtleitung fixieren und einen Rückfallplan vorbereiten.']], reason: null },
+  { id: 'w16', cat: 'Lessons Learned', kind: 'gut', title: 'Rahmenvertrag für Normteile spart Bestellaufwand', origin: 'Montagezelle M7 (2025)', okey: 'm7', date: '12.06.2025', author: 'Du', help: 5, tags: ['Einkauf', 'Normteile', 'Bestellung'],
+    f: [['Beobachtung', 'Normteile über den Rahmenvertrag kamen in zwei Tagen statt zwei Wochen.'], ['Empfehlung', 'Normteile und Kleinteile über den bestehenden Rahmenvertrag abrufen statt einzeln bestellen.']], reason: null }
 ];
 const WK = {}; WISSEN.forEach(w => { WK[w.id] = w; });
 
@@ -729,6 +741,19 @@ class Component extends DCLogic {
     rows.sort((a, b) => a.wk - b.wk);
     return { rows, empty: !rows.length, count: rows.length ? rows.length + (rows.length === 1 ? ' Konflikt' : ' Konflikte') : 'keine Konflikte', msg: s.rcMsg || '', hasMsg: !!s.rcMsg,
       hint: 'Je Person und Woche: Grundlast aus der Linie, Aufgaben aller Projekte nach Fälligkeit und Schätzung, Abwesenheiten. Planbar sind 32 h pro Woche (80 % der Sollzeit). Vorschläge betreffen zuerst das Projekt mit der niedrigsten Priorität (Berichte › Portfolio).' }; }
+  dlCsv(file, head, rows) { try { const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', csv = '﻿' + [head].concat(rows).map(r => r.map(q).join(';')).join('\r\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = file; document.body.appendChild(a); a.click(); a.remove(); return true; } catch (e) { return false; } }
+  llUI(ctx, exclude, opt) { const s = this.state, stop = new Set(['und', 'der', 'die', 'das', 'mit', 'für', 'von', 'eine', 'einen', 'oder', 'nicht', 'wird', 'werden', 'auch', 'nach', 'über', 'beim', 'dann', 'noch', 'schon', 'weil', 'wenn', 'zwei', 'vier', 'neue', 'neuer', 'projekt', 'phase', 'aufgabe']);
+    const toks = str => (String(str || '').toLowerCase().match(/[a-zäöüß0-9]{4,}/g) || []).filter(w => !stop.has(w)), stem = w => w.slice(0, 6), C = new Set(toks(ctx).map(stem));
+    const L = WISSEN.filter(w => w.cat === 'Lessons Learned' && w.okey !== exclude && !(opt.dis || {})[w.id]).map(w => { const ws = Array.from(new Set(toks(w.title + ' ' + w.tags.join(' ') + ' ' + w.f.map(x => x[1]).join(' ')).map(stem))), hit = ws.filter(x => C.has(x)), tagHit = w.tags.filter(tg => C.has(stem(tg.toLowerCase())));
+      return { w, hit, tagHit, score: hit.length + tagHit.length * 2 + (w.help || 0) * 0.05 }; }).filter(x => x.hit.length >= 2 || x.tagHit.length >= 1).sort((a, b) => b.score - a.score);
+    const shown = opt.all ? L : L.slice(0, 3);
+    return { items: shown.map(({ w, tagHit, hit }) => { const rec = (w.f.find(x => x[0] === 'Empfehlung') || w.f[w.f.length - 1] || ['', ''])[1], taken = !!(opt.taken || {})[w.id], helped = !!(s.wHelp || {})[w.id];
+        return { id: w.id, kind: w.kind === 'gut' ? 'Lief gut' : 'Verbessern', bg: w.kind === 'gut' ? '#107C10' : '#A33F06', title: w.title, rec, meta: 'aus ' + w.origin + ' · ' + w.date + ' · passt zu: ' + (tagHit.length ? tagHit.join(', ') : hit.slice(0, 3).join(', ')) + ' · ' + ((w.help || 0) + (helped ? 1 : 0)) + '× hilfreich',
+          takeLabel: taken ? opt.takenLbl : opt.takeLbl, takeBg: taken ? '#107C10' : 'transparent', takeFg: taken ? '#FFFFFF' : 'inherit', take: () => opt.onTake(w, rec, taken),
+          helpLabel: helped ? '👍 Hilfreich' : '👍', helpPressed: helped ? 'true' : 'false', help: () => this.setState({ wHelp: Object.assign({}, s.wHelp, { [w.id]: !helped }) }),
+          dis: () => opt.onDis(w), details: () => this.setState({ panel: { kind: 'wissen', id: w.id, from: s.screen } }) }; }),
+      empty: !L.length, count: L.length, more: L.length > 3 && !opt.all, moreLabel: 'Alle ' + L.length + ' passenden anzeigen' }; }
   modX(pk, tab, t, accent, on) { const s = this.state, U = (s.uprojs || []).find(u => u.key === pk), name = this.pnm(pk), RED = '#C50F1F', GRN = '#107C10', AMB = '#B07B00';
     if (!pk || !name) return { is: {}, msg: '', hasMsg: false };
     const tasks = TASKS.filter(x => x.proj === name), open = tasks.filter(x => !this.isDone(x)), mem = (PMEMBERS[pk] || []).filter(m => m[0] !== 'Kunde' && !m[4]).map(m => m[0]);
@@ -896,9 +921,26 @@ class Component extends DCLogic {
       warnOpen: openT + openOP + openCR > 0 ? 'Hinweis: Es ist noch etwas offen (' + [openT ? openT + ' Aufgaben' : '', openOP ? openOP + ' offene Punkte' : '', openCR ? openCR + ' Change Requests' : ''].filter(Boolean).join(', ') + '). Es wird mit archiviert und bleibt nachvollziehbar.' : '', hasWarnOpen: openT + openOP + openCR > 0,
       doClose: () => { if (!(abnOk && llOk)) return; save({ psetBy: Object.assign({}, this.state.psetBy, { [pk]: Object.assign({}, (this.state.psetBy || {})[pk] || {}, { archived: true }) }), clBy: Object.assign({}, this.state.clBy, { [pk]: Object.assign({}, CL, { closed: '13.11.2026' }) }) }, 'Projekt abgeschlossen und archiviert. Abschlussbericht und Lessons Learned sind abgelegt; das Projekt ist nur noch lesbar.', ['Projekt', 'Status', 'laufend', 'abgeschlossen']); },
       reopen: () => save({ psetBy: Object.assign({}, this.state.psetBy, { [pk]: Object.assign({}, (this.state.psetBy || {})[pk] || {}, { archived: false }) }) }, 'Projekt wieder geöffnet.', ['Projekt', 'Status', 'abgeschlossen', 'laufend']) };
+    const soonN = nodesP.filter(n => n.end >= '2026-11-13' && n.start <= '2027-01-12'), llCtx = name + ' ' + (U ? U.model : '') + ' ' + soonN.map(n => n.name).join(' ') + ' ' + open.map(x => x.title).join(' ');
+    const llDis = ((s.llDis || {})[pk]) || {}, llTk = ((s.llTaken || {})[pk]) || {};
+    const llh = Object.assign(this.llUI(llCtx, pk, { dis: llDis, taken: llTk, all: !!s.llAll, takeLbl: '+ Als Aufgabe übernehmen', takenLbl: '✓ Aufgabe angelegt',
+      onTake: (w, rec, taken) => { if (taken) return; const id = 'llk' + (s.rev || 0) + '_' + TASKS.length, x = { id, title: rec.length > 90 ? w.title : rec, proj: name, due: this.isoAdd('2026-11-13', 14), bucket: 'Backlog', prio: 'Mittel', owner: 'Du', mine: true, ms: null, desc: 'Aus Lessons Learned „' + w.title + '“ (' + w.origin + '): ' + rec, est: 2, co: [] }; TASKS.push(x); TASK[id] = x;
+        save({ rev: (this.state.rev || 0) + 1, llTaken: Object.assign({}, this.state.llTaken, { [pk]: Object.assign({}, llTk, { [w.id]: id }) }) }, 'Aufgabe „' + x.title + '“ angelegt, fällig ' + fd(x.due) + '.', ['Lesson Learned „' + w.title + '“', 'übernommen', '', 'Aufgabe']); },
+      onDis: w => this.setState({ llDis: Object.assign({}, this.state.llDis, { [pk]: Object.assign({}, llDis, { [w.id]: true }) }), mxMsg: 'Hinweis ausgeblendet. Er erscheint in diesem Projekt nicht mehr.' }) }),
+      { sub: 'passend zu den nächsten 60 Tagen: ' + (soonN.slice(0, 3).map(n => n.name).join(', ') || name), moreGo: () => this.setState({ llAll: true }), hasDis: Object.keys(llDis).length > 0, disLabel: Object.keys(llDis).length + ' ausgeblendet · wieder zeigen', disReset: () => this.setState({ llDis: Object.assign({}, this.state.llDis, { [pk]: {} }) }) });
+    const dDE = iso => (iso ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' + iso.slice(0, 4) : ''), fileN = k => (PCODE[name] || name).replace(/[^\wäöüÄÖÜß-]+/g, '_') + '_' + k + '_2026-11-13.csv';
+    const depsX = this.depsOf(), lvl = n => { let d = 0, p = PARENT[n.id]; while (p) { d++; p = PARENT[p]; } return d; };
+    const exp = { open: !!s.expOpen, openA: s.expOpen ? 'true' : 'false', toggle: () => this.setState({ expOpen: !s.expOpen }),
+      tasks: () => { const ok2 = this.dlCsv(fileN('Aufgaben'), ['Titel', 'Verantwortlich', 'Fällig', 'Status', 'Bucket', 'Priorität', 'Schätzung h'], tasks.map(x => [x.title, this.ownerOf(x), dDE(x.due), this.isDone(x) ? 'erledigt' : (x.due < '2026-11-13' ? 'überfällig' : 'offen'), this.bucketOf(x), x.prio || '', est(x)]));
+        this.setState({ expOpen: false, mxMsg: ok2 ? tasks.length + ' Aufgaben als Excel-Datei (CSV) heruntergeladen.' : 'Download im Browser nicht möglich.' }); },
+      dates: () => { const ok2 = this.dlCsv(fileN('Termine'), ['Ebene', 'Art', 'Name', 'Beginn', 'Ende', 'Status', 'Vorgänger'], nodesP.map(n => [lvl(n), n.type === 'phase' ? 'Phase' : (n.type === 'gate' ? (n.msPoint ? 'Meilenstein' : 'Quality Gate') : (n.kindLabel || 'Meilenstein')), '  '.repeat(lvl(n)) + n.name, n.type === 'gate' ? '' : dDE(n.start), dDE(n.end), this.nodeStatus(n), (depsX[n.id] || []).filter(id => NODE[id]).map(id => NODE[id].name).join(', ')]));
+        this.setState({ expOpen: false, mxMsg: ok2 ? nodesP.length + ' Termine (Phasen, Meilensteine, Gates) als Excel-Datei heruntergeladen.' : 'Download im Browser nicht möglich.' }); },
+      opl: () => { const ok2 = this.dlCsv(fileN('OffenePunkte'), ['ID', 'Art', 'Text', 'Wer', 'Bis / am', 'Status', 'Herkunft'], OP.map(o => [o.id, 'Offener Punkt', o.t, o.who, dDE(o.due), o.st, o.src || '']).concat(DC.map(d => [d.id, 'Entscheidung', d.t + (d.why ? ' (Warum: ' + d.why + ')' : ''), d.by, d.d, 'entschieden', d.src || ''])));
+        this.setState({ expOpen: false, mxMsg: ok2 ? (OP.length + DC.length) + ' offene Punkte und Entscheidungen als Excel-Datei heruntergeladen.' : 'Download im Browser nicht möglich.' }); },
+      pdf: () => { this.setState({ expOpen: false, ptab: 'planung', upTab: 'planung', mview: Object.assign({}, s.mview, { sm42p: 'gantt' }), mxMsg: '' }); setTimeout(() => { try { window.print(); } catch (e) { /* ohne Druck */ } }, 400); } };
     const is = { close: tab === 'close', opl: tab === 'opl', risk: tab === 'risk', zeit: tab === 'zeit', res: tab === 'res', status: tab === 'status', cr: tab === 'cr', audit: tab === 'audit' };
     const conf = tab === 'res' ? this.resConf(mem, pk, t, accent) : { rows: [], empty: true };
-    return { is, close, opl, risk, zeit, res, conf, cr, status, audit, fin, team, resOn: !!(on && on('res')), msg: s.mxMsg || '', hasMsg: !!s.mxMsg }; }
+    return { is, exp, llh, close, opl, risk, zeit, res, conf, cr, status, audit, fin, team, resOn: !!(on && on('res')), msg: s.mxMsg || '', hasMsg: !!s.mxMsg }; }
   labelsOf(pk) { const del = ((this.state.lblDel || {})[pk]) || {}; return LABELS.concat(((this.state.lblX || {})[pk]) || []).filter(l => !del[l[0]]); }
   layOf(key, def) { const L = (this.state.lay || {})[key] || {}; const order = (L.order || []).filter(k => def.includes(k)).concat(def.filter(k => !(L.order || []).includes(k))); return { order, hide: L.hide || {} }; }
   layUI(key, def, names, fixed, t, accent) { const L = this.layOf(key, def), set = patch => this.setState({ lay: Object.assign({}, this.state.lay, { [key]: Object.assign({}, L, patch) }) });
@@ -3197,6 +3239,10 @@ class Component extends DCLogic {
       tplList: Object.keys(P_TPL).concat(Object.keys(UTPL)).filter(k => !/^(leer|kan0|wf0|v0|sc0)$/.test(k)).map(k => { const x = P_TPL[k] || UTPL[k], hid = !!(s.tplHide || {})[k], own = !!UTPL[k];
         return { name: (x.icon || '') + ' ' + x.name, sub: own ? 'eigene Vorlage' : 'mitgeliefert', act: own ? 'Löschen' : (hid ? 'Wieder anzeigen' : 'Ausblenden'), state: hid ? '· ausgeblendet' : '',
           go: () => (own ? this.setState({ userTpl: (s.userTpl || []).filter(ut => ut.key !== k), newP: Object.assign({}, nw, { tpl: nw.tpl === k ? 'leer' : nw.tpl }) }) : this.setState({ tplHide: Object.assign({}, s.tplHide, { [k]: !hid }), newP: Object.assign({}, nw, { tpl: nw.tpl === k ? 'leer' : nw.tpl }) })) }; }),
+      ll: (() => { const TPx = ALLTPL[nw.tpl] || {}, ctx = (nw.name || '') + ' ' + (TPx.name || '') + ' ' + (TPx.desc || '') + ' ' + (TPx.model || '') + ' ' + (TPx.phases || []).map(p0 => p0[0] + ' ' + (p0[3] || '')).join(' ') + ' ' + (TPx.tasks || []).join(' '), tk = {}; (nw.llTake || []).forEach(id => { tk[id] = true; });
+        return Object.assign(this.llUI(ctx, null, { dis: nw.llDis || {}, taken: tk, all: !!nw.llAll, takeLbl: '+ Beim Anlegen als Aufgabe', takenLbl: '✓ wird als Aufgabe angelegt',
+          onTake: (w, rec, taken) => setNw({ llTake: taken ? (nw.llTake || []).filter(x => x !== w.id) : (nw.llTake || []).concat([w.id]) }), onDis: w => setNw({ llDis: Object.assign({}, nw.llDis, { [w.id]: true }) }) }),
+          { sub: (nw.llTake || []).length ? (nw.llTake || []).length + ' werden als Aufgabe angelegt' : 'passend zu Name, Vorlage und Phasen', moreGo: () => setNw({ llAll: true }), hasDis: false, disLabel: '', disReset: () => {} }); })(),
       stOpen: nw.stOpen === true, stToggle: () => setNw({ stOpen: nw.stOpen !== true }), stBtn: nw.stOpen === true ? '▴ Hilfe zur Vorgehensmodell-Findung ausblenden' : '🧭 Hilfe bei der Wahl des Vorgehensmodells (Stacey-Matrix)',
       stGrid: staceyW.map(c => { const sel = (nw.sx || 0) === c.x && (nw.sy || 0) === c.y, corner = (c.x === 0 && c.y === 0) || (c.x === 4 && c.y === 4) || (c.x === 2 && c.y === 2) || (c.x === 3 && c.y === 0); return { bg: c.bg, ring: sel ? accent : 'transparent', sel: sel ? 'true' : 'false', mark: sel ? '●' : (corner ? c.zone : ''), aria: 'Anforderungen ' + (c.y + 1) + ' von 5 unklar, Technik ' + (c.x + 1) + ' von 5 neu, ' + c.zone, pick: () => setNw({ sx: c.x, sy: c.y }) }; }),
       stY: ['klar', 'eher klar', 'teils offen', 'unklar', 'völlig offen'].map((l, i) => ({ label: l, pressed: (nw.sy || 0) === i ? 'true' : 'false', ring: (nw.sy || 0) === i ? accent : t.border, bg: (nw.sy || 0) === i ? t.soft : t.surface, go: () => setNw({ sy: i }) })),
@@ -3238,6 +3284,8 @@ class Component extends DCLogic {
         TP.tasks.forEach((tt, i) => { const id = key + 't' + i, ph = TP.phases[Math.min(TP.phases.length - 1, Math.floor(i * TP.phases.length / Math.max(1, TP.tasks.length)))];
           const x = { id, title: tt, proj: name, due: addDays(nw.start, ph ? ph[2] : 7 * (i + 1)), bucket: 'Backlog', prio: 'Mittel', owner: nw.members[i % nw.members.length], mine: nw.members[i % nw.members.length] === 'Du', ms: null, desc: 'Aus Vorlage ' + TP.name, est: 4, co: [] };
           x.mine = x.owner === 'Du'; TASKS.push(x); TASK[id] = x; });
+        (nw.llTake || []).forEach((wid, i) => { const w = WISSEN.find(z => z.id === wid); if (!w) return; const rec = (w.f.find(z => z[0] === 'Empfehlung') || w.f[w.f.length - 1])[1], id = key + 'l' + i;
+          const x = { id, title: rec.length > 90 ? w.title : rec, proj: name, due: addDays(nw.start, 14), bucket: 'Backlog', prio: 'Mittel', owner: 'Du', mine: true, ms: null, desc: 'Aus Lessons Learned „' + w.title + '“ (' + w.origin + ')', est: 2, co: [] }; TASKS.push(x); TASK[id] = x; });
         const u = { key, name, code, color: nw.color, tpl: nw.tpl, model: TP.model, stufe: nwStufe, mods: nw.mods, start: nw.start, members: nw.members.slice(), nodes, risks: [], costs: [], budget: nwStufe >= 3 ? 50000 : 0, reqs: [], archived: false };
         this.setState({ rev: (s.rev || 0) + 1, uprojs: UP.concat([u]), screen: 'pn', upSel: key, upTab: TP.tasks.length || !nodes.length ? 'aufgaben' : 'planung', newP: null, pnMsg: 'Projekt „' + name + '“ angelegt' + (nodes.length ? ' mit ' + nodes.filter(n => n.type === 'phase').length + ' Phasen und ' + nodes.filter(n => n.type === 'gate').length + ' Quality Gates' : '') + (TP.tasks.length ? ' und ' + TP.tasks.length + ' Aufgaben' : '') + '. Aufgaben direkt in einer Spalte mit „+ Aufgabe“ anlegen.' }); } };
 
