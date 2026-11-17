@@ -20,6 +20,10 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
+- **PowerPoint aus dem Projekt** (Export › „📽 Präsentation (PowerPoint)“):
+  - **Foliensatz erzeugen:** Titel, Status mit Ampeln, Termine als Gantt, Meilensteine, offene Aufgaben, Team und Zuständigkeiten, Kosten als echtes PowerPoint-Diagramm, Risiken, offene Punkte und Entscheidungen, nächste Schritte. Folien einzeln an- und abwählbar.
+  - **Eigene Vorlage (.pptx) hochladen:** Das Cockpit übernimmt Farben, Schriften und Logo. Enthält die Vorlage Platzhalter wie {{Projekt}}, {{Ampel}} oder {{OffeneAufgaben}}, füllt „Meine Vorlage ausfüllen“ sie direkt in den eigenen Folien aus. Eine Mustervorlage mit allen 24 Platzhaltern gibt es zum Herunterladen.
+  - Läuft komplett im Browser mit PptxGenJS und JSZip (MIT-Lizenz, liegen im Ordner `vendor/`). Die Vorlage bleibt im Entwurf nur bis zum Neuladen erhalten.
 - **Hinweise aus früheren Projekten (Lessons Learned):**
   - **Beim Anlegen:** Der Assistent „Neues Projekt“ schlägt passend zu Name, Vorlage, Phasen und Startaufgaben Lessons Learned anderer Projekte vor. Mit „+ Beim Anlegen als Aufgabe“ wird daraus gleich eine Aufgabe.
   - **Während des Projekts:** In der Übersicht stehen Hinweise passend zu den Phasen, Meilensteinen und Aufgaben der nächsten 60 Tage, mit Knöpfen „Als Aufgabe übernehmen“, „👍 hilfreich“ und „Nicht relevant“.
