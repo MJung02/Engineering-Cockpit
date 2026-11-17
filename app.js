@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 17.11.2026 10:33 */
+/* Engineering Cockpit – Entwurf, Stand 17.11.2026 12:24 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -637,17 +637,29 @@ class Component extends DCLogic {
       if (w) this.shiftNode(g.id, g.mode, Math.round((e.clientX - g.x0) / w * span));
     };
   }
+  nodeBounds(id) { const n = NODE[id], p = NODE[PARENT[id]], k = (n && n.children) || [];
+    return { lo: p ? p.start : null, hi: p ? p.end : null, pn: p ? p.name : '', cs: k.length ? k.reduce((a, c) => (c.start < a ? c.start : a), '9999') : null, ce: k.length ? k.reduce((a, c) => (c.end > a ? c.end : a), '0000') : null }; }
+  dayDiff(a, b) { return Math.round((D(a) - D(b)) / 86400000); }
+  isoAdd(iso, d) { const x = D(iso); x.setDate(x.getDate() + d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
+  moveNodeBy(m, d) { m.start = this.isoAdd(m.start, d); m.end = this.isoAdd(m.end, d); if (VNODE[m.id]) { VNODE[m.id].start = m.start; VNODE[m.id].end = m.end; } (m.children || []).forEach(c => this.moveNodeBy(c, d)); }
+  fitInto(n, p) { if (!n || !p) return ''; let d = 0; if (n.start < p.start) d = this.dayDiff(p.start, n.start); else if (n.end > p.end) d = -this.dayDiff(n.end, p.end);
+    if (d) this.moveNodeBy(n, d); let c = false; if (n.start < p.start) { n.start = p.start; c = true; } if (n.end > p.end) { n.end = p.end; c = true; }
+    if (VNODE[n.id]) { VNODE[n.id].start = n.start; VNODE[n.id].end = n.end; } if (c) (n.children || []).forEach(k => this.fitInto(k, n));
+    return d || c ? ' In den Zeitraum von „' + p.name + '“ (' + fmt(D(p.start)) + ' – ' + fmt(D(p.end)) + ') gelegt.' : ''; }
   shiftNode(id, mode, days) {
-    const n = NODE[id]; if (!n || !days) return;
-    const add = (iso, d) => { const x = D(iso); x.setDate(x.getDate() + d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
-    const move = m => { m.start = add(m.start, days); m.end = add(m.end, days); if (VNODE[m.id]) { VNODE[m.id].start = m.start; VNODE[m.id].end = m.end; } (m.children || []).forEach(move); };
-    if (mode === 'end') { if (n.type === 'gate') return; const ne = add(n.end, days); n.end = D(ne) < D(n.start) ? n.start : ne; if (VNODE[id]) VNODE[id].end = n.end; }
-    else if (mode === 'start') { if (n.type === 'gate') return; const ns = add(n.start, days); n.start = D(ns) > D(n.end) ? n.end : ns; if (VNODE[id]) VNODE[id].start = n.start; }
-    else move(n);
-    let p = PARENT[id];
-    while (p) { const ph = NODE[p]; if (ph && ph.children && ph.children.length) { ph.start = ph.children.reduce((a, c) => (c.start < a ? c.start : a), '9999'); ph.end = ph.children.reduce((a, c) => (c.end > a ? c.end : a), '0000'); } p = PARENT[p]; }
+    const n = NODE[id]; if (!n || !days) return; const point = n.type === 'gate'; if (point && mode !== 'move') return;
+    const B = this.nodeBounds(id), add = (a, d) => this.isoAdd(a, d), lim = x => ' Grenze: „' + B.pn + '“ ' + x + '.'; let note = '', d = days;
+    if (mode === 'move') {
+      if (B.lo && add(n.start, d) < B.lo) { d = this.dayDiff(B.lo, n.start); note = lim('beginnt am ' + fmt(D(B.lo))); }
+      if (B.hi && add(n.end, d) > B.hi) { d = this.dayDiff(B.hi, n.end); note = lim('endet am ' + fmt(D(B.hi))); }
+      if (B.lo && add(n.start, d) < B.lo) d = this.dayDiff(B.lo, n.start);
+      if (d) this.moveNodeBy(n, d);
+    } else if (mode === 'end') { let ne = add(n.end, d); if (ne < n.start) ne = n.start; if (B.hi && ne > B.hi) { ne = B.hi; note = lim('endet am ' + fmt(D(B.hi))); } if (B.ce && ne < B.ce) { ne = B.ce; note = ' Kürzer geht nicht: Darin liegt etwas bis ' + fmt(D(B.ce)) + '.'; } d = this.dayDiff(ne, n.end); n.end = ne; if (VNODE[id]) VNODE[id].end = n.end; }
+    else { let ns = add(n.start, d); if (ns > n.end) ns = n.end; if (B.lo && ns < B.lo) { ns = B.lo; note = lim('beginnt am ' + fmt(D(B.lo))); } if (B.cs && ns > B.cs) { ns = B.cs; note = ' Kürzer geht nicht: Darin beginnt etwas am ' + fmt(D(B.cs)) + '.'; } d = this.dayDiff(ns, n.start); n.start = ns; if (VNODE[id]) VNODE[id].start = n.start; }
+    if (!d) { const m0 = '„' + n.name + '“ bleibt, wo es ist.' + note; return this.setState({ mvMsg: m0, pnMsg: m0 }); }
+    days = d;
     const txt = mode === 'end' ? (days > 0 ? 'Ende ' + days + ' Tage später, länger' : 'Ende ' + (-days) + ' Tage früher, kürzer') : mode === 'start' ? (days > 0 ? 'Start ' + days + ' Tage später, kürzer' : 'Start ' + (-days) + ' Tage früher, länger') : (days > 0 ? days + ' Tage später' : (-days) + ' Tage früher');
-    const msgS = '„' + n.name + '“ liegt jetzt ' + (n.type === 'gate' ? 'auf dem ' + fmt(D(n.end)) : 'von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end))) + ' (' + txt + '). Die Baseline bleibt zum Vergleich erhalten.';
+    const msgS = '„' + n.name + '“ liegt jetzt ' + (point ? 'auf dem ' + fmt(D(n.end)) : 'von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end))) + ' (' + txt + ').' + note + ' Die Baseline bleibt zum Vergleich erhalten.';
     this.setState({ rev: (this.state.rev || 0) + 1, mvMsg: msgS, pnMsg: msgS });
   }
   moveToDay(id, iso, label) {
@@ -658,11 +670,14 @@ class Component extends DCLogic {
     if (kind === 'n') { const n = NODE[ref]; if (!n) return; const days = Math.round((D(iso) - D(n.end)) / 86400000); if (days) this.shiftNode(ref, 'move', days); this.setState({ weekMsg: '„' + n.name + '“ auf ' + label + ' verschoben. Im Gantt und für alle Beteiligten sofort sichtbar.' }); }
   }
   setNodeDate(id, which, iso) {
-    const n = NODE[id]; if (!n || !/^\d{4}-\d\d-\d\d$/.test(iso || '')) return;
-    if (n.type === 'gate') { n.start = iso; n.end = iso; } else if (which === 'start') { n.start = iso; if (n.end < iso) n.end = iso; } else { n.end = iso; if (n.start > iso) n.start = iso; }
+    const n = NODE[id]; if (!n || !/^\d{4}-\d\d-\d\d$/.test(iso || '')) return; const B = this.nodeBounds(id); let note = '', v = iso;
+    if (B.lo && v < B.lo) { v = B.lo; note = ' Das Datum lag vor „' + B.pn + '“, darum ' + fmt(D(v)) + '.'; }
+    if (B.hi && v > B.hi) { v = B.hi; note = ' Das Datum lag nach „' + B.pn + '“, darum ' + fmt(D(v)) + '.'; }
+    if (n.type === 'gate') { n.start = v; n.end = v; }
+    else if (which === 'start') { if (B.cs && v > B.cs) { v = B.cs; note = ' Später geht nicht: Darin beginnt etwas am ' + fmt(D(B.cs)) + '.'; } n.start = v; if (n.end < v) n.end = v; }
+    else { if (B.ce && v < B.ce) { v = B.ce; note = ' Früher geht nicht: Darin endet etwas am ' + fmt(D(B.ce)) + '.'; } n.end = v; if (n.start > v) n.start = v; }
     if (VNODE[id]) { VNODE[id].start = n.start; VNODE[id].end = n.end; }
-    let p = PARENT[id]; while (p) { const ph = NODE[p]; if (ph && ph.children && ph.children.length) { ph.start = ph.children.reduce((a, c) => (c.start < a ? c.start : a), '9999'); ph.end = ph.children.reduce((a, c) => (c.end > a ? c.end : a), '0000'); } p = PARENT[p]; }
-    const m0 = '„' + n.name + '“ ' + (n.type === 'gate' ? 'ist jetzt am ' + fmt(D(n.end)) + D(n.end).getFullYear() : 'liegt jetzt von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + D(n.end).getFullYear()) + ' (von Hand eingetragen). Die Baseline bleibt zum Vergleich erhalten.';
+    const m0 = '„' + n.name + '“ ' + (n.type === 'gate' ? 'ist jetzt am ' + fmt(D(n.end)) + D(n.end).getFullYear() : 'liegt jetzt von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + D(n.end).getFullYear()) + ' (von Hand eingetragen).' + note + ' Die Baseline bleibt zum Vergleich erhalten.';
     this.setState({ rev: (this.state.rev || 0) + 1, mvMsg: m0, pnMsg: m0 });
   }
   tabSeen(pk, role, k) { if (k === 'uebersicht' || k === 'aufgaben' || k === 'team' || role === 'Owner') return true; const rv = ((this.state.pTabRole || {})[pk] || {})[role]; if (rv && rv[k] !== undefined) return rv[k];
@@ -802,7 +817,7 @@ class Component extends DCLogic {
     let msg, par = null;
     if (tg.type === 'phase' && n.type !== 'phase') { tg.children = tg.children || []; tg.children.push(n); PARENT[fromId] = toId; par = tg; msg = '„' + n.name + '“ liegt jetzt in „' + tg.name + '“.'; }
     else { const dest = listOf(toId), j = dest.indexOf(tg); dest.splice(j < 0 ? dest.length : j, 0, n); PARENT[fromId] = PARENT[toId] || null; par = PARENT[toId] ? NODE[PARENT[toId]] : null; msg = '„' + n.name + '“ steht jetzt vor „' + tg.name + '“' + (par ? ' in „' + par.name + '“' : '') + '.'; }
-    if (par && n.start < par.start) { par.start = n.start; msg += ' Die Phase beginnt jetzt früher.'; } if (par && n.end > par.end) { par.end = n.end; msg += ' Die Phase reicht jetzt länger.'; }
+    if (par) msg += this.fitInto(n, par);
     this.setState({ rev: (this.state.rev || 0) + 1, pnMsg: msg }); }
   canPlan(pk) { const r = (PMEMBERS[pk] || []).find(x => x[0] === 'Du'); return !r || r[1] === 'Owner' || r[1] === 'Bearbeiter'; }
   dateEdit(n, can) { const pt = n.type === 'gate', ok = v => /^\d{4}-\d\d-\d\d$/.test(v || '') && +v.slice(0, 4) >= 2020 && +v.slice(0, 4) <= 2100, val = e => (e && e.target ? e.target.value : '');
@@ -1008,6 +1023,7 @@ class Component extends DCLogic {
   decide(id, text) { const result = Object.assign({}, this.state.result); result[id] = text; this.setState({ result }); }
 
   renderVals() {
+    if (typeof window !== 'undefined' && !window.__ecNodes) window.__ecNodes = { NODE, PARENT };
     if (!this._tabHook && typeof document !== 'undefined') { this._tabHook = true; document.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('[role=tab]') : null; if (b) setTimeout(() => { try { const L = b.closest('[role=tablist]'); if (L && L.scrollWidth > L.clientWidth) L.scrollTo({ left: b.offsetLeft - (L.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' }); } catch (x) { /* alt */ } }, 30); }, true); }
     Object.assign(PRIO, PRIO0, this.state.prioC || {});
     TASKS.forEach(x => this.kenn(x));
@@ -1737,8 +1753,8 @@ class Component extends DCLogic {
         hasHint: hint > 0 && status !== 'ueberfaellig', hint: hint + ' überfällig', chip: ch,
         left: pct(dd(START, a) / SPAN * 100), width: point ? '16px' : pct(Math.max((dd(a, b) + 1) / SPAN * 100, 0.8)),
         barH: point ? '16px' : (n.type === 'phase' ? '22px' : '16px'), barMt: point ? '-8px' : (n.type === 'phase' ? '-11px' : '-8px'),
-        transform: point ? 'translateX(-50%) rotate(45deg)' : 'none', radius: point ? '3px' : '6px',
-        barText: point ? '' : (status === 'erledigt' ? ' ✓' : (status === 'ueberfaellig' ? ' !' : '')), aria: n.name + ', ' + ch.label,
+        transform: point ? (n.msPoint ? 'translateX(-50%) rotate(45deg)' : 'translateX(-50%)') : 'none', radius: point ? (n.msPoint ? '3px' : '4px') : '6px',
+        barText: point ? (n.msPoint ? '' : 'G') : (status === 'erledigt' ? ' ✓' : (status === 'ueberfaellig' ? ' !' : '')), aria: n.name + ', ' + ch.label,
         rowBg: (s.highlight === n.id || (s.panel && s.panel.id === n.id)) ? t.hl : 'transparent',
         ...(() => { const bm = blMap[n.id]; if (!bm || !blOn) return { blShow: false, blLeft: '0%', blWidth: '0%', hasDev: false, dev: '', devColor: t.muted, devTitle: '' };
           const ba = D(bm[0]), bb = D(bm[1]), dv = dd(bb, b), pt2 = n.type === 'gate';
@@ -1949,11 +1965,11 @@ class Component extends DCLogic {
           if (n.type === 'phase') n.children = [];
           if (par) par.children = (par.children || []).concat([n]); else PTREE_OF[pk].push(n);
           NODE[id] = n; PARENT[id] = par ? par.id : null;
-          let pp = PARENT[id]; while (pp) { const ph = NODE[pp]; if (n.start < ph.start) ph.start = n.start; if (n.end > ph.end) ph.end = n.end; pp = PARENT[pp]; }
+          const fitMsg = par ? this.fitInto(n, par) : '';
           const pv = { sm42: 'sm42p', rl2: 'rl2p', pd: 'pdp', ih: 'ihp' }[pk];
           return this.setState({ rev: (s.rev || 0) + 1, screen: 'projekt', proj: pk, ptab: 'planung', mview: Object.assign({}, s.mview, { [pv]: nKind === 'phase' ? 'gantt' : 'ms' }),
             panel: { kind: 'node', id, from: 'planung' }, nt: Object.assign({}, nts, { title: '' }),
-            mvMsg: n.kindLabel + ' „' + nodeTitle + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (nKind === 'phase' ? fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) : 'Termin ' + fmt(D(n.end))) + ' · alle Projektmitglieder sehen es sofort.' });
+            mvMsg: n.kindLabel + ' „' + nodeTitle + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (nKind === 'phase' ? fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) : 'Termin ' + fmt(D(n.end))) + ' · alle Projektmitglieder sehen es sofort.' + fitMsg });
         }
         const title = (nts.title || '').trim() || 'Neue Aufgabe ' + (s.sent.length + 1);
         if (selfApproved) { const id = 'tn' + s.sent.length + '_' + TASKS.length; const x = { id, title, proj: inProj ? nts.proj : 'Ohne Projekt', due: nts.due || '2026-11-20', bucket: 'Backlog', prio: 'Mittel', owner: target, mine: target === 'Du', ms: null, desc: 'Angelegt am 13.11.', est: nts.h, co: inProj ? (nts.co || []) : [], repeat: (nts.rep || 'nie') !== 'nie' ? nts.rep : null }; TASKS.push(x); TASK[id] = x; }
@@ -2350,7 +2366,7 @@ class Component extends DCLogic {
       const gp = d => pct(Math.max(0, Math.min(100, dd(PR0, D(d)) / PRS * 100)));
       const rows = [];
       const pushNode = (n, indent, fw, rowBg) => { const st = this.nodeStatus(n), dnd = { drag: this.ganttStart(n.id, 'move'), over: this.ganttOver(), drop: this.ganttDrop(PRS), draggable: 'true' };
-        if (n.type === 'gate') rows.push({ label: '◆ ' + n.name, indent, fw, isBar: false, isMs: true, left: gp(n.end), bg: stBg(st), bd: stc(st) === t.strong ? t.text : stc(st), title: n.name + ' · ' + fmt(D(n.end)), rowBg, open: () => this.openNode(n.id, mvFrom), width: '0', top: '0', h: '0', ...dnd });
+        if (n.type === 'gate') rows.push({ label: (n.msPoint ? '◆ ' : '▣ ') + n.name, rot: n.msPoint ? 'rotate(45deg)' : 'none', rad: n.msPoint ? '2px' : '4px', indent, fw, isBar: false, isMs: true, left: gp(n.end), bg: stBg(st), bd: stc(st) === t.strong ? t.text : stc(st), title: n.name + ' · ' + fmt(D(n.end)), rowBg, open: () => this.openNode(n.id, mvFrom), width: '0', top: '0', h: '0', ...dnd });
         else rows.push({ label: n.name, indent, fw, isBar: true, isMs: false, left: gp(n.start), width: pct(Math.max(0.8, (dd(D(n.start), D(n.end)) + 1) / PRS * 100)), top: n.type === 'phase' ? '13px' : '10px', h: n.type === 'phase' ? '10px' : '16px',
           bg: n.type === 'phase' ? t.strong : (st === 'erledigt' ? GREEN : (st === 'ueberfaellig' ? RED : t.soft)), bd: n.type === 'phase' ? t.strong : (st === 'plan' ? accent : stc(st)), title: n.name + ' · ' + fmt(D(n.start)) + ' – ' + fmt(D(n.end)) + ' · ' + this.chip(st, t, accent).label, rowBg, open: () => this.openNode(n.id, mvFrom), ...dnd, canResize: n.type === 'ms' || (n.type === 'phase' && !(n.children && n.children.length)), dragS: this.ganttStart(n.id, 'start'), dragE: this.ganttStart(n.id, 'end') }); };
       PTREE.forEach(ph => { pushNode(ph, '8px', 700, ph.type === 'phase' ? t.surface2 : 'transparent'); (ph.children || []).forEach(c => pushNode(c, '24px', 500, 'transparent')); });
@@ -2369,7 +2385,7 @@ class Component extends DCLogic {
             bg: ts === 'erledigt' ? GREEN : (ts === 'ueberfaellig' ? RED : t.soft), bd: ts === 'plan' || ts === 'heute' ? accent : stc(ts), title: x.title + ' · ' + estOf(x) + ' h · fällig ' + fmt(due), rowBg: 'transparent', open: () => this.openTask(x.id, mvFrom) });
         });
         ctxMs.filter(n => ctxTasks.some(x => x.proj === pn && x.ms === n.id)).forEach(n => { const ns = this.nodeStatus(n);
-          rows.push({ label: '◆ ' + n.name, indent: '24px', fw: 500, isBar: false, isMs: true, left: gq(D(n.end)), width: '0', top: '0', h: '0', bg: stBg(ns), bd: stc(ns) === t.strong ? t.text : stc(ns), title: n.name + ' · ' + fmt(D(n.end)), rowBg: 'transparent', open: () => this.openNode(n.id, mvFrom) }); });
+          rows.push({ label: (n.msPoint ? '◆ ' : '▣ ') + n.name, rot: n.msPoint ? 'rotate(45deg)' : 'none', rad: n.msPoint ? '2px' : '4px', indent: '24px', fw: 500, isBar: false, isMs: true, left: gq(D(n.end)), width: '0', top: '0', h: '0', bg: stBg(ns), bd: stc(ns) === t.strong ? t.text : stc(ns), title: n.name + ' · ' + fmt(D(n.end)), rowBg: 'transparent', open: () => this.openNode(n.id, mvFrom) }); });
       });
       const ticks = Array.from({ length: 6 }, (_, i) => ({ label: 'KW ' + (45 + i), left: pct(i * 7 / GSPAN * 100) }));
       gantt = { rows, ticks, today: gq(TODAY), hasFull: false, full: () => {}, hint: 'Deine Aufgaben als Balken: Dauer aus dem Aufwand und 5,6 h planbarer Zeit pro Tag, Ende am Fälligkeitstag. ★ = im Fokus.' };
@@ -3070,7 +3086,7 @@ class Component extends DCLogic {
       tplList: Object.keys(P_TPL).concat(Object.keys(UTPL)).filter(k => !/^(leer|kan0|wf0|v0|sc0)$/.test(k)).map(k => { const x = P_TPL[k] || UTPL[k], hid = !!(s.tplHide || {})[k], own = !!UTPL[k];
         return { name: (x.icon || '') + ' ' + x.name, sub: own ? 'eigene Vorlage' : 'mitgeliefert', act: own ? 'Löschen' : (hid ? 'Wieder anzeigen' : 'Ausblenden'), state: hid ? '· ausgeblendet' : '',
           go: () => (own ? this.setState({ userTpl: (s.userTpl || []).filter(ut => ut.key !== k), newP: Object.assign({}, nw, { tpl: nw.tpl === k ? 'leer' : nw.tpl }) }) : this.setState({ tplHide: Object.assign({}, s.tplHide, { [k]: !hid }), newP: Object.assign({}, nw, { tpl: nw.tpl === k ? 'leer' : nw.tpl }) })) }; }),
-      stOpen: nw.stOpen !== false, stToggle: () => setNw({ stOpen: nw.stOpen === false }), stBtn: nw.stOpen === false ? '🧭 Hilfe: Stacey-Matrix einblenden' : '🧭 Stacey-Matrix ausblenden',
+      stOpen: nw.stOpen === true, stToggle: () => setNw({ stOpen: nw.stOpen !== true }), stBtn: nw.stOpen === true ? '▴ Hilfe zur Vorgehensmodell-Findung ausblenden' : '🧭 Hilfe bei der Wahl des Vorgehensmodells (Stacey-Matrix)',
       stGrid: staceyW.map(c => { const sel = (nw.sx || 0) === c.x && (nw.sy || 0) === c.y, corner = (c.x === 0 && c.y === 0) || (c.x === 4 && c.y === 4) || (c.x === 2 && c.y === 2) || (c.x === 3 && c.y === 0); return { bg: c.bg, ring: sel ? accent : 'transparent', sel: sel ? 'true' : 'false', mark: sel ? '●' : (corner ? c.zone : ''), aria: 'Anforderungen ' + (c.y + 1) + ' von 5 unklar, Technik ' + (c.x + 1) + ' von 5 neu, ' + c.zone, pick: () => setNw({ sx: c.x, sy: c.y }) }; }),
       stY: ['klar', 'eher klar', 'teils offen', 'unklar', 'völlig offen'].map((l, i) => ({ label: l, pressed: (nw.sy || 0) === i ? 'true' : 'false', ring: (nw.sy || 0) === i ? accent : t.border, bg: (nw.sy || 0) === i ? t.soft : t.surface, go: () => setNw({ sy: i }) })),
       stX: ['bekannt', 'eher bekannt', 'teils neu', 'neu', 'völlig neu'].map((l, i) => ({ label: l, pressed: (nw.sx || 0) === i ? 'true' : 'false', ring: (nw.sx || 0) === i ? accent : t.border, bg: (nw.sx || 0) === i ? t.soft : t.surface, go: () => setNw({ sx: i }) })),
@@ -3083,12 +3099,19 @@ class Component extends DCLogic {
         return { apNeed: why.length > 0, apOk: !why.length, apText: why.length ? 'Freigabe nötig: ' + why.join('; ') + '. Lege es als Entwurf an oder reiche es gleich mit Freigabe ein.' : 'Ohne Freigabe: Stufe 1 oder 2, kein Budget, nur Leute aus deinem Team. Das Projekt ist sofort aktiv.' }; })(),
       fams: P_FAM.map(([fk, ic, nm2, ds, col]) => { const on = curFam === fk, ex = Object.keys(ALLTPL).filter(k => famOf(k) === fk); return { icon: ic, name: nm2, desc: ds, iconBg: col, meta: ex.length > 1 ? (ex.length === 2 ? 'Beispiel: ' : 'Beispiele: ') + ex.filter(k => !/^(leer|kan0|wf0|v0|sc0)$/.test(k)).map(k => ALLTPL[k].name).join(', ') : 'leer starten',
         pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => setNw({ tpl: on ? nw.tpl : ex[0], stufe: null, mods: {} }) }; }),
-      exHead: 'Beispiele für ' + (P_FAM.find(f => f[0] === curFam) || ['', '', ''])[2] + ', mit fertiger Struktur:',
-      examples: Object.keys(ALLTPL).filter(k => famOf(k) === curFam).map(k => { const x = ALLTPL[k], on = nw.tpl === k; return { icon: x.icon, name: x.name, desc: x.desc, meta: 'Stufe ' + x.stufe + (x.phases.length ? ' · ' + x.phases.length + (x.phases.length === 1 ? ' Phase, ' : ' Phasen, ') + x.phases.filter(p0 => p0[3]).length + (x.phases.filter(p0 => p0[3]).length === 1 ? ' Gate' : ' Gates') : '') + (x.tasks.length ? ' · ' + x.tasks.length + ' Startaufgaben' : ''), pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => setNw({ tpl: k, stufe: null, mods: {} }) }; }),
+      ...(() => { const q = (s.exQ || '').trim().toLowerCase(), all = Object.keys(ALLTPL).filter(k => !(s.tplHide || {})[k] || nw.tpl === k), L0 = q ? all.filter(k => ((ALLTPL[k].name || '') + ' ' + (ALLTPL[k].desc || '')).toLowerCase().includes(q)) : all.filter(k => famOf(k) === curFam);
+        const L1 = L0.filter(k => k === nw.tpl).concat(L0.filter(k => k !== nw.tpl)), more = s.exAll || q ? 0 : Math.max(0, L1.length - 4);
+        const exTpl = k => { const x = ALLTPL[k], on = nw.tpl === k; return { icon: x.icon, name: x.name, desc: x.desc, meta: 'Stufe ' + x.stufe + (x.phases.length ? ' · ' + x.phases.length + (x.phases.length === 1 ? ' Phase' : ' Phasen') : '') + (x.tasks.length ? ' · ' + x.tasks.length + ' Startaufgaben' : ''), pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => setNw({ tpl: k, stufe: null, mods: {} }) }; };
+        return { examples: (more ? L1.slice(0, 4) : L1).map(exTpl), exHead: q ? L0.length + (L0.length === 1 ? ' Vorlage passt' : ' Vorlagen passen') + ' zu „' + s.exQ.trim() + '“' : 'Vorlage (optional) · ' + L0.length + ' für ' + (P_FAM.find(f => f[0] === curFam) || ['', '', ''])[2],
+          exQ: s.exQ || '', setExQ: e => this.setState({ exQ: e && e.target ? e.target.value : '' }), exMore: more > 0, exMoreLabel: 'Alle ' + L1.length + ' anzeigen', exAllGo: () => this.setState({ exAll: true }), exLess: !!s.exAll && !q && L1.length > 4, exLessGo: () => this.setState({ exAll: false }), exNone: !L0.length }; })(),
       name: nw.name, setName: e => this.setState({ newP: Object.assign({}, this.state.newP || NW0, { name: e && e.target ? e.target.value : '', err: '' }) }),
       start: nw.start, setStart: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) setNw({ start: v }); },
       colors: PCOLORS.map(c => ({ c, pressed: nw.color === c ? 'true' : 'false', ring: nw.color === c ? t.text : 'transparent', go: () => setNw({ color: c }) })),
-      people: PPL.map(n => { const on = nw.members.includes(n); return { label: (on ? '✓ ' : '+ ') + (n === 'Du' ? 'Du (Projektleitung)' : n), pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => { if (n === 'Du') return; setNw({ members: on ? nw.members.filter(m => m !== n) : nw.members.concat([n]) }); } }; }),
+      people: nw.members.map(n => ({ label: n === 'Du' ? 'Du (Projektleitung)' : n, x: n !== 'Du', rm: n + ' entfernen', go: () => { if (n === 'Du') return; setNw({ members: nw.members.filter(m => m !== n) }); } })),
+      ...(() => { const q = (s.nwQ || '').trim().toLowerCase(), pool = Array.from(new Set(PPL.concat(DIR.map(d => d[0])))), hits = q.length < 2 ? [] : pool.filter(n => !nw.members.includes(n) && (n + ' ' + (TEAM_OF[n] || '')).toLowerCase().includes(q));
+        return { mq: s.nwQ || '', setMq: e => this.setState({ nwQ: e && e.target ? e.target.value : '' }), mHas: hits.length > 0, mNone: q.length >= 2 && !hits.length, mInfo: hits.length > 8 ? hits.length + ' Treffer, die ersten 8. Genauer suchen grenzt ein.' : '',
+          mRes: hits.slice(0, 8).map(n => ({ name: n, ini: ini(n), av: AV[n] || accent, team: TEAM_OF[n] ? 'Team ' + TEAM_OF[n] : '', load: 'ausgelastet ' + (LOAD47[n] || 60) + ' %', go: () => this.setState({ newP: Object.assign({}, nw, { members: nw.members.concat([n]), err: '' }), nwQ: '' }) })),
+          mSug: PPL.filter(n => !nw.members.includes(n)).map(n => ({ label: '+ ' + n, go: () => setNw({ members: nw.members.concat([n]) }) })), mHasSug: PPL.some(n => !nw.members.includes(n)) }; })(),
       stufen: STUFEN.map(([n, name, desc]) => ({ n: String(n), name, desc: desc + (n === TP.stufe ? ' · empfohlen für diese Vorlage' : ''), pressed: nwStufe === n ? 'true' : 'false', ring: nwStufe === n ? accent : t.border, bg: nwStufe === n ? t.soft : t.surface, go: () => setNw({ stufe: n, mods: {} }) })),
       modGroups: this.modGroups(nwPs, (k, on) => setNw({ mods: Object.assign({}, nw.mods, { [k]: !on }) }), t, accent, true, curFam === 'v'),
       sumTitle: nw.name.trim() ? '„' + nw.name.trim() + '“ wird angelegt' : 'Noch ohne Name',
@@ -3211,13 +3234,13 @@ class Component extends DCLogic {
         addPh: ({ phase: 'z. B. Montage und Verdrahtung', ms: 'z. B. Schaltschrank geliefert', gate: 'z. B. Abnahme FAT' })[s.upAddK || 'phase'], addDateLabel: ({ phase: 'Beginn', ms: 'Termin', gate: 'Fällig am' })[s.upAddK || 'phase'],
         durs: [[14, '2 Wo.'], [28, '4 Wo.'], [56, '8 Wo.']].map(([d0, l]) => ({ label: l, pressed: (s.upDur || 28) === d0 ? 'true' : 'false', ring: (s.upDur || 28) === d0 ? accent : t.border, bg: (s.upDur || 28) === d0 ? t.soft : t.surface, go: () => this.setState({ upDur: d0, upMsE: addDays(s.upMsD || addDays(u.start, 30), d0) }) })),
         addBtn: ({ phase: 'Phase anlegen', ms: 'Meilenstein anlegen', gate: 'Gate anlegen' })[s.upAddK || 'phase'],
-        addNote: (s.upAddK || 'phase') === 'phase' ? 'Eine Phase hat Beginn und Ende. Meilensteine und Gates ordnest du danach einer Phase zu; Arbeitspakete legst du im Detail einer Phase an.' : ((s.upAddK === 'gate' ? 'Ein Quality Gate hat einen Fälligkeitstermin und eine Checkliste. ' : 'Ein Meilenstein ist ein Termin ohne Dauer. ') + 'Liegt er außerhalb der gewählten Phase, wird die Phase verlängert. Termine änderst du später direkt in der Spalte „Termin“.'),
+        addNote: (s.upAddK || 'phase') === 'phase' ? 'Eine Phase hat Beginn und Ende. Meilensteine und Gates ordnest du danach einer Phase zu; Arbeitspakete legst du im Detail einer Phase an.' : ((s.upAddK === 'gate' ? 'Ein Quality Gate hat einen Fälligkeitstermin und eine Checkliste. ' : 'Ein Meilenstein ist ein Termin ohne Dauer. ') + 'Er liegt immer innerhalb der gewählten Phase; ein Datum außerhalb wird an die Phase angepasst. Termine änderst du später direkt in der Spalte „Termin“.'),
         addNode: () => { const k = s.upAddK || 'phase', nm2 = (s.upMsN || '').trim(), d2 = s.upMsD || addDays(u.start, 30), e2 = s.upMsE || addDays(d2, s.upDur || 28); if (!nm2) return this.setState({ pnMsg: 'Erst einen Namen eingeben.' });
           if (k === 'phase' && e2 < d2) return this.setState({ pnMsg: 'Das Ende liegt vor dem Beginn. Bitte Ende ändern.' });
           const id = u.key + 'x' + Object.keys(NODE).length, n = k === 'phase' ? { id, name: nm2, type: 'phase', start: d2, end: e2, children: [], owner: 'Du', tasks: [], kindLabel: 'Phase' }
             : { id, name: nm2, type: 'gate', start: d2, end: d2, owner: 'Du', tasks: [], msPoint: k === 'ms', kindLabel: k === 'ms' ? 'Meilenstein' : 'Quality Gate', checks: k === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
           const phs = (u.tree || []).filter(q => q.type === 'phase'), selP = s.upPar || '', par = k === 'phase' || selP === '__top' ? null : (selP ? phs.find(q => q.id === selP) : phs.find(q => d2 >= q.start && d2 <= q.end)) || null;
-          let ext = ''; if (par && d2 < par.start) { par.start = d2; ext = ' Die Phase beginnt jetzt am ' + fmt(D(d2)) + '.'; } else if (par && d2 > par.end) { par.end = d2; ext = ' Die Phase reicht jetzt bis ' + fmt(D(d2)) + '.'; }
+          const ext = par ? this.fitInto(n, par) : '';
           if (par) par.children = (par.children || []).concat([n]); else u.tree.push(n); NODE[id] = n; PARENT[id] = par ? par.id : null; u.tree.sort((x, y) => (x.start < y.start ? -1 : 1));
           this.setState({ rev: (s.rev || 0) + 1, upMsN: '', upMsE: null, upPar: '', pnMsg: n.kindLabel + ' „' + nm2 + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (k === 'phase' ? fmt(D(n.start)) + ' – ' + fmt(D(n.end)) : (k === 'gate' ? 'fällig am ' : '') + fmt(D(d2))) + '.' + ext + ' Klick auf die Zeile öffnet das Detail.' }); },
         gates: [].map(n => { const r = gres[n.id], isG = n.type === 'gate', late = !r && n.end < '2026-11-13'; const ST = { bestanden: ['Bestanden', GREEN], auflage: ['Mit Auflage', '#C19C00'], nicht: ['Nicht bestanden', RED] };
@@ -3307,15 +3330,20 @@ class Component extends DCLogic {
                   canDecide: /^bei /.test(i0.status), who: i0.appr === 'Projektleitung' ? 'Projektleitung' : i0.appr,
                   ok: () => setL(l0 => l0.map(z => (z.id === i0.id ? Object.assign({}, z, { status: 'freigegeben' }) : z)), 'Freigegeben durch ' + i0.appr + ' (im Entwurf simuliert). ' + fE2(i0.amt) + ' zählen jetzt ins Ist.'),
                   no: () => setL(l0 => l0.map(z => (z.id === i0.id ? Object.assign({}, z, { status: 'abgelehnt' }) : z)), 'Rechnung abgelehnt. Sie zählt nicht ins Ist.') })) }; })(),
-            akv: (() => { const L = (PMEMBERS[u.key] || u.members.map(m => [m, m === 'Du' ? 'Owner' : 'Bearbeiter'])).filter(x => !x[4]), am = (s.mbrAkv || {})[u.key] || {}, tx = (s.akvTx || {})[u.key] || {};
+            akv: (() => { const L = (PMEMBERS[u.key] || u.members.map(m => [m, m === 'Du' ? 'Owner' : 'Bearbeiter'])).filter(x => !x[4]), am = (s.mbrAkv || {})[u.key] || {}, ed = !!(s.akvEd || {})[u.key], tx = ed ? ((s.akvDraft || {})[u.key] || {}) : ((s.akvTx || {})[u.key] || {});
+              const canEd = (((PMEMBERS[u.key] || []).find(x => x[0] === 'Du') || [])[1] || 'Owner') === 'Owner', view = ((s.akvView || {})[u.key]) || 'tabelle';
               const DEF = { Owner: ['Projekt leiten, planen, Team steuern', 'Termine und Umfang ändern, Aufgaben vergeben', 'Termin, Kosten und Projektziel'], Bearbeiter: ['Arbeitspakete bearbeiten, Aufgaben erledigen', 'Fachliche Entscheidungen im eigenen Arbeitspaket', 'Ergebnis der eigenen Arbeitspakete'], Mitwirkender: ['Zuarbeit zu Aufgaben', 'Eigene Aufgaben ändern und kommentieren', 'Eigene Aufgaben termingerecht'], Leser: ['Sich informieren', '–', '–'], Gast: ['Zulieferung von außen', 'Freigegebenes sehen', 'Eigene Lieferung'] };
               const rows = L.map(x => { const n = x[0], r = x[1], d = DEF[r] || DEF.Bearbeiter, own = tx[n] || {}, lim = am[n] !== undefined ? am[n] : (r === 'Owner' ? 5000 : 0);
                 const Rn = acts.filter(a => rc[a.id + '|' + n] === 'R').map(a => a.name), An = acts.filter(a => rc[a.id + '|' + n] === 'A').map(a => a.name), weak = An.length > 0 && ['Leser', 'Gast', 'Mitwirkender'].includes(r);
-                const set = f => e => { const v = e && e.target ? e.target.value : ''; const cur = (this.state.akvTx || {})[u.key] || {}; this.setState({ akvTx: Object.assign({}, this.state.akvTx, { [u.key]: Object.assign({}, cur, { [n]: Object.assign({}, cur[n] || {}, { [f]: v }) }) }) }); };
+                const set = f => e => { const v = e && e.target ? e.target.value : ''; const cur = (this.state.akvDraft || {})[u.key] || {}; this.setState({ akvDraft: Object.assign({}, this.state.akvDraft, { [u.key]: Object.assign({}, cur, { [n]: Object.assign({}, cur[n] || {}, { [f]: v }) }) }) }); };
                 return { name: n === 'Du' ? 'Du (ich)' : n, role: r, limit: lim ? lim.toLocaleString('de-DE') + ' €' : '0 €', a: own.a !== undefined ? own.a : d[0], k: own.k !== undefined ? own.k : d[1], v: own.v !== undefined ? own.v : d[2], setA: set('a'), setK: set('k'), setV: set('v'),
                   aAuto: Rn.length ? 'führt aus (R): ' + Rn.join(', ') : '', hasAAuto: Rn.length > 0, vAuto: An.length ? 'verantwortet (A): ' + An.join(', ') : '', hasVAuto: An.length > 0,
-                  kAuto: lim ? 'Rechnungen und Nachträge freigeben bis ' + lim.toLocaleString('de-DE') + ' €' : 'gibt keine Rechnungen frei', warn: weak }; });
-              return { rows, hasWarn: rows.some(r0 => r0.warn) }; })(),
+                  kAuto: lim ? 'Rechnungen und Nachträge freigeben bis ' + lim.toLocaleString('de-DE') + ' €' : 'gibt keine Rechnungen frei', warn: weak, ini: ini(n), av: AV[n] || accent, vBd: weak ? RED : t.border }; });
+              const vw = k => ({ label: k === 'tabelle' ? 'Tabelle' : 'Diagramm', pressed: view === k ? 'true' : 'false', bg: view === k ? t.surface : 'transparent', fg: view === k ? t.text : t.muted, go: () => this.setState({ akvView: Object.assign({}, this.state.akvView, { [u.key]: k }) }) });
+              return { rows, hasWarn: rows.some(r0 => r0.warn), edit: ed, isTab: !ed && view === 'tabelle', isDia: !ed && view === 'diagramm', views: [vw('tabelle'), vw('diagramm')], canEd: canEd && !ed,
+                startEd: () => this.setState({ akvEd: Object.assign({}, this.state.akvEd, { [u.key]: true }), akvDraft: Object.assign({}, this.state.akvDraft, { [u.key]: JSON.parse(JSON.stringify((this.state.akvTx || {})[u.key] || {})) }), akvMsg: '' }),
+                save: () => this.setState({ akvTx: Object.assign({}, this.state.akvTx, { [u.key]: (this.state.akvDraft || {})[u.key] || {} }), akvEd: Object.assign({}, this.state.akvEd, { [u.key]: false }), akvMsg: 'AKV gespeichert. Alle Mitglieder sehen die neue Fassung.' }),
+                cancel: () => this.setState({ akvEd: Object.assign({}, this.state.akvEd, { [u.key]: false }), akvMsg: 'Änderungen verworfen.' }), msg: s.akvMsg || '', hasMsg: !!s.akvMsg }; })(),
             raciAddTxt: s.raciT || '', setRaciT: e => this.setState({ raciT: e && e.target ? e.target.value : '' }), raciNone: !acts.length && !((s.raciX || {})[u.key] || []).length,
             raciAdd: () => { const v = (this.state.raciT || '').trim(); if (!v) return this.setState({ pnMsg: 'Bitte eine Tätigkeit eingeben, z. B. „Bestellung freigeben“.' }); const L0 = (this.state.raciX || {})[u.key] || []; this.setState({ raciX: Object.assign({}, this.state.raciX, { [u.key]: L0.concat([{ id: u.key + 'rx' + L0.length, name: v, type: 'act' }]) }), raciT: '', pnMsg: '„' + v + '“ steht jetzt in der RACI-Matrix. Je Zeile genau ein A vergeben.' }); },
             raciRows: acts.concat((s.raciX || {})[u.key] || []).map(n => { const aCount = u.members.filter(m => rc[n.id + '|' + m] === 'A').length; return { name: (n.type === 'gate' ? (n.msPoint ? '◆ ' : '◈ ') : '') + n.name, warn: aCount === 0 ? 'noch kein A' : (aCount > 1 ? aCount + '× A, nur eines erlaubt' : ''), warnColor: aCount === 1 ? GREEN : '#A33F06',
@@ -3502,7 +3530,7 @@ class Component extends DCLogic {
     const doTodos = tx => { const items = tx.split(/\n+|;\s*|\s+und dann\s+/).map(l => l.trim()).filter(l => l.length > 2), todos = items.map(parseTodo).map(makeTodo);
       chatPush([{ who: 'bot', kind: 'todo', text: todos.length === 1 ? 'Angelegt:' : todos.length + ' To-dos angelegt:', todos }], { rev: (this.state.rev || 0) + 1, sent: (this.state.sent || []).concat(todos.filter(td => !td.id).map(td => ({ title: td.title, who: td.who, proj: 'Ohne Projekt', h: td.h, status: td.mode === 'annahme' ? 'annahme' : 'wartet', boss: td.boss }))) }); };
     const TONES = [['freundlich', 'Freundlich'], ['formell', 'Formell'], ['knapp', 'Kürzer'], ['frist', 'Mit Frist']];
-    const chat = { open: !!s.chatOpen, openA: s.chatOpen ? 'true' : 'false', btn: s.chatOpen ? '✕ Schließen' : '✨ Assistent', btnI: s.chatOpen ? '✕' : '✨', btnT: s.chatOpen ? 'Schließen' : 'Assistent', toggle: () => this.setState({ chatOpen: !s.chatOpen }),
+    const chat = { right: s.panel && !s.chatOpen ? 'auto' : '16px', left: s.panel && !s.chatOpen ? '16px' : 'auto', open: !!s.chatOpen, openA: s.chatOpen ? 'true' : 'false', btn: s.chatOpen ? '✕ Schließen' : '✨ Assistent', btnI: s.chatOpen ? '✕' : '✨', btnT: s.chatOpen ? 'Schließen' : 'Assistent', toggle: () => this.setState({ chatOpen: !s.chatOpen }),
       sub: 'Lokales Modell auf dem Cockpit-Server · im Entwurf mit Regeln nachgebildet', clear: () => this.setState({ chat: null, chatIn: '' }),
       input: s.chatIn || '', setIn: e => this.setState({ chatIn: e && e.target ? e.target.value : '' }), send: () => { const v0 = this.state.chatIn; this.setState({ chatIn: '' }); sendChat(v0); },
       key: e => { if (!e || e.key !== 'Enter' || e.shiftKey || e.isComposing) return; if (e.preventDefault) e.preventDefault(); const v0 = e.target && e.target.value !== undefined ? e.target.value : this.state.chatIn; if (e.target) e.target.value = ''; this.setState({ chatIn: '' }); sendChat(v0); },
@@ -3849,7 +3877,7 @@ class Component extends DCLogic {
         ntText: s.ntText || '', setNtText: e => this.setState({ ntText: e && e.target ? e.target.value : '' }), ntDue: (s.ntDueBy || {})[n.id] || n.end, setNtDue: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) this.setState({ ntDueBy: Object.assign({}, this.state.ntDueBy, { [n.id]: v }) }); },
         ntWho: nMem.slice(0, 7).map(m => ({ name: m, short: m === 'Du' ? 'ich' : m.split(' ').pop(), ini: ini(m), av: AV[m] || accent, pressed: ntW === m ? 'true' : 'false', ring: ntW === m ? accent : t.border, go: () => this.setState({ ntWho: m }) })),
         kidsShow: n.type === 'phase' || n.type === 'ms' || kids.length > 0, noKids: kids.length === 0, kidsTitle: n.type === 'phase' ? 'Arbeitspakete, Meilensteine und Gates' : 'Untermeilensteine und Gates', kidsSum: kids.length ? kids.filter(k => k.chip.label === '✓ Erledigt' || /erledigt/i.test(k.chip.label)).length + ' von ' + kids.length + ' erledigt' : '',
-        ...(() => { const nk = s.nkKind || 'ms', nkS = (s.nkStartBy || {})[n.id] || n.start, nkE = (s.nkEndBy || {})[n.id] || (nk === 'ap' ? n.end : n.end), nkW = nMem.includes(s.nkWho) ? s.nkWho : (nMem.includes(n.owner) ? n.owner : 'Du');
+        ...(() => { const nk = s.nkKind || 'ms', nkS = (s.nkStartBy || {})[n.id] || n.start, nkE = (s.nkEndBy || {})[n.id] || n.end, nkW = nMem.includes(s.nkWho) ? s.nkWho : (nMem.includes(n.owner) ? n.owner : 'Du');
           const KINDS = [['ms', '◆', 'Meilenstein'], ['gate', '◈', 'Quality Gate'], ['ap', '▭', 'Arbeitspaket']];
           const setBy = (key, v) => this.setState({ [key]: Object.assign({}, this.state[key], { [n.id]: v }) });
           return { nkKinds: KINDS.map(([k, ic, l]) => ({ icon: ic, label: l, pressed: nk === k ? 'true' : 'false', ring: nk === k ? accent : t.border, bg: nk === k ? t.soft : t.surface, go: () => this.setState({ nkKind: k }) })),
@@ -3861,9 +3889,9 @@ class Component extends DCLogic {
               const id = 'nk' + (s.rev || 0) + '_' + Object.keys(NODE).length, kl = ({ ms: 'Meilenstein', gate: 'Quality Gate', ap: 'Arbeitspaket' })[nk];
               const c = { id, name, type: nk === 'ap' ? 'ms' : 'gate', start: nk === 'ap' ? nkS : nkE, end: nkE, owner: nkW, tasks: [], done: false, kindLabel: kl, msPoint: nk === 'ms', checks: nk === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
               if (nk === 'ap') c.children = [];
-              const grew = nkE > n.end; n.children = (n.children || []).concat([c]); NODE[id] = c; PARENT[id] = n.id;
-              let pp = n.id; while (pp) { const ph = NODE[pp]; if (c.start < ph.start) ph.start = c.start; if (c.end > ph.end) ph.end = c.end; pp = PARENT[pp]; }
-              this.setState({ rev: (s.rev || 0) + 1, nkName: '', akMsg: kl + ' „' + name + '“ unter „' + n.name + '“ angelegt, ' + (nk === 'ap' ? fmt(D(nkS)) + ' bis ' + fmt(D(nkE)) : 'Termin ' + fmt(D(nkE))) + ' Steht sofort im Gantt' + (nkW !== 'Du' ? ', ' + nkW + ' ist benachrichtigt' : '') + '.' + (grew ? ' „' + n.name + '“ reicht jetzt bis ' + fmt(D(nkE)) + ', weil das neue Element später liegt.' : '') }); } }; })(),
+              n.children = (n.children || []).concat([c]); NODE[id] = c; PARENT[id] = n.id;
+              const fitM = this.fitInto(c, n);
+              this.setState({ rev: (s.rev || 0) + 1, nkName: '', akMsg: kl + ' „' + name + '“ unter „' + n.name + '“ angelegt, ' + (nk === 'ap' ? fmt(D(nkS)) + ' bis ' + fmt(D(nkE)) : 'Termin ' + fmt(D(nkE))) + ' Steht sofort im Gantt' + (nkW !== 'Du' ? ', ' + nkW + ' ist benachrichtigt' : '') + '.' + fitM }); } }; })(),
         ntAdd: ntAddF, ntHasLoose: loose.length > 0, ntLoose: loose.map(x => ({ label: x.title, title: x.title + ' · fällig ' + fmt(D(x.due)) + ' · ' + this.ownerOf(x), go: () => linkTask(x.id, '„' + x.title + '“ gehört jetzt zu „' + n.name + '“.') })),
         kids, hasKids: kids.length > 0, shiftBtns: [['◀ 1 Woche früher', 'move', -7], ['1 Woche später ▶', 'move', 7]].concat(n.type !== 'gate' ? [['Start +1 Woche (kürzer)', 'start', 7], ['Ende −1 Woche (kürzer)', 'end', -7], ['Ende +1 Woche (länger)', 'end', 7]] : []).map(([label, md, d]) => ({ label, go: () => this.shiftNode(n.id, md, d) })), tasks: tks, hasTasks: tks.length > 0, canJump: !inPlanung, jump: () => this.jumpTo(n.id)
       });

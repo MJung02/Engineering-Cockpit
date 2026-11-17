@@ -18,6 +18,20 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 
 Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
 
+## Neu nach der fünften Testrunde (17.11.2026)
+
+- **Gantt-Grenzen:** Ein Untermeilenstein liegt immer im Zeitraum seines Meilensteins, ein Meilenstein immer in seiner Phase.
+  - Verschieben, Verlängern und Datumseingaben stoppen an der Grenze, und eine Meldung nennt die Grenze.
+  - Die übergeordnete Phase ändert sich dabei nicht mehr.
+  - Eine Phase lässt sich nicht kürzer machen als ihr Inhalt.
+  - Neu angelegte oder in eine Phase gezogene Elemente werden in deren Zeitraum gelegt.
+- **Meilenstein und Quality Gate** sehen im Gantt verschieden aus: Ein Meilenstein ist eine Raute ◆, ein Gate ein Quadrat ▣ mit „G“.
+- **Stacey-Hilfe im Assistenten:** standardmäßig eingeklappt („Hilfe bei der Wahl des Vorgehensmodells“). Die Fragen nennen jetzt die Achse (senkrecht: Anforderungen, waagrecht: Lösung/Technik).
+- **Vorlagen:** Suchfeld und zunächst nur 4 Vorschläge, mit „Alle anzeigen“. Das bleibt auch bei vielen Vorlagen übersichtlich.
+- **Mitglieder beim Projekt anlegen:** Suche über alle 500 Kolleginnen und Kollegen (Name oder Team). Ausgewählte stehen als Chips mit ✕, dazu Vorschläge aus dem eigenen Team.
+- **AKV:** Die Normalansicht ist eine lesbare Tabelle oder ein Diagramm mit Karten je Person. Bearbeiten geht nur über ✎ (nur Owner), mit „Speichern“ und „Abbrechen“.
+- **KI-Knopf:** ist jetzt ein runder Knopf. Ist rechts ein Panel offen, wandert er nach links unten. Unter dem Seiteninhalt bleibt Platz, damit er keine Knöpfe verdeckt.
+
 ## Neu nach der vierten Testrunde (17.11.2026)
 
 - **Module mit eigener Funktion:** Jedes zugeschaltete Modul bekommt einen eigenen Reiter im Projekt.
