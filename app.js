@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 17.11.2026 13:33 */
+/* Engineering Cockpit – Entwurf, Stand 17.11.2026 13:47 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -336,6 +336,7 @@ const CRX_SEED = { rl2: [{ id: 'CR-01', t: 'Zusätzlicher Lichtvorhang an Statio
 const ABW_SEED = { sm42: [{ n: 'S. Keller', von: '2026-11-23', bis: '2026-11-27', art: 'Urlaub' }, { n: 'T. Brandt', von: '2026-12-02', bis: '2026-12-02', art: 'Schulung' }], rl2: [{ n: 'M. Yilmaz', von: '2026-11-16', bis: '2026-11-18', art: 'Dienstreise' }] };
 const KT_SEED = { sm42: [{ n: 'Fr. Hartmann', f: 'Kunde, Werkleitung', e: 'hoch', c: 'Abnahme und Termine' }, { n: 'Hr. Ott', f: 'Lieferant Servoantriebe', e: 'mittel', c: 'Liefertermine' }, { n: 'Sicherheitsfachkraft', f: 'intern, Arbeitssicherheit', e: 'hoch', c: 'Abnahme Schutztür' }],
   rl2: [{ n: 'Hr. Kurz', f: 'Schichtleitung Linie 2', e: 'hoch', c: 'Stillstandsfenster' }], pd: [{ n: 'Dr. Weiß', f: 'Kunde, Entwicklung', e: 'hoch', c: 'Spezifikation' }] };
+const DEP_SEED = { m23: ['m22'] };
 const KST0 = { sm42: '4711-SM', rl2: '4712-RL', pd: '4713-PD', ih: '4720-IH' }, IA0 = { sm42: 'IA-26-0412', pd: 'IA-26-0388' };
 const PSET0 = { sm42: { stufe: 3, mods: {} }, rl2: { stufe: 2, mods: { res: true } }, pd: { stufe: 4, mods: {} }, ih: { stufe: 1, mods: { plan: true, docs: true, zeit: true } } };
 const PCOLORS = ['#0F6CBD', '#0E7A6E', '#5B2D90', '#A33F06', '#C50F1F', '#107C10', '#8A3707', '#3B3A39'];
@@ -637,6 +638,22 @@ class Component extends DCLogic {
       if (w) this.shiftNode(g.id, g.mode, Math.round((e.clientX - g.x0) / w * span));
     };
   }
+  depsOf() { return this.state.deps || DEP_SEED; }
+  projNodes(id) { let r = id; while (PARENT[r]) r = PARENT[r]; const pk = Object.keys(PTREE_OF).find(k => (PTREE_OF[k] || []).some(x => x.id === r)); const out = []; const w = l => (l || []).forEach(x => { out.push(x); w(x.children); }); w(PTREE_OF[pk]); return out; }
+  depNeed(p) { return p.type === 'gate' ? p.end : this.isoAdd(p.end, 1); }
+  dependsOn(a, b, deps, seen) { seen = seen || {}; if (seen[a]) return false; seen[a] = true; return (deps[a] || []).some(x => x === b || this.dependsOn(x, b, deps, seen)); }
+  pushSucc(id, deps, seen) { deps = deps || this.depsOf(); seen = seen || {}; const p = NODE[id]; if (!p) return []; const moved = [];
+    Object.keys(deps).forEach(sid => { if (!(deps[sid] || []).includes(id) || seen[sid]) return; const sN = NODE[sid]; if (!sN) return; const need = this.depNeed(p); if (sN.start >= need) return;
+      const d = this.dayDiff(need, sN.start); seen[sid] = true; this.moveNodeBy(sN, d); const B = this.nodeBounds(sid); let w = '';
+      if (B.hi && sN.end > B.hi) { this.fitInto(sN, NODE[PARENT[sid]]); w = ' – Konflikt: passt nicht mehr in „' + B.pn + '“, Phase verlängern oder Abhängigkeit prüfen'; }
+      moved.push('„' + sN.name + '“ +' + d + (d === 1 ? ' Tag' : ' Tage') + w); this.pushSucc(sid, deps, seen).forEach(x => moved.push(x)); });
+    return moved; }
+  pushNote(id, deps) { const m = this.pushSucc(id, deps); return m.length ? ' Nachfolger mitverschoben: ' + m.join(', ') + '.' : ''; }
+  critSet(nodes, deps) { const ids = new Set(nodes.map(n => n.id)), inDep = new Set(); Object.keys(deps).forEach(sid => { if (!ids.has(sid)) return; (deps[sid] || []).forEach(pid => { if (ids.has(pid)) { inDep.add(sid); inDep.add(pid); } }); });
+    const crit = new Set(); if (!inDep.size) return crit; const cand = nodes.filter(n => inDep.has(n.id)), end = cand.reduce((a, n) => (n.end > a ? n.end : a), '0000'), st = cand.filter(n => n.end === end);
+    while (st.length) { const n = st.pop(); if (crit.has(n.id)) continue; crit.add(n.id); (deps[n.id] || []).forEach(pid => { const p = NODE[pid]; if (p && ids.has(pid) && this.depNeed(p) >= n.start) st.push(p); }); }
+    return crit; }
+  depLabel(n, deps) { const pr = ((deps || this.depsOf())[n.id] || []).filter(id => NODE[id]).map(id => NODE[id].name); return { hasDep: pr.length > 0, depTxt: pr.length ? 'nach ' + pr.join(', ') : '' }; }
   nodeBounds(id) { const n = NODE[id], p = NODE[PARENT[id]], k = (n && n.children) || [];
     return { lo: p ? p.start : null, hi: p ? p.end : null, pn: p ? p.name : '', cs: k.length ? k.reduce((a, c) => (c.start < a ? c.start : a), '9999') : null, ce: k.length ? k.reduce((a, c) => (c.end > a ? c.end : a), '0000') : null }; }
   dayDiff(a, b) { return Math.round((D(a) - D(b)) / 86400000); }
@@ -659,7 +676,8 @@ class Component extends DCLogic {
     if (!d) { const m0 = '„' + n.name + '“ bleibt, wo es ist.' + note; return this.setState({ mvMsg: m0, pnMsg: m0 }); }
     days = d;
     const txt = mode === 'end' ? (days > 0 ? 'Ende ' + days + ' Tage später, länger' : 'Ende ' + (-days) + ' Tage früher, kürzer') : mode === 'start' ? (days > 0 ? 'Start ' + days + ' Tage später, kürzer' : 'Start ' + (-days) + ' Tage früher, länger') : (days > 0 ? days + ' Tage später' : (-days) + ' Tage früher');
-    const msgS = '„' + n.name + '“ liegt jetzt ' + (point ? 'auf dem ' + fmt(D(n.end)) : 'von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end))) + ' (' + txt + ').' + note + ' Die Baseline bleibt zum Vergleich erhalten.';
+    const pushT = this.pushNote(id) + (n.children || []).map(c => this.pushNote(c.id)).join('');
+    const msgS = '„' + n.name + '“ liegt jetzt ' + (point ? 'auf dem ' + fmt(D(n.end)) : 'von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end))) + ' (' + txt + ').' + note + pushT + ' Die Baseline bleibt zum Vergleich erhalten.';
     this.setState({ rev: (this.state.rev || 0) + 1, mvMsg: msgS, pnMsg: msgS });
   }
   moveToDay(id, iso, label) {
@@ -677,7 +695,7 @@ class Component extends DCLogic {
     else if (which === 'start') { if (B.cs && v > B.cs) { v = B.cs; note = ' Später geht nicht: Darin beginnt etwas am ' + fmt(D(B.cs)) + '.'; } n.start = v; if (n.end < v) n.end = v; }
     else { if (B.ce && v < B.ce) { v = B.ce; note = ' Früher geht nicht: Darin endet etwas am ' + fmt(D(B.ce)) + '.'; } n.end = v; if (n.start > v) n.start = v; }
     if (VNODE[id]) { VNODE[id].start = n.start; VNODE[id].end = n.end; }
-    const m0 = '„' + n.name + '“ ' + (n.type === 'gate' ? 'ist jetzt am ' + fmt(D(n.end)) + D(n.end).getFullYear() : 'liegt jetzt von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + D(n.end).getFullYear()) + ' (von Hand eingetragen).' + note + ' Die Baseline bleibt zum Vergleich erhalten.';
+    const m0 = '„' + n.name + '“ ' + (n.type === 'gate' ? 'ist jetzt am ' + fmt(D(n.end)) + D(n.end).getFullYear() : 'liegt jetzt von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + D(n.end).getFullYear()) + ' (von Hand eingetragen).' + note + this.pushNote(id) + ' Die Baseline bleibt zum Vergleich erhalten.';
     this.setState({ rev: (this.state.rev || 0) + 1, mvMsg: m0, pnMsg: m0 });
   }
   tabSeen(pk, role, k) { if (k === 'uebersicht' || k === 'aufgaben' || k === 'team' || role === 'Owner') return true; const rv = ((this.state.pTabRole || {})[pk] || {})[role]; if (rv && rv[k] !== undefined) return rv[k];
@@ -1404,7 +1422,7 @@ class Component extends DCLogic {
 
     // Projekt-Tabs
     const TABK0 = ['uebersicht', 'aufgaben', 'planung', 'team', 'analyse', 'dokumente', 'finanzen'], TABK = ['uebersicht', 'aufgaben', 'planung', 'team', 'analyse', 'zeiten', 'kapazitaet', 'status', 'dokumente', 'finanzen', 'aenderungen', 'verlauf'];
-    const TLBL = { analyse: 'Risiken', zeiten: 'Zeiten', kapazitaet: 'Kapazität', status: 'Statusbericht', aenderungen: 'Change Requests', verlauf: 'Verlauf' }, tlbl = k => TLBL[k] || tr.tabs[TABK0.indexOf(k)];
+    const TLBL = { analyse: 'Risiken', zeiten: 'Zeiten', kapazitaet: 'Kapazität', status: 'Statusbericht', aenderungen: 'Change Requests', verlauf: 'Verlauf' }, TLBL_X = { en: { analyse: 'Risks', zeiten: 'Time', kapazitaet: 'Capacity', status: 'Status report', aenderungen: 'Change requests', verlauf: 'History' }, es: { analyse: 'Riesgos', zeiten: 'Tiempos', kapazitaet: 'Capacidad', status: 'Informe de estado', aenderungen: 'Solicitudes de cambio', verlauf: 'Historial' }, pl: { analyse: 'Ryzyka', zeiten: 'Czas pracy', kapazitaet: 'Obciążenie', status: 'Raport statusu', aenderungen: 'Wnioski o zmianę', verlauf: 'Historia' }, tr: { analyse: 'Riskler', zeiten: 'Süreler', kapazitaet: 'Kapasite', status: 'Durum raporu', aenderungen: 'Değişiklik talepleri', verlauf: 'Geçmiş' } }, tlbl = k => ((TLBL_X[s.lang] || {})[k]) || (s.lang === 'de' || !TLBL_X[s.lang] ? TLBL[k] : null) || tr.tabs[TABK0.indexOf(k)];
     const PSc = Object.assign({}, PSET0[s.proj] || { stufe: 2, mods: {} }, (s.psetBy || {})[s.proj] || {});
     const modC = k => { const m = P_MODS.find(x => x[0] === k); return PSc.mods && PSc.mods[k] !== undefined ? PSc.mods[k] : (m ? m[2] <= PSc.stufe : true); };
     const TABMOD = { planung: ['plan'], analyse: ['risk'], zeiten: ['zeit'], kapazitaet: ['res'], status: ['status'], aenderungen: ['cr'], verlauf: ['audit'], dokumente: ['docs'], finanzen: ['budget'] };
@@ -1740,6 +1758,7 @@ class Component extends DCLogic {
     });
     walk(TREE, 0);
     const blAll = Object.assign({}, BL_SEED, s.blBy || {}), blCur = blAll.sm42 || null, blMap = blCur ? blCur.map : {}, blOn = s.blOn !== false;
+    const depsG = this.depsOf(), critG = this.critSet(this.projNodes('p1'), depsG);
     const rows = rowsRaw.map(({ n, depth, status }) => {
       const a = D(n.start), b = D(n.end), point = n.type === 'gate', hint = this.overdueBelow(n), ch = this.chip(status, t, accent);
       const hasKids = !!(n.children && n.children.length) && s.ampel === 'alle';
@@ -1754,6 +1773,7 @@ class Component extends DCLogic {
         left: pct(dd(START, a) / SPAN * 100), width: point ? '16px' : pct(Math.max((dd(a, b) + 1) / SPAN * 100, 0.8)),
         barH: point ? '16px' : (n.type === 'phase' ? '22px' : '16px'), barMt: point ? '-8px' : (n.type === 'phase' ? '-11px' : '-8px'),
         transform: point ? (n.msPoint ? 'translateX(-50%) rotate(45deg)' : 'translateX(-50%)') : 'none', radius: point ? (n.msPoint ? '3px' : '4px') : '6px',
+        shadow: critG.has(n.id) ? '0 0 0 3px rgba(197,15,31,0.55)' : '0 1px 2px rgba(0,0,0,0.12)', ...this.depLabel(n, depsG),
         barText: point ? (n.msPoint ? '' : 'G') : (status === 'erledigt' ? ' ✓' : (status === 'ueberfaellig' ? ' !' : '')), aria: n.name + ', ' + ch.label,
         rowBg: (s.highlight === n.id || (s.panel && s.panel.id === n.id)) ? t.hl : 'transparent',
         ...(() => { const bm = blMap[n.id]; if (!bm || !blOn) return { blShow: false, blLeft: '0%', blWidth: '0%', hasDev: false, dev: '', devColor: t.muted, devTitle: '' };
@@ -2351,7 +2371,7 @@ class Component extends DCLogic {
     const mp = d => pct(Math.max(0, Math.min(100, dd(M0, d) / MSPAN * 100)));
     const MON = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
     const msSorted = ctxMs.slice().sort((a, b) => D(a.end) - D(b.end));
-    const msLine = msSorted.map((n, i) => { const c = this.chip(this.nodeStatus(n), t, accent); return { left: mp(D(n.end)), top: (i % 2 ? 22 : 6) + 'px', bg: stBg(this.nodeStatus(n)), bd: c.bd === t.strong ? t.text : c.bd, title: n.name + ' · ' + fmt(D(n.end)) + ' · ' + c.label, open: () => this.openNode(n.id, mvFrom) }; });
+    const msLine = msSorted.map((n, i) => { const c = this.chip(this.nodeStatus(n), t, accent); return { rot: n.type === 'gate' && !n.msPoint ? 'none' : 'rotate(45deg)', left: mp(D(n.end)), top: (i % 2 ? 22 : 6) + 'px', bg: stBg(this.nodeStatus(n)), bd: c.bd === t.strong ? t.text : c.bd, title: n.name + ' · ' + fmt(D(n.end)) + ' · ' + c.label, open: () => this.openNode(n.id, mvFrom) }; });
     const msMonths = []; for (let d = new Date(M0); d < M1; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) msMonths.push({ label: MON[d.getMonth()] + (d.getMonth() === 0 ? ' ' + d.getFullYear() : ''), left: mp(d) });
     const msRows = msSorted.map(n => {
       const st = this.nodeStatus(n), tk = (n.tasks || []).map(id => TASK[id]), open = tk.filter(x => !this.isDone(x)).length, tot = tk.length;
@@ -3202,7 +3222,7 @@ class Component extends DCLogic {
             gbl: { onA: blOn ? 'true' : 'false', ring: blOn ? accent : t.border, btn: blOn ? '▬ Baseline an' : '▬ Baseline aus', toggle: () => this.setState({ blOn: !blOn }), saveLabel: blU ? 'Neue Baseline speichern' : 'Baseline speichern',
               text: blU ? 'Baseline vom ' + blU.date + ': ' + (moved.length ? moved.length + (moved.length === 1 ? ' Termin' : ' Termine') + ' verschoben' + (mx > 0 ? ', größte Verschiebung +' + mx + ' Tage' : '') + '. Grauer Balken = Plan laut Baseline.' : 'alle Termine wie geplant.') : 'Noch keine Baseline. Speichere sie, sobald der Plan steht; danach siehst du jede Verschiebung als grauen Balken.',
               save: () => { const map = {}; flat.forEach(({ n }) => { map[n.id] = [n.start, n.end]; }); this.setState({ blBy: Object.assign({}, s.blBy, { [u.key]: { date: fmt(TODAY) + TODAY.getFullYear(), iso: '2026-11-13', map } }), pnMsg: 'Baseline gespeichert (' + fmt(TODAY) + TODAY.getFullYear() + '). Verschiebungen zählen ab jetzt gegen diesen Stand.' }); } },
-            gRows: raw.map(({ n, depth, st }) => { const a1 = D(n.start), b1 = D(n.end), point = n.type === 'gate', hint = this.overdueBelow(n), ch0 = this.chip(st, t, accent), gr = gres[n.id], hasKids = !!(n.children && n.children.length) && amp === 'alle', op = isOpen(n);
+            gRows: (() => { const depsU = this.depsOf(), nodesU = []; const wU = l => (l || []).forEach(x => { nodesU.push(x); wU(x.children); }); wU(u.tree); const critU = this.critSet(nodesU, depsU), depLbl = n => this.depLabel(n, depsU); return  raw.map(({ n, depth, st }) => { const a1 = D(n.start), b1 = D(n.end), point = n.type === 'gate', hint = this.overdueBelow(n), ch0 = this.chip(st, t, accent), gr = gres[n.id], hasKids = !!(n.children && n.children.length) && amp === 'alle', op = isOpen(n);
               const ch = point && !n.msPoint && st !== 'erledigt' && st !== 'ueberfaellig' ? Object.assign({}, ch0, { bg: '#5B2D90', bd: '#5B2D90', fg: '#FFFFFF' }) : ch0;
               const bm = blM[n.id], bl = (() => { if (!bm || !blOn) return { blShow: false, blLeft: '0%', blWidth: '0%', hasDev: false, dev: '', devColor: t.muted, devTitle: '' }; const ba = D(bm[0]), bb = D(bm[1]), dv = dd(bb, b1);
                 return { blShow: dv !== 0 || dd(ba, a1) !== 0, blLeft: pct(dd(G0, ba) / GS * 100), blWidth: point ? '6px' : pct(Math.max((dd(ba, bb) + 1) / GS * 100, 0.8)), hasDev: dv !== 0, dev: (dv > 0 ? '+' : '−') + Math.abs(dv) + ' T. zur Baseline', devColor: dv > 0 ? RED : GREEN, devTitle: 'Baseline ' + fmt(ba) + (point ? '' : ' – ' + fmt(bb)) }; })();
@@ -3219,30 +3239,31 @@ class Component extends DCLogic {
                 hasHint: hint > 0 && st !== 'ueberfaellig', hint: hint + ' überfällig', chip: ch,
                 left: pct(dd(G0, a1) / GS * 100), width: point ? '16px' : pct(Math.max((dd(a1, b1) + 1) / GS * 100, 0.8)),
                 barH: point ? '16px' : (n.type === 'phase' ? '22px' : '16px'), barMt: point ? '-8px' : (n.type === 'phase' ? '-11px' : '-8px'),
-                transform: point ? 'translateX(-50%) rotate(45deg)' : 'none', radius: point ? '3px' : '6px',
-                barText: point ? '' : (st === 'erledigt' ? ' ✓' : (st === 'ueberfaellig' ? ' !' : '')), aria: (n.kindLabel || KIND[n.type] || '') + ' ' + n.name + ', ' + ch.label,
-                rowBg: s.panel && s.panel.id === n.id ? t.hl : 'transparent' }, bl); }) }; })(),
+                transform: point ? (n.msPoint ? 'translateX(-50%) rotate(45deg)' : 'translateX(-50%)') : 'none', radius: point ? (n.msPoint ? '3px' : '4px') : '6px',
+                shadow: critU.has(n.id) ? '0 0 0 3px rgba(197,15,31,0.55)' : '0 1px 2px rgba(0,0,0,0.12)', ...depLbl(n),
+                barText: point ? (n.msPoint ? '' : 'G') : (st === 'erledigt' ? ' ✓' : (st === 'ueberfaellig' ? ' !' : '')), aria: (n.kindLabel || KIND[n.type] || '') + ' ' + n.name + ', ' + ch.label,
+                rowBg: s.panel && s.panel.id === n.id ? t.hl : 'transparent' }, bl); }); })() }; })(),
         trows: flat.map(({ n, d }) => { const st = this.nodeStatus(n), ch = this.chip(st, t, accent), gr = gres[n.id], isPt = n.type === 'gate', isG = isPt && !n.msPoint, a0 = D(n.start), b0 = D(n.end);
           return { name: n.name, icon: n.type === 'phase' ? (d ? '▭' : '▬') : (isG ? '◈' : '◆'), iconColor: isG ? '#5B2D90' : (n.type === 'phase' ? accent : t.text), indent: (8 + d * 20) + 'px', fw: n.type === 'phase' && !d ? '700' : '500',
             dates: isPt ? fmt(b0) : fmt(a0) + ' – ' + fmt(b0), st: gr ? ({ ok: '✓ bestanden', auflage: '✓ mit Auflage', nein: '✗ nicht bestanden', bestanden: '✓ bestanden', nicht: '✗ nicht bestanden' })[gr.r || gr] || ch.label : ch.label, stBg: ch.bg, stFg: ch.fg, stBd: ch.bd,
             left: pct(Math.max(0, dd(D(p0), a0) / span * 100)), width: isPt ? '14px' : pct(Math.max(1.5, (dd(a0, b0) + 1) / span * 100)), h: isPt ? '14px' : (d ? '12px' : '18px'), mt: isPt ? '-7px' : (d ? '-6px' : '-9px'), tf: isPt ? 'translateX(-50%) rotate(45deg)' : 'none', rad: isPt ? '3px' : '5px',
             bar: st === 'erledigt' ? GREEN : (st === 'ueberfaellig' ? RED : (isG ? '#5B2D90' : (n.type === 'phase' && !d ? (ups.color || u.color) : accent))), open: () => this.setState({ panel: { kind: 'node', id: n.id, from: 'pn' }, pSub: 'details', akMsg: '' }) }; }),
-        addKinds: [['phase', '▭ Phase'], ['ms', '◆ Meilenstein'], ['gate', '◈ Quality Gate']].map(([k, l]) => ({ label: l, pressed: (s.upAddK || 'phase') === k ? 'true' : 'false', ring: (s.upAddK || 'phase') === k ? accent : t.border, bg: (s.upAddK || 'phase') === k ? t.soft : t.surface, go: () => this.setState({ upAddK: k }) })),
-        addIsPhase: (s.upAddK || 'phase') === 'phase', addNotPhase: (s.upAddK || 'phase') !== 'phase',
+        addKinds: [['phase', '▭ Phase'], ['ms', '◆ Meilenstein (Termin)'], ['msr', '▬ Meilenstein (von–bis)'], ['gate', '▣ Quality Gate']].map(([k, l]) => ({ label: l, pressed: (s.upAddK || 'phase') === k ? 'true' : 'false', ring: (s.upAddK || 'phase') === k ? accent : t.border, bg: (s.upAddK || 'phase') === k ? t.soft : t.surface, go: () => this.setState({ upAddK: k }) })),
+        addIsPhase: (s.upAddK || 'phase') === 'phase', addHasEnd: ['phase', 'msr'].includes(s.upAddK || 'phase'), addNotPhase: (s.upAddK || 'phase') !== 'phase',
         msEnd: s.upMsE || addDays(s.upMsD || addDays(u.start, 30), s.upDur || 28), setMsEnd: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) this.setState({ upMsE: v, upDur: 0 }); },
         addPars: [['', 'automatisch nach Termin']].concat((u.tree || []).filter(q => q.type === 'phase').map(q => [q.id, q.name + ' (' + fmt(D(q.start)) + '–' + fmt(D(q.end)) + ')'])).concat([['__top', 'keine (oberste Ebene)']]).map(([k, l]) => ({ label: l, pressed: (s.upPar || '') === k ? 'true' : 'false', ring: (s.upPar || '') === k ? accent : t.border, bg: (s.upPar || '') === k ? t.soft : t.surface, go: () => this.setState({ upPar: k }) })),
-        addPh: ({ phase: 'z. B. Montage und Verdrahtung', ms: 'z. B. Schaltschrank geliefert', gate: 'z. B. Abnahme FAT' })[s.upAddK || 'phase'], addDateLabel: ({ phase: 'Beginn', ms: 'Termin', gate: 'Fällig am' })[s.upAddK || 'phase'],
+        addPh: ({ phase: 'z. B. Montage und Verdrahtung', ms: 'z. B. Schaltschrank geliefert', msr: 'z. B. Mechanik montiert', gate: 'z. B. Abnahme FAT' })[s.upAddK || 'phase'], addDateLabel: ({ phase: 'Beginn', ms: 'Termin', msr: 'Beginn', gate: 'Fällig am' })[s.upAddK || 'phase'],
         durs: [[14, '2 Wo.'], [28, '4 Wo.'], [56, '8 Wo.']].map(([d0, l]) => ({ label: l, pressed: (s.upDur || 28) === d0 ? 'true' : 'false', ring: (s.upDur || 28) === d0 ? accent : t.border, bg: (s.upDur || 28) === d0 ? t.soft : t.surface, go: () => this.setState({ upDur: d0, upMsE: addDays(s.upMsD || addDays(u.start, 30), d0) }) })),
-        addBtn: ({ phase: 'Phase anlegen', ms: 'Meilenstein anlegen', gate: 'Gate anlegen' })[s.upAddK || 'phase'],
+        addBtn: ({ phase: 'Phase anlegen', ms: 'Meilenstein anlegen', msr: 'Meilenstein anlegen', gate: 'Gate anlegen' })[s.upAddK || 'phase'],
         addNote: (s.upAddK || 'phase') === 'phase' ? 'Eine Phase hat Beginn und Ende. Meilensteine und Gates ordnest du danach einer Phase zu; Arbeitspakete legst du im Detail einer Phase an.' : ((s.upAddK === 'gate' ? 'Ein Quality Gate hat einen Fälligkeitstermin und eine Checkliste. ' : 'Ein Meilenstein ist ein Termin ohne Dauer. ') + 'Er liegt immer innerhalb der gewählten Phase; ein Datum außerhalb wird an die Phase angepasst. Termine änderst du später direkt in der Spalte „Termin“.'),
         addNode: () => { const k = s.upAddK || 'phase', nm2 = (s.upMsN || '').trim(), d2 = s.upMsD || addDays(u.start, 30), e2 = s.upMsE || addDays(d2, s.upDur || 28); if (!nm2) return this.setState({ pnMsg: 'Erst einen Namen eingeben.' });
-          if (k === 'phase' && e2 < d2) return this.setState({ pnMsg: 'Das Ende liegt vor dem Beginn. Bitte Ende ändern.' });
-          const id = u.key + 'x' + Object.keys(NODE).length, n = k === 'phase' ? { id, name: nm2, type: 'phase', start: d2, end: e2, children: [], owner: 'Du', tasks: [], kindLabel: 'Phase' }
+          if ((k === 'phase' || k === 'msr') && e2 < d2) return this.setState({ pnMsg: 'Das Ende liegt vor dem Beginn. Bitte Ende ändern.' });
+          const id = u.key + 'x' + Object.keys(NODE).length, n = k === 'phase' ? { id, name: nm2, type: 'phase', start: d2, end: e2, children: [], owner: 'Du', tasks: [], kindLabel: 'Phase' } : k === 'msr' ? { id, name: nm2, type: 'ms', start: d2, end: e2, children: [], owner: 'Du', tasks: [], msPoint: false, kindLabel: 'Meilenstein' }
             : { id, name: nm2, type: 'gate', start: d2, end: d2, owner: 'Du', tasks: [], msPoint: k === 'ms', kindLabel: k === 'ms' ? 'Meilenstein' : 'Quality Gate', checks: k === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
           const phs = (u.tree || []).filter(q => q.type === 'phase'), selP = s.upPar || '', par = k === 'phase' || selP === '__top' ? null : (selP ? phs.find(q => q.id === selP) : phs.find(q => d2 >= q.start && d2 <= q.end)) || null;
           const ext = par ? this.fitInto(n, par) : '';
           if (par) par.children = (par.children || []).concat([n]); else u.tree.push(n); NODE[id] = n; PARENT[id] = par ? par.id : null; u.tree.sort((x, y) => (x.start < y.start ? -1 : 1));
-          this.setState({ rev: (s.rev || 0) + 1, upMsN: '', upMsE: null, upPar: '', pnMsg: n.kindLabel + ' „' + nm2 + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (k === 'phase' ? fmt(D(n.start)) + ' – ' + fmt(D(n.end)) : (k === 'gate' ? 'fällig am ' : '') + fmt(D(d2))) + '.' + ext + ' Klick auf die Zeile öffnet das Detail.' }); },
+          this.setState({ rev: (s.rev || 0) + 1, upMsN: '', upMsE: null, upPar: '', pnMsg: n.kindLabel + ' „' + nm2 + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (k === 'phase' || k === 'msr' ? fmt(D(n.start)) + ' – ' + fmt(D(n.end)) : (k === 'gate' ? 'fällig am ' : '') + fmt(D(n.end))) + '.' + ext + ' Klick auf die Zeile öffnet das Detail.' }); },
         gates: [].map(n => { const r = gres[n.id], isG = n.type === 'gate', late = !r && n.end < '2026-11-13'; const ST = { bestanden: ['Bestanden', GREEN], auflage: ['Mit Auflage', '#C19C00'], nicht: ['Nicht bestanden', RED] };
           const setR = v => () => { if (v === 'auflage') this.quickTask({ title: 'Auflage aus ' + n.name + ' erfüllen', proj: u.name, due: addDays(n.end, 14) }); this.setState({ upGate: Object.assign({}, this.state.upGate, { [n.id]: v }), pnMsg: n.name + ': ' + ST[v][0] + '.' + (v === 'auflage' ? ' Die Auflage steht als Aufgabe im Backlog, fällig in 14 Tagen.' : (v === 'nicht' ? ' Die Phase bleibt offen, bis das Gate erneut bewertet ist.' : '')) }); };
           return { icon: isG ? '◈' : '◆', name: n.name, sub: fmt(D(n.end)) + (isG && n.checks ? ' · Checkliste: ' + n.checks.join(', ') : ''), status: r ? ST[r][0] : (late ? 'überfällig' : 'geplant'), stBg: r ? ST[r][1] : (late ? RED : t.strong), canDecide: isG && !r, pass: setR('bestanden'), cond: setR('auflage'), fail: setR('nicht') }; }),
@@ -3846,6 +3867,14 @@ class Component extends DCLogic {
       const msTo = rangeOn => { const P0 = NODE[PARENT[n.id]]; if (rangeOn) { let st = this.isoAdd(n.end, -7); if (P0 && st < P0.start) st = P0.start; Object.assign(n, { type: 'ms', msPoint: false, start: st, children: n.children || [], kindLabel: 'Meilenstein' }); }
         else { Object.assign(n, { type: 'gate', msPoint: true, start: n.end, kindLabel: 'Meilenstein' }); delete n.children; }
         this.setState({ rev: (this.state.rev || 0) + 1, akMsg: rangeOn ? '„' + n.name + '“ hat jetzt einen Zeitraum: ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + '. Beginn und Ende darunter ändern.' : '„' + n.name + '“ ist jetzt ein Termin am ' + fmt(D(n.end)) + '.' }); };
+      const depsN = this.depsOf(), predsN = (depsN[n.id] || []).filter(id => NODE[id]), succN = Object.keys(depsN).filter(k => (depsN[k] || []).includes(n.id) && NODE[k]);
+      const ancOf = (a, b) => { let x = PARENT[b]; while (x) { if (x === a) return true; x = PARENT[x]; } return false; };
+      const poolN = this.projNodes(n.id).filter(x => x.id !== n.id && !predsN.includes(x.id) && !ancOf(x.id, n.id) && !ancOf(n.id, x.id) && !this.dependsOn(x.id, n.id, depsN)).sort((a, b) => (a.end < b.end ? -1 : 1));
+      const setDeps = (nd, msg) => { const pm = (nd[n.id] || []).map(pid => this.pushNote(pid, nd)).join(''); this.setState({ deps: nd, rev: (this.state.rev || 0) + 1, akMsg: msg + pm }); };
+      Object.assign(p, { depPreds: predsN.map(id => ({ label: NODE[id].name + ' (' + (NODE[id].type === 'gate' ? fmt(D(NODE[id].end)) : 'bis ' + fmt(D(NODE[id].end))) + ')', rm: 'Abhängigkeit von ' + NODE[id].name + ' entfernen', go: () => setDeps(Object.assign({}, depsN, { [n.id]: predsN.filter(x => x !== id) }), 'Abhängigkeit entfernt.') })),
+        noPreds: !predsN.length, depSuccs: succN.map(id => ({ label: NODE[id].name, go: () => this.openNode(id, 'planung') })), hasSuccs: succN.length > 0,
+        depOpen: s.depOpen === n.id, depToggle: () => this.setState({ depOpen: s.depOpen === n.id ? null : n.id }), depBtn: s.depOpen === n.id ? 'Fertig' : '+ Vorgänger',
+        depPool: poolN.slice(0, 14).map(x => ({ label: (x.type === 'phase' ? '▭ ' : (x.type === 'gate' ? (x.msPoint ? '◆ ' : '▣ ') : '▬ ')) + x.name, go: () => setDeps(Object.assign({}, depsN, { [n.id]: predsN.concat([x.id]) }), '„' + n.name + '“ beginnt jetzt nach „' + x.name + '“.') })) });
       Object.assign(p, { msModeShow: isMsN && !hasKidsN, msModes: [[true, '◆ Termin (Stichtag)'], [false, '▬ Zeitraum (von–bis)']].map(([pt, l]) => ({ label: l, pressed: isPt === pt ? 'true' : 'false', ring: isPt === pt ? accent : t.border, bg: isPt === pt ? t.soft : t.surface, go: () => { if (isPt !== pt) msTo(!pt); } })),
         nodeDateEdit: !hasKidsN, nodeDateFixed: hasKidsN, nodeIsPoint: n.type === 'gate', nodeStartIso: n.start, nodeEndIso: n.end, notPoint: n.type !== 'gate',
         setNodeStart: e => this.setNodeDate(n.id, 'start', e && e.target ? e.target.value : ''), setNodeEnd: e => this.setNodeDate(n.id, 'end', e && e.target ? e.target.value : '') });

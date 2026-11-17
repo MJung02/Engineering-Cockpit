@@ -18,6 +18,17 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 
 Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
 
+## Neu nach der sechsten Testrunde (17.11.2026)
+
+- **Abhängigkeiten im Gantt:** Im Detail jedes Elements legst du unter „Abhängigkeiten · beginnt nach“ mit „+ Vorgänger“ fest, was vorher fertig sein muss (Ende → Anfang). Im Gantt steht dann „↳ nach …“ unter dem Namen.
+  - Verschiebt sich ein Vorgänger nach hinten, rücken die Nachfolger automatisch mit. Die Meldung nennt, wer um wie viele Tage gerückt ist.
+  - Passt ein Nachfolger dadurch nicht mehr in seine Phase, meldet das Cockpit einen Konflikt.
+  - Kreise (A nach B nach A) lassen sich nicht anlegen.
+- **Kritischer Pfad:** Rot umrandete Balken liegen ohne Puffer auf der Kette zum spätesten Termin. Verzögern sie sich, verschiebt sich das Ende.
+- **Meilenstein von–bis auch in eigenen Projekten:** Im Reiter Planung gibt es beim Anlegen „Meilenstein (Termin)“ und „Meilenstein (von–bis)“.
+- **Quality Gates als ▣** jetzt auch in der Meilenstein-Zeitleiste und im Gantt der eigenen Projekte.
+- Die Reiter Risiken, Zeiten, Kapazität, Statusbericht, Change Requests und Verlauf sind ins Englische, Spanische, Polnische und Türkische übersetzt.
+
 ## Neu nach der fünften Testrunde (17.11.2026)
 
 - **Meilenstein als Termin oder Zeitraum:** Im Detail eines Meilensteins schaltest du unter „Art“ zwischen „◆ Termin (Stichtag)“ und „▬ Zeitraum (von–bis)“ um. Beim Anlegen gibt es „Meilenstein (Termin)“ und „Meilenstein (von–bis)“.
