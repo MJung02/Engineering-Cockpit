@@ -18,6 +18,17 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 
 Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
 
+## Neu nach der dritten Testrunde (17.11.2026)
+
+- **Vorgehensmodell wechseln wirkt:** Scrum stellt das Board auf Product Backlog, Sprint-Backlog, In Arbeit, Review, Done um und legt 4 Sprints an; V-Modell legt die Ebenen mit Gates an und schaltet Anforderungen und Testfälle ein; Wasserfall legt Phasen mit Gates an; Kanban stellt das Board um; Liste blendet die Planung aus. Vorhandene Phasen bleiben.
+- **Planung:** ⠿ ziehen ändert die Reihenfolge, auf eine Phase gezogen landet ein Meilenstein oder Gate darin. „+“ an jeder Phase bereitet das Anlegen vor, Enter legt an.
+- **Eigene Rollen** benennen und löschen (⚙ › Mitglieder, Rollen und Rechte).
+- **Etiketten** erklärt, eigene anlegen und löschen (⚙ › Etiketten).
+- **Team-Reiter** in jedem Projekt immer sichtbar; Bereiche ein-/ausblenden und ordnen (⚙ Ansicht anpassen). In den Beispielprojekten lassen sich die übrigen Reiter für sich ausblenden (⚙ Meine Reiter).
+- **Berichte:** Reiter per Ziehen ordnen, über ⚙ ausblenden.
+- **Vorlagen verwalten** im Assistenten: eigene löschen, mitgelieferte ausblenden.
+- **Handy (iPhone):** Kopfzeile in einer Zeile, Reiter wischbar, größere Schrift, kein Zoom in Eingabefeldern, Assistent als runder Knopf, Nachrichten im Posteingang als Vollbild, „Die nächsten 5 Arbeitstage“ untereinander mit „⇄ Verschieben“ und „⤓ Hierher“ statt Ziehen.
+
 ## Neu nach der zweiten Testrunde (17.11.2026)
 
 - **Handy:** Menü hinter ☰ (Hamburger), Inhalte rücken zusammen.
