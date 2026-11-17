@@ -18,6 +18,22 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 
 Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
 
+## Neu nach der vierten Testrunde (17.11.2026)
+
+- **Module mit eigener Funktion:** Jedes zugeschaltete Modul bekommt einen eigenen Reiter im Projekt.
+  - **Risiken:** Register mit Bewertung, Maßnahme, Verantwortlichem, Status und Risikomatrix (statt der Stacey-Matrix).
+  - **Zeiten:** Buchen auf Aufgaben, Summe je Person, Wochenzettel einreichen.
+  - **Kapazität:** Auslastung je Person für die nächsten 4 Wochen, Warnung bei Überplanung, Ausgleich mit einem Klick.
+  - **Statusbericht:** Ampeln aus den Daten, Texte vorbefüllt, Bericht senden.
+  - **Change Requests:** einreichen, genehmigen oder ablehnen; genehmigte Mehrkosten stehen als Nachtrag unter Finanzen.
+  - **Verlauf (Audit):** alle Änderungen im Projekt, filterbar, Export als CSV.
+- **Anforderungen und Testfälle** lassen sich nur im V-Modell einschalten.
+- **Stacey-Matrix:** im Assistenten „Neues Projekt“ sofort sichtbar und anklickbar. In bestehenden Projekten steht sie unter ⚙ › Vorgehensmodell.
+- **Finanzen:** zeigen Kostenstelle und Innenauftrag. Beides pflegst du unter ⚙ › Stammdaten.
+- **Team-Reiter:** neue Bereiche Auslastung, Abwesenheiten (mit Warnung bei fälligen Aufgaben) sowie Kontakte und Stakeholder. Über „⚙ Ansicht anpassen“ ziehst du Bereiche am ⠿, stellst halbe oder ganze Breite ein und blendest sie mit ✕ aus.
+- **„+ Neu“ außerhalb eines Projekts:** nur Aufgabe, Projekt und Projektantrag. Meilensteine, Gates und Phasen legst du im Projekt an.
+- **Handy:** Der Projektkopf ist kompakt, und das ⚙ steht neben dem Namen. Aufgabenlisten erscheinen als Karten. Der gewählte Reiter rutscht automatisch in Sicht. Der ✨-Knopf verdeckt nichts mehr. Die Teamplanung läuft nicht mehr über den Rand.
+
 ## Neu nach der dritten Testrunde (17.11.2026)
 
 - **Vorgehensmodell wechseln wirkt:** Scrum stellt das Board auf Product Backlog, Sprint-Backlog, In Arbeit, Review, Done um und legt 4 Sprints an; V-Modell legt die Ebenen mit Gates an und schaltet Anforderungen und Testfälle ein; Wasserfall legt Phasen mit Gates an; Kanban stellt das Board um; Liste blendet die Planung aus. Vorhandene Phasen bleiben.

@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 17.11.2026 09:40 */
+/* Engineering Cockpit – Entwurf, Stand 17.11.2026 10:33 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -327,6 +327,16 @@ const P_TPL = {
   wart: { fam: 'kanban', icon: '🔧', name: 'Wartungsplanung', desc: 'Board mit WIP-Limits und wiederkehrenden Aufgaben.', stufe: 1, model: 'Kanban mit WIP-Limits', phases: [], tasks: ['Wartungsplan anlegen', 'Ersatzteilliste prüfen'] } };
 const P_MODS = [['tasks', 'Aufgaben, Board, Liste, Kalender, Dateien', 1], ['plan', 'Meilensteine, Phasen, Zeitplan', 2], ['zeit', 'Zeiterfassung', 2], ['docs', 'Dokumente', 2], ['res', 'Ressourcen und Kapazität', 3], ['budget', 'Budget und Rechnungen', 3], ['risk', 'Risiken', 3], ['raci', 'RACI / AKV', 3], ['status', 'Statusbericht', 3], ['req', 'Anforderungen mit Verfolgbarkeit', 4], ['cr', 'Change Requests', 4], ['test', 'Testfälle', 4], ['audit', 'Audit-Ansicht', 4]];
 const STUFEN = [[1, 'Liste', 'Aufgaben und Board. Sonst nichts.'], [2, 'Projekt', '+ Meilensteine, Zeitplan, Zeiten, Dokumente'], [3, 'Gesteuertes Projekt', '+ Kapazität, Budget, Risiken, RACI, Statusbericht'], [4, 'Reguliert / komplex', '+ Anforderungen, Change Requests, Testfälle, Audit']];
+const RISK_SEED = { sm42: [['Lieferverzug Servoantriebe', 4, 4, 'Zweitlieferant anfragen, Liefertermin wöchentlich prüfen', 'Du'], ['Abnahme Schutztür durch Sicherheitsfachkraft verzögert sich', 2, 5, 'Termin früh blocken, Unterlagen vorab senden', 'T. Brandt'], ['Inbetriebnehmer in KW 50 nicht verfügbar', 3, 3, 'Vertretung einplanen', 'S. Keller']],
+  rl2: [['Altsteuerung nicht dokumentiert', 4, 3, 'Programm vorab auslesen und sichern', 'T. Brandt'], ['Stillstandsfenster zu kurz für Umbau', 3, 5, 'Umbau in zwei Wochenenden teilen', 'Du']],
+  pd: [['Messunsicherheit über Toleranz', 3, 4, 'Vorversuch mit Referenzaufnehmer', 'N. Becker'], ['Kalibrierlabor ausgebucht', 2, 3, 'Termin jetzt reservieren', 'E. Lang']],
+  ih: [['Ersatzteil Presse 3 nicht am Lager', 3, 4, 'Mindestbestand anlegen', 'R. Fischer']] };
+const CRX_SEED = { rl2: [{ id: 'CR-01', t: 'Zusätzlicher Lichtvorhang an Station 4', art: 'Umfang', cost: 6800, days: 5, why: 'Forderung aus Gefährdungsbeurteilung', st: 'eingereicht', by: 'T. Brandt', d: '10.11.' }],
+  pd: [{ id: 'CR-01', t: 'Messbereich auf 500 Nm erweitern', art: 'Umfang', cost: 12400, days: 10, why: 'Kundenwunsch nach Spezifikationsreview', st: 'genehmigt', by: 'N. Becker', d: '04.11.' }] };
+const ABW_SEED = { sm42: [{ n: 'S. Keller', von: '2026-11-23', bis: '2026-11-27', art: 'Urlaub' }, { n: 'T. Brandt', von: '2026-12-02', bis: '2026-12-02', art: 'Schulung' }], rl2: [{ n: 'M. Yilmaz', von: '2026-11-16', bis: '2026-11-18', art: 'Dienstreise' }] };
+const KT_SEED = { sm42: [{ n: 'Fr. Hartmann', f: 'Kunde, Werkleitung', e: 'hoch', c: 'Abnahme und Termine' }, { n: 'Hr. Ott', f: 'Lieferant Servoantriebe', e: 'mittel', c: 'Liefertermine' }, { n: 'Sicherheitsfachkraft', f: 'intern, Arbeitssicherheit', e: 'hoch', c: 'Abnahme Schutztür' }],
+  rl2: [{ n: 'Hr. Kurz', f: 'Schichtleitung Linie 2', e: 'hoch', c: 'Stillstandsfenster' }], pd: [{ n: 'Dr. Weiß', f: 'Kunde, Entwicklung', e: 'hoch', c: 'Spezifikation' }] };
+const KST0 = { sm42: '4711-SM', rl2: '4712-RL', pd: '4713-PD', ih: '4720-IH' }, IA0 = { sm42: 'IA-26-0412', pd: 'IA-26-0388' };
 const PSET0 = { sm42: { stufe: 3, mods: {} }, rl2: { stufe: 2, mods: { res: true } }, pd: { stufe: 4, mods: {} }, ih: { stufe: 1, mods: { plan: true, docs: true, zeit: true } } };
 const PCOLORS = ['#0F6CBD', '#0E7A6E', '#5B2D90', '#A33F06', '#C50F1F', '#107C10', '#8A3707', '#3B3A39'];
 const KO0 = { status: 'offen', pl: 'M. Yilmaz', due: '2027-01-15', date: '2027-01-12', time: '10:00', dur: 2, place: 'Besprechungsraum 2', ppl: ['M. Yilmaz', 'H. Lorenz', 'S. Keller', 'E. Lang'], agenda: {},
@@ -657,13 +667,133 @@ class Component extends DCLogic {
   }
   tabSeen(pk, role, k) { if (k === 'uebersicht' || k === 'aufgaben' || k === 'team' || role === 'Owner') return true; const rv = ((this.state.pTabRole || {})[pk] || {})[role]; if (rv && rv[k] !== undefined) return rv[k];
     return role === 'Bearbeiter' ? true : ({ Mitwirkender: ['dokumente'], Leser: [], Gast: [] }[role] || []).includes(k); }
+  risksOf(pk) { const s = this.state; if ((s.riskBy || {})[pk]) return s.riskBy[pk]; const U = (s.uprojs || []).find(u => u.key === pk);
+    return U ? (U.risks || []).map((r, i) => ({ id: 'r' + i, t: r.t, w: r.w, a: r.a, m: r.m || '', o: r.o || 'Du', st: 'offen' })) : (RISK_SEED[pk] || []).map((r, i) => ({ id: 'r' + i, t: r[0], w: r[1], a: r[2], m: r[3], o: r[4], st: 'offen' })); }
+  kstOf(pk) { const s = this.state, ps = (s.psetBy || {})[pk] || {}, U = (s.uprojs || []).find(u => u.key === pk); return ps.kst !== undefined ? ps.kst : ((U && U.kst) || KST0[pk] || ''); }
+  iaOf(pk) { const s = this.state, ps = (s.psetBy || {})[pk] || {}, U = (s.uprojs || []).find(u => u.key === pk); return ps.ia !== undefined ? ps.ia : ((U && U.ia) || IA0[pk] || ''); }
+  modX(pk, tab, t, accent, on) { const s = this.state, U = (s.uprojs || []).find(u => u.key === pk), name = this.pnm(pk), RED = '#C50F1F', GRN = '#107C10', AMB = '#B07B00';
+    if (!pk || !name) return { is: {}, msg: '', hasMsg: false };
+    const tasks = TASKS.filter(x => x.proj === name), open = tasks.filter(x => !this.isDone(x)), mem = (PMEMBERS[pk] || []).filter(m => m[0] !== 'Kunde' && !m[4]).map(m => m[0]);
+    const pad = v => String(v).padStart(2, '0'), now = () => { const d = new Date(); return '13.11. ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+    const save = (patch, msg, log) => { const p = Object.assign({}, patch, { mxMsg: msg || '' }); if (log) p.audBy = Object.assign({}, this.state.audBy, { [pk]: (((this.state.audBy || {})[pk]) || []).concat([[now(), 'Du'].concat(log)]) }); this.setState(p); };
+    const chip = (sel, label, go) => ({ label, pressed: sel ? 'true' : 'false', ring: sel ? accent : t.border, bg: sel ? t.soft : t.surface, go });
+    const fE = v => Math.round(v).toLocaleString('de-DE') + ' €', hF = v => (Math.round(v * 100) / 100).toLocaleString('de-DE') + ' h', fd = iso => (iso ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' : '–');
+    const F = s.mxF || {}, setF = k => e => this.setState({ mxF: Object.assign({}, this.state.mxF, { [k]: e && e.target ? e.target.value : '' }) }), setFv = (k, v) => this.setState({ mxF: Object.assign({}, this.state.mxF, { [k]: v }) });
+    const sponsor = PL_OF[pk] === 'Du' || !PL_OF[pk] ? 'die Bereichsleitung' : PL_OF[pk];
+    const est = x => EST[x.id] || x.est || 1, ini2 = n => n.split(/[ .]+/).filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    // Risiken
+    const R = this.risksOf(pk), sc = r => r.w * r.a, rc = v => (v >= 12 ? RED : (v >= 6 ? AMB : GRN));
+    const setR = (l, msg, log) => save({ riskBy: Object.assign({}, this.state.riskBy, { [pk]: l }) }, msg, log);
+    const risk = { items: R.slice().sort((a, b) => ((a.st === 'geschlossen') - (b.st === 'geschlossen')) || (sc(b) - sc(a))).map(r => ({ title: r.t, score: String(sc(r)), bg: r.st === 'geschlossen' ? '#8A8886' : rc(sc(r)), strike: r.st === 'geschlossen' ? 'line-through' : 'none',
+        sub: 'Wahrscheinlichkeit ' + r.w + ' × Auswirkung ' + r.a + ' · verantwortlich ' + r.o + ' · ' + r.st, m: r.m ? 'Maßnahme: ' + r.m : 'Noch keine Maßnahme', mCol: r.m ? t.text : RED,
+        stLabel: r.st === 'geschlossen' ? 'Wieder öffnen' : (r.st === 'offen' ? '▶ In Bearbeitung' : '✓ Schließen'),
+        step: () => { const nx = r.st === 'geschlossen' ? 'offen' : (r.st === 'offen' ? 'in Bearbeitung' : 'geschlossen'); setR(R.map(x => (x.id === r.id ? Object.assign({}, x, { st: nx }) : x)), 'Risiko „' + r.t + '“: ' + nx + '.', ['Risiko „' + r.t + '“', 'Status', r.st, nx]); },
+        del: () => setR(R.filter(x => x.id !== r.id), 'Risiko gelöscht.', ['Risiko „' + r.t + '“', 'gelöscht', 'W' + r.w + '×A' + r.a, '']) })),
+      empty: !R.length, count: R.filter(r => r.st !== 'geschlossen').length + ' offen · ' + R.filter(r => r.st !== 'geschlossen' && sc(r) >= 12).length + ' hoch', grid: [],
+      text: F.rt || '', setText: setF('rt'), m: F.rm || '', setM: setF('rm'),
+      ws: [1, 2, 3, 4, 5].map(v => chip((F.rw || 3) === v, String(v), () => setFv('rw', v))), as: [1, 2, 3, 4, 5].map(v => chip((F.ra || 3) === v, String(v), () => setFv('ra', v))),
+      owners: mem.slice(0, 8).map(n => chip((F.ro || 'Du') === n, n, () => setFv('ro', n))),
+      add: () => { const F2 = this.state.mxF || {}, tt = (F2.rt || '').trim(); if (!tt) return this.setState({ mxMsg: 'Erst beschreiben, was schiefgehen kann.' });
+        const r = { id: 'r' + Date.now(), t: tt, w: F2.rw || 3, a: F2.ra || 3, m: (F2.rm || '').trim(), o: F2.ro || 'Du', st: 'offen' };
+        save({ riskBy: Object.assign({}, this.state.riskBy, { [pk]: R.concat([r]) }), mxF: Object.assign({}, F2, { rt: '', rm: '' }) }, 'Risiko erfasst, Bewertung ' + (r.w * r.a) + (r.w * r.a >= 12 ? ' (hoch). Bitte eine Maßnahme festlegen.' : '.'), ['Risiko „' + r.t + '“', 'angelegt', '', 'W' + r.w + '×A' + r.a]); } };
+    for (let a = 5; a >= 1; a--) for (let w = 1; w <= 5; w++) { const n = R.filter(r => r.st !== 'geschlossen' && r.w === w && r.a === a).length; risk.grid.push({ n: n ? String(n) : '', bg: rc(w * a), op: n ? '1' : '0.22', aria: 'Wahrscheinlichkeit ' + w + ', Auswirkung ' + a + ': ' + n + ' Risiken' }); }
+    // Zeiten
+    const tk = x => 't:' + x.id, timesOf = x => (((AKTE_SEED[tk(x)] || {}).times) || []).concat((((s.akte || {})[tk(x)] || {}).times) || []);
+    const TL = []; tasks.forEach(x => timesOf(x).forEach(r => TL.push({ x, d: r[0], who: r[1], h: r[2], note: r[3] || '' })));
+    const hSum = TL.reduce((a, r) => a + r.h, 0), byP = {}; TL.forEach(r => { byP[r.who] = (byP[r.who] || 0) + r.h; }); const mxP = Math.max(1, ...Object.values(byP).concat([0]));
+    const selT = tasks.find(x => x.id === F.zt) || open[0], wz = ((s.wzBy || {})[pk]) || '';
+    const zeit = { sum: hF(hSum), count: TL.length + (TL.length === 1 ? ' Buchung' : ' Buchungen'), people: Object.keys(byP).sort((a, b) => byP[b] - byP[a]).map(n => ({ name: n, h: hF(byP[n]), w: Math.round(byP[n] / mxP * 100) + '%' })),
+      rows: TL.slice().reverse().slice(0, 15).map(r => ({ d: r.d, who: r.who, task: r.x.title, h: hF(r.h), note: r.note, sub: r.who + (r.note ? ' · ' + r.note : ''), open: () => this.openTask(r.x.id, U ? 'pn' : 'projekt') })), empty: !TL.length,
+      tasks: open.slice(0, 8).map(x => chip(!!selT && selT.id === x.id, x.title.length > 34 ? x.title.slice(0, 32) + '…' : x.title, () => setFv('zt', x.id))), noTasks: !open.length,
+      hs: [0.5, 1, 2, 4, 8].map(v => chip((F.zh || 1) === v, v.toLocaleString('de-DE') + ' h', () => setFv('zh', v))), note: F.zn || '', setNote: setF('zn'),
+      book: () => { const F2 = this.state.mxF || {}, x = tasks.find(y => y.id === F2.zt) || open[0]; if (!x) return this.setState({ mxMsg: 'Keine offene Aufgabe zum Buchen.' });
+        const h = F2.zh || 1, k = tk(x), cur = Object.assign({ doku: [], files: [], times: [], inv: [] }, (this.state.akte || {})[k] || {}); cur.times = cur.times.concat([['13.11.', 'Du', h, (F2.zn || '').trim()]]);
+        save({ akte: Object.assign({}, this.state.akte, { [k]: cur }), mxF: Object.assign({}, F2, { zn: '' }) }, hF(h) + ' auf „' + x.title + '“ gebucht. Steht auch an der Aufgabe unter Zeiten.', ['Zeit „' + x.title + '“', 'gebucht', '', hF(h)]); },
+      wz: wz ? 'Wochenzettel KW 46: ' + wz : 'Wochenzettel KW 46: noch nicht eingereicht', wzLabel: wz ? 'Zurückziehen' : 'Wochenzettel einreichen',
+      wzGo: () => save({ wzBy: Object.assign({}, this.state.wzBy, { [pk]: wz ? '' : 'eingereicht, wartet auf Freigabe durch ' + sponsor }) }, wz ? 'Wochenzettel zurückgezogen.' : 'Wochenzettel eingereicht. Die Freigabe landet im Posteingang von ' + sponsor + '.', ['Wochenzettel KW 46', 'Status', wz ? 'eingereicht' : 'offen', wz ? 'zurückgezogen' : 'eingereicht']) };
+    // Kapazität
+    const PCT = n => { const m = (PMEMBERS[pk] || []).find(x => x[0] === n), p = m && m[3] ? parseInt(m[3], 10) : NaN; return isNaN(p) ? 20 : p; };
+    const RR = mem.map(n => { const my = open.filter(x => this.ownerOf(x) === n), hrs = my.filter(x => !x.due || x.due <= '2026-12-11').reduce((a, x) => a + est(x), 0), cap = 40 * PCT(n) / 100 * 4, load = cap ? Math.round(hrs / cap * 100) : 0; return { n, my, hrs, cap, load, tot: LOAD47[n] || 70 }; });
+    const ov = RR.filter(r => r.load > 100 && r.my.length).sort((a, b) => b.load - a.load)[0], lo = RR.slice().sort((a, b) => a.load - b.load)[0], big = ov ? ov.my.slice().sort((a, b) => est(b) - est(a))[0] : null;
+    const res = { rows: RR.map(r => ({ name: r.n, ini: ini2(r.n), av: AV[r.n] || accent, pct: PCT(r.n) + ' % im Projekt', hrs: hF(r.hrs) + ' geplant von ' + hF(r.cap) + ' verfügbar', w: Math.min(100, r.load) + '%', col: r.load > 100 ? RED : (r.load > 85 ? AMB : GRN), load: r.load + ' %',
+        tot: 'über alle Projekte ' + r.tot + ' %', totCol: r.tot > 95 ? RED : t.muted, n: r.my.length + ' offene Aufgaben' })),
+      empty: !RR.length, hasOver: !!ov, ok: !ov, overText: ov ? ov.n + ' ist in den nächsten 4 Wochen mit ' + ov.load + ' % überplant.' + (big && lo && lo.n !== ov.n ? ' Vorschlag: „' + big.title + '“ (' + hF(est(big)) + ') an ' + lo.n + ' (' + lo.load + ' %) geben.' : '') : 'Niemand ist in den nächsten 4 Wochen überplant.',
+      canBal: !!(ov && big && lo && lo.n !== ov.n), balance: () => { if (!(ov && big && lo)) return; save({ ownerOv: Object.assign({}, this.state.ownerOv, { [big.id]: lo.n }) }, '„' + big.title + '“ liegt jetzt bei ' + lo.n + '. ' + lo.n + ' bekommt eine Benachrichtigung.', ['Aufgabe „' + big.title + '“', 'Verantwortlich', ov.n, lo.n]); },
+      hint: 'Grundlage: Projektanteil (Team › ✎) × 40 h pro Woche, Schätzungen der offenen Aufgaben mit Fälligkeit bis 11.12. Die Gesamtauslastung kommt aus allen Projekten und Linienaufgaben.' };
+    // Change Requests
+    const C = ((s.crBy || {})[pk]) || CRX_SEED[pk] || [], setC = (l, msg, log, extra) => save(Object.assign({ crBy: Object.assign({}, this.state.crBy, { [pk]: l }) }, extra || {}), msg, log);
+    const setSt = (c, st) => setC(C.map(x => (x.id === c.id ? Object.assign({}, x, { st }) : x)), c.id + ' ' + st + '.' + (st === 'genehmigt' && c.cost ? ' ' + fE(c.cost) + ' stehen jetzt als Nachtrag unter Finanzen.' : '') + (st === 'genehmigt' && c.days ? ' Plan um ' + c.days + ' Tage anpassen: Reiter Planung.' : ''), [c.id + ' „' + c.t + '“', 'Status', c.st, st]);
+    const cr = { items: C.slice().reverse().map(c => ({ id: c.id, title: c.t, sub: c.art + ' · ' + (c.cost ? '+' + fE(c.cost) : 'ohne Mehrkosten') + (c.days ? ' · +' + c.days + ' Tage' : '') + ' · von ' + c.by + ', ' + c.d, why: c.why, hasWhy: !!c.why,
+        st: c.st, stBg: c.st === 'genehmigt' ? GRN : (c.st === 'abgelehnt' ? RED : AMB), pending: c.st === 'eingereicht', ok: () => setSt(c, 'genehmigt'), no: () => setSt(c, 'abgelehnt') })),
+      empty: !C.length, count: C.filter(c => c.st === 'eingereicht').length + ' offen · ' + C.filter(c => c.st === 'genehmigt').length + ' genehmigt', who: 'Freigabe durch ' + sponsor + ' (Owner oder Auftraggeber).',
+      t: F.ct || '', setT: setF('ct'), why: F.cw || '', setWhy: setF('cw'), cost: F.cc || '', setCost: setF('cc'), days: F.cd || '', setDays: setF('cd'),
+      arts: ['Umfang', 'Termin', 'Kosten', 'Qualität'].map(k => chip((F.ca || 'Umfang') === k, k, () => setFv('ca', k))), open: !!s.crNew, toggle: () => this.setState({ crNew: !s.crNew }), btn: s.crNew ? 'Abbrechen' : '+ Change Request',
+      add: () => { const F2 = this.state.mxF || {}; if (!(F2.ct || '').trim()) return this.setState({ mxMsg: 'Kurz beschreiben, was sich ändern soll.' });
+        const c = { id: 'CR-' + pad(C.length + 1), t: F2.ct.trim(), art: F2.ca || 'Umfang', cost: parseFloat(String(F2.cc || '0').replace(/\./g, '').replace(',', '.')) || 0, days: parseInt(F2.cd || '0', 10) || 0, why: (F2.cw || '').trim(), st: 'eingereicht', by: 'Du', d: '13.11.' };
+        setC(C.concat([c]), c.id + ' eingereicht. Die Freigabe liegt jetzt bei ' + sponsor + '.', [c.id + ' „' + c.t + '“', 'eingereicht', '', c.art], { mxF: Object.assign({}, F2, { ct: '', cw: '', cc: '', cd: '' }), crNew: false }); },
+      sm42: pk === 'sm42', openOld: () => this.setState({ panel: { kind: 'crs', id: 'crs', from: 'planung' } }) };
+    // Statusbericht
+    const SB = Object.assign({ amp: null, erreicht: null, naechst: null, entsch: null, sent: [] }, ((s.sbBy || {})[pk]) || {}), setSB = p => this.setState({ sbBy: Object.assign({}, this.state.sbBy, { [pk]: Object.assign({}, SB, p) }) });
+    const FB = pk === 'sm42' ? [['', 480000], ['', 212400]] : (typeof PFIN !== 'undefined' && PFIN[pk] ? PFIN[pk].B : null);
+    const budget = U ? (U.budget || 0) : (FB ? FB[0][1] : 0), cost = U ? (U.costs || []).reduce((a, c) => a + c[1], 0) : (FB ? FB[1][1] : 0);
+    const ovd = open.filter(x => x.due && x.due < '2026-11-13').length, hiR = R.filter(r => r.st !== 'geschlossen' && sc(r) >= 12).length, AC = { 'grün': GRN, gelb: AMB, rot: RED };
+    const autoA = ovd > 2 || hiR > 1 || (budget && cost > budget) ? 'rot' : (ovd || hiR ? 'gelb' : 'grün'), amp = SB.amp || autoA;
+    const dDone = tasks.filter(x => this.isDone(x)).slice(-4).map(x => '• ' + x.title).join('\n') || '• noch nichts abgeschlossen';
+    const dNext = open.slice().sort((a, b) => (a.due < b.due ? -1 : 1)).slice(0, 3).map(x => '• ' + x.title + ' (bis ' + fd(x.due) + ')').join('\n') || '• –';
+    const dEnt = C.filter(c => c.st === 'eingereicht').map(c => '• ' + c.id + ' „' + c.t + '“ freigeben').concat(R.filter(r => r.st !== 'geschlossen' && sc(r) >= 12 && !r.m).map(r => '• Maßnahme für Risiko „' + r.t + '“ festlegen')).join('\n') || '• keiner';
+    const status = { lights: [['Termine', ovd ? ovd + ' Aufgaben überfällig' : 'im Plan', ovd > 2 ? RED : (ovd ? AMB : GRN)], ['Kosten', budget ? Math.round(cost / budget * 100) + ' % vom Budget verbraucht' : 'kein Budget hinterlegt', budget && cost > budget ? RED : (budget ? GRN : t.strong)], ['Risiken', hiR ? hiR + ' hoch bewertet' : 'keine hohen Risiken', hiR > 1 ? RED : (hiR ? AMB : GRN)]].map(([l, v, c]) => ({ l, v, c })),
+      amps: ['grün', 'gelb', 'rot'].map(a => ({ label: a, pressed: amp === a ? 'true' : 'false', ring: amp === a ? AC[a] : t.border, bg: amp === a ? AC[a] : t.surface, fg: amp === a ? '#FFFFFF' : t.text, go: () => setSB({ amp: a }) })),
+      ampNote: SB.amp ? 'Gesamtampel von dir gesetzt (Vorschlag aus den Daten: ' + autoA + ').' : 'Gesamtampel automatisch aus Terminen, Kosten und Risiken: ' + autoA + '. Du kannst sie überschreiben.', ampCol: AC[amp],
+      erreicht: SB.erreicht !== null ? SB.erreicht : dDone, naechst: SB.naechst !== null ? SB.naechst : dNext, entsch: SB.entsch !== null ? SB.entsch : dEnt,
+      setE: e => setSB({ erreicht: e && e.target ? e.target.value : '' }), setN: e => setSB({ naechst: e && e.target ? e.target.value : '' }), setD: e => setSB({ entsch: e && e.target ? e.target.value : '' }),
+      reset: () => setSB({ amp: null, erreicht: null, naechst: null, entsch: null }), to: 'Geht an ' + sponsor + ' und erscheint im Portfolio unter Berichte › Statusbericht.',
+      send: () => save({ sbBy: Object.assign({}, this.state.sbBy, { [pk]: Object.assign({}, SB, { sent: SB.sent.concat([{ d: '13.11.2026', amp }]) }) }) }, 'Statusbericht (Ampel ' + amp + ') an ' + sponsor + ' gesendet.', ['Statusbericht', 'gesendet', '', 'Ampel ' + amp]),
+      pdf: () => this.setState({ mxMsg: 'Der Bericht würde jetzt als PDF erzeugt, mit Logo, Ampeln und den drei Textfeldern.' }),
+      hist: SB.sent.slice().reverse().map(x => ({ text: x.d + ' · Ampel ' + x.amp + ' · von dir gesendet', c: AC[x.amp] })), noHist: !SB.sent.length };
+    // Audit
+    const flatN = []; const walk = l => (l || []).forEach(n => { flatN.push(n); walk(n.children); }); walk(PTREE_OF[pk]);
+    const AU = [], H = s.hist || {}; tasks.forEach(x => (H['t:' + x.id] || HIST_SEED['t:' + x.id] || []).forEach(h => AU.push({ when: h[0], who: h[1], obj: 'Aufgabe „' + x.title + '“', typ: 'Aufgaben', field: h[2], a: h[3], b: h[4] })));
+    flatN.forEach(n => (H['n:' + n.id] || HIST_SEED['n:' + n.id] || []).forEach(h => AU.push({ when: h[0], who: h[1], obj: (n.kindLabel || 'Phase') + ' „' + n.name + '“', typ: 'Planung', field: h[2], a: h[3], b: h[4] })));
+    (((s.audBy || {})[pk]) || []).forEach(h => AU.push({ when: h[0], who: h[1], obj: h[2], typ: /^Risiko/.test(h[2]) ? 'Risiken' : (/^CR-/.test(h[2]) ? 'Change Requests' : (/^Zeit|^Wochenzettel/.test(h[2]) ? 'Zeiten' : 'Sonstiges')), field: h[3], a: h[4], b: h[5] }));
+    const wk = w => { const m = /(\d\d)\.(\d\d)\.\s*(\d\d:\d\d)?/.exec(w || '') || []; return (m[2] || '00') + (m[1] || '00') + (m[3] || '00:00'); };
+    AU.sort((a, b) => (wk(a.when) < wk(b.when) ? 1 : -1)); const af = s.audF || 'Alle', typs = ['Alle'].concat(['Aufgaben', 'Planung', 'Risiken', 'Change Requests', 'Zeiten', 'Sonstiges'].filter(x => AU.some(r => r.typ === x)));
+    const AUf = AU.filter(r => af === 'Alle' || r.typ === af);
+    const audit = { rows: AUf.slice(0, 50).map(r => ({ when: r.when, who: r.who, ini: ini2(r.who), av: AV[r.who] || '#5C5C5C', obj: r.obj, field: r.field, a: r.a || '–', b: r.b || '–' })), empty: !AUf.length, count: AU.length + ' Einträge, unveränderbar gespeichert',
+      filters: typs.map(x => chip(af === x, x, () => this.setState({ audF: x }))),
+      csv: () => { try { const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', csv = '\ufeffZeitpunkt;Person;Objekt;Feld;Alt;Neu\n' + AU.map(r => [r.when, r.who, r.obj, r.field, r.a, r.b].map(q).join(';')).join('\n');
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'Verlauf_' + name.replace(/\W+/g, '_') + '.csv'; document.body.appendChild(a); a.click(); a.remove(); this.setState({ mxMsg: 'Verlauf als CSV heruntergeladen (' + AU.length + ' Einträge).' }); } catch (e) { this.setState({ mxMsg: 'Download im Browser nicht möglich.' }); } } };
+    // Finanzen: Kostenstelle, Innenauftrag, Nachträge
+    const kst = this.kstOf(pk), ia = this.iaOf(pk), apC = C.filter(c => c.st === 'genehmigt' && c.cost);
+    const fin = { kst: kst || 'nicht hinterlegt', ia: ia || 'nicht hinterlegt', kstCol: kst ? t.text : t.muted, iaCol: ia ? t.text : t.muted, edit: () => this.setState({ panel: { kind: 'settings', id: 'settings', from: U ? 'pn' : 'projekt' }, setSub: 'stamm', setMsg: '' }),
+      nach: apC.map(c => ({ text: c.id + ' ' + c.t, amt: '+' + fE(c.cost) })), hasNach: apC.length > 0, nachSum: 'Nachträge gesamt +' + fE(apC.reduce((a, c) => a + c.cost, 0)) };
+    // Team: Abwesenheiten, Kontakte
+    const AB = ((s.abwBy || {})[pk]) || ABW_SEED[pk] || [], setAB = (l, msg, log) => save({ abwBy: Object.assign({}, this.state.abwBy, { [pk]: l }) }, msg, log);
+    const KT = ((s.ktBy || {})[pk]) || KT_SEED[pk] || [], setKT = (l, msg, log, extra) => save(Object.assign({ ktBy: Object.assign({}, this.state.ktBy, { [pk]: l }) }, extra || {}), msg, log);
+    const EC = { hoch: RED, mittel: AMB, niedrig: GRN };
+    const team = { abw: AB.map((a, i) => { const hit = open.filter(x => this.ownerOf(x) === a.n && x.due >= a.von && x.due <= a.bis); return { name: a.n, ini: ini2(a.n), av: AV[a.n] || accent, text: a.art + ' · ' + fd(a.von) + (a.bis !== a.von ? ' – ' + fd(a.bis) : ''), warn: hit.length ? '⚠ ' + hit.length + ' Aufgabe' + (hit.length > 1 ? 'n' : '') + ' fällig in dieser Zeit: ' + hit.map(x => x.title).join(', ') : '', hasWarn: hit.length > 0,
+        del: () => setAB(AB.filter((x, k) => k !== i), 'Abwesenheit gelöscht.', ['Abwesenheit ' + a.n, 'gelöscht', a.art, '']) }; }), abwEmpty: !AB.length,
+      abwWho: mem.slice(0, 8).map(n => chip((F.an || mem[0]) === n, n, () => setFv('an', n))), abwArt: ['Urlaub', 'Krank', 'Schulung', 'Dienstreise'].map(k => chip((F.aa || 'Urlaub') === k, k, () => setFv('aa', k))),
+      abwVon: F.av || '2026-11-23', abwBis: F.ab || '2026-11-27', setVon: setF('av'), setBis: setF('ab'),
+      abwAdd: () => { const F2 = this.state.mxF || {}, a = { n: F2.an || mem[0], von: F2.av || '2026-11-23', bis: F2.ab || F2.av || '2026-11-27', art: F2.aa || 'Urlaub' }; if (!a.n) return; if (a.bis < a.von) a.bis = a.von; setAB(AB.concat([a]), a.art + ' für ' + a.n + ' eingetragen.', ['Abwesenheit ' + a.n, a.art, '', fd(a.von) + '–' + fd(a.bis)]); },
+      kt: KT.map((k, i) => ({ name: k.n, f: k.f, e: 'Einfluss ' + k.e, eCol: EC[k.e] || t.strong, c: k.c ? 'Thema: ' + k.c : '', hasC: !!k.c, del: () => setKT(KT.filter((x, j) => j !== i), 'Kontakt entfernt.', ['Kontakt ' + k.n, 'entfernt', '', '']) })), ktEmpty: !KT.length,
+      ktN: F.kn || '', setKtN: setF('kn'), ktF: F.kf || '', setKtF: setF('kf'), ktC: F.kc || '', setKtC: setF('kc'), ktE: ['hoch', 'mittel', 'niedrig'].map(k => chip((F.ke || 'mittel') === k, k, () => setFv('ke', k))),
+      ktAdd: () => { const F2 = this.state.mxF || {}; if (!(F2.kn || '').trim()) return this.setState({ mxMsg: 'Name des Kontakts fehlt.' }); const k = { n: F2.kn.trim(), f: (F2.kf || '').trim(), e: F2.ke || 'mittel', c: (F2.kc || '').trim() };
+        setKT(KT.concat([k]), 'Kontakt „' + k.n + '“ hinzugefügt.', ['Kontakt ' + k.n, 'hinzugefügt', '', k.f], { mxF: Object.assign({}, F2, { kn: '', kf: '', kc: '' }) }); } };
+    const is = { risk: tab === 'risk', zeit: tab === 'zeit', res: tab === 'res', status: tab === 'status', cr: tab === 'cr', audit: tab === 'audit' };
+    return { is, risk, zeit, res, cr, status, audit, fin, team, resOn: !!(on && on('res')), msg: s.mxMsg || '', hasMsg: !!s.mxMsg }; }
   labelsOf(pk) { const del = ((this.state.lblDel || {})[pk]) || {}; return LABELS.concat(((this.state.lblX || {})[pk]) || []).filter(l => !del[l[0]]); }
   layOf(key, def) { const L = (this.state.lay || {})[key] || {}; const order = (L.order || []).filter(k => def.includes(k)).concat(def.filter(k => !(L.order || []).includes(k))); return { order, hide: L.hide || {} }; }
   layUI(key, def, names, fixed, t, accent) { const L = this.layOf(key, def), set = patch => this.setState({ lay: Object.assign({}, this.state.lay, { [key]: Object.assign({}, L, patch) }) });
     const out = { open: this.state.layOpen === key, toggle: () => this.setState({ layOpen: this.state.layOpen === key ? null : key }) };
     out.items = L.order.map((k, i) => { const on = !L.hide[k]; return { label: names[k], pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, mark: fixed.includes(k) ? '' : (on ? '✓ ' : '+ '),
       go: () => (fixed.includes(k) ? null : set({ hide: Object.assign({}, L.hide, { [k]: on }) })), up: () => { if (!i) return; const o = L.order.slice(); [o[i - 1], o[i]] = [o[i], o[i - 1]]; set({ order: o }); }, down: () => { if (i === L.order.length - 1) return; const o = L.order.slice(); [o[i + 1], o[i]] = [o[i], o[i + 1]]; set({ order: o }); } }; });
-    def.forEach(k => { out[k] = { show: !L.hide[k] || fixed.includes(k), order: String(L.order.indexOf(k) + 1) }; }); return out; }
+    const W = (((this.state.lay || {})[key] || {}).w) || {}, dk = k => 'lay|' + key + '|' + k;
+    def.forEach(k => { const half = W[k] === 'half', hot = this.state.dragOver === dk(k);
+      out[k] = { show: !L.hide[k] || fixed.includes(k), order: String(L.order.indexOf(k) + 1), col: half ? 'span 1' : '1 / -1', ol: hot ? '2px dashed ' + accent : 'none', canHide: !fixed.includes(k),
+        wLabel: half ? '▭ ganze Breite' : '◧ halbe Breite', wide: () => set({ w: Object.assign({}, W, { [k]: half ? 'full' : 'half' }) }), hide: () => set({ hide: Object.assign({}, L.hide, { [k]: true }) }),
+        drag: this.dragStart(dk(k)), dragEnd: this.dragEnd(), over: this.dragOver(dk(k)),
+        drop: this.dropOn(dk(k), id => { const p = String(id).split('|'); if (p[0] !== 'lay' || p[1] !== key || p[2] === k) return; const o = L.order.filter(x => x !== p[2]); o.splice(o.indexOf(k), 0, p[2]); set({ order: o }); }) }; });
+    out.hint = 'Bereiche am ⠿ ziehen, Breite umschalten oder mit ✕ ausblenden.'; return out; }
   nodeMove(u, fromId, toId) { if (!fromId || fromId === toId) return; const n = NODE[fromId], tg = NODE[toId]; if (!n || !tg) return;
     const listOf = id => (PARENT[id] ? (NODE[PARENT[id]].children = NODE[PARENT[id]].children || []) : u.tree);
     if (n.type === 'phase' && tg.type !== 'phase') return this.setState({ pnMsg: 'Phasen lassen sich nur vor eine andere Phase ziehen.' });
@@ -717,12 +847,13 @@ class Component extends DCLogic {
     const text = greet + '\n\n' + (tone === 'frist' ? (parts[0] ? parts.join('\n\n') : '') : parts.join('\n\n')).replace(/^vielen/, 'vielen').replace(/^ich/, 'ich') + '\n\n' + close + '\n' + (ctx.sig || 'Dein Name');
     return { subject, text: (text.charAt(0).toUpperCase() + text.slice(1)) }; }
   pnm(pk) { return PNAME_OF[pk] || ((this.state.uprojs || []).find(u => u.key === pk) || {}).name || ''; }
-  modGroups(ps, toggle, t, accent, own) { const INFO = { tasks: ['Liste, Board, Kalender, Personen, Dateien an jeder Aufgabe', 'Reiter Aufgaben'], plan: ['Phasen, Meilensteine, Quality Gates, Arbeitspakete', 'Reiter Planung'], zeit: ['Zeiten an Aufgaben buchen, Wochenzettel', 'Aufgabe › Zeiten'], docs: ['Dokumente und Fotos am Projekt', 'Aufgabe › Dateien'],
-      res: ['Auslastung der Mitglieder, Projektanteile', 'Reiter Team'], budget: ['Budget, Kosten, Rechnungen, Nachträge', 'Reiter Finanzen'], risk: ['Risikoregister mit Wahrscheinlichkeit × Auswirkung', 'Reiter Analyse'], raci: ['Wer führt aus, verantwortet, wird gefragt, informiert; AKV mit Freigabegrenzen', 'Reiter Team › RACI und AKV'],
-      status: ['Statusbericht für Auftraggeber und Portfolio', 'Berichte'], req: ['Anforderungen mit Nachweis', own ? 'Reiter Anforderungen' : 'Planung › V-Modell'], cr: ['Änderungen an Umfang, Termin, Kosten mit Freigabe', 'Planung › Change Requests'], test: ['Testfälle zu Anforderungen, Nachweis je Anforderung', own ? 'Reiter Anforderungen' : 'Planung › Verfolgbarkeit'], audit: ['Prüfpfad aller Änderungen', 'Verlauf an jedem Objekt'] };
-    const isOn = k => { const m = P_MODS.find(x => x[0] === k); return ps.mods && ps.mods[k] !== undefined ? ps.mods[k] : (m ? m[2] <= ps.stufe : true); };
+  modGroups(ps, toggle, t, accent, own, isV) { const INFO = { tasks: ['Liste, Board, Kalender, Personen, Dateien an jeder Aufgabe', 'Reiter Aufgaben'], plan: ['Phasen, Meilensteine, Quality Gates, Arbeitspakete', 'Reiter Planung'], zeit: ['Zeiten an Aufgaben buchen, Wochenzettel', 'Reiter Zeiten'], docs: ['Dokumente und Fotos am Projekt', 'Aufgabe › Dateien'],
+      res: ['Auslastung je Person, Überlastung, Ausgleich', 'Reiter Kapazität'], budget: ['Budget, Kosten, Rechnungen, Nachträge', 'Reiter Finanzen'], risk: ['Risikoregister mit Wahrscheinlichkeit × Auswirkung, Maßnahmen', 'Reiter Risiken'], raci: ['Wer führt aus, verantwortet, wird gefragt, informiert; AKV mit Freigabegrenzen', 'Reiter Team › RACI und AKV'],
+      status: ['Statusbericht mit Ampel für Auftraggeber und Portfolio', 'Reiter Statusbericht'], req: ['Anforderungen mit Nachweis', own ? 'Reiter Anforderungen' : 'Planung › V-Modell'], cr: ['Änderungen an Umfang, Termin, Kosten mit Freigabe', 'Reiter Change Requests'], test: ['Testfälle zu Anforderungen, Nachweis je Anforderung', own ? 'Reiter Anforderungen' : 'Planung › Verfolgbarkeit'], audit: ['Prüfpfad aller Änderungen im Projekt, Export', 'Reiter Verlauf'] };
+    const vOnly = k => (k === 'req' || k === 'test') && !isV;
+    const isOn = k => { if (vOnly(k)) return false; const m = P_MODS.find(x => x[0] === k); return ps.mods && ps.mods[k] !== undefined ? ps.mods[k] : (m ? m[2] <= ps.stufe : true); };
     return [[1, 'Immer dabei'], [2, 'Ab Stufe 2 · Projekt'], [3, 'Ab Stufe 3 · Gesteuert'], [4, 'Stufe 4 · Reguliert']].map(([lv, title]) => ({ title, items: P_MODS.filter(m => m[2] === lv).map(([k, label]) => { const on = isOn(k), fixed = k === 'tasks', soon = /kommt/.test(INFO[k][1]);
-      return { name: label, desc: INFO[k][0], where: on ? '→ ' + INFO[k][1] : (lv > ps.stufe ? 'aus (Stufe ' + lv + ')' : 'ausgeschaltet'), whereColor: on ? (soon ? '#A33F06' : accent) : t.muted, checked: on ? 'true' : 'false', track: on ? (fixed ? t.strong : '#107C10') : t.border, justify: on ? 'flex-end' : 'flex-start', cursor: fixed ? 'default' : 'pointer', go: () => (fixed ? null : toggle(k, on, label)) }; }) })); }
+      const vo = vOnly(k); return { name: label, desc: INFO[k][0], where: vo ? 'nur im V-Modell' : (on ? '→ ' + INFO[k][1] : (lv > ps.stufe ? 'aus (Stufe ' + lv + ')' : 'ausgeschaltet')), whereColor: on ? (soon ? '#A33F06' : accent) : t.muted, checked: on ? 'true' : 'false', track: on ? (fixed ? t.strong : '#107C10') : (vo ? t.surface2 : t.border), justify: on ? 'flex-end' : 'flex-start', cursor: fixed || vo ? 'not-allowed' : 'pointer', go: () => (fixed || vo ? null : toggle(k, on, label)) }; }) })); }
   memberUI(pk, t, accent, akvOn) { const s = this.state, U = (s.uprojs || []).find(u => u.key === pk), ini0 = n => n === 'Kunde' ? 'KD' : n.split(/[ .]+/).filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
     if (!PMEMBERS[pk]) PMEMBERS[pk] = U ? U.members.map(m => [m, m === (PL_OF[pk] || 'Du') ? 'Owner' : 'Bearbeiter']) : [];
     const L = PMEMBERS[pk], R5 = ['Owner', 'Bearbeiter', 'Mitwirkender', 'Leser', 'Gast'], RB = { Owner: '#5B2D90', Bearbeiter: '#0F6CBD', Mitwirkender: '#0E6E7A', Leser: '#5C5C5C', Gast: '#8A3707' };
@@ -877,6 +1008,7 @@ class Component extends DCLogic {
   decide(id, text) { const result = Object.assign({}, this.state.result); result[id] = text; this.setState({ result }); }
 
   renderVals() {
+    if (!this._tabHook && typeof document !== 'undefined') { this._tabHook = true; document.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('[role=tab]') : null; if (b) setTimeout(() => { try { const L = b.closest('[role=tablist]'); if (L && L.scrollWidth > L.clientWidth) L.scrollTo({ left: b.offsetLeft - (L.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' }); } catch (x) { /* alt */ } }, 30); }, true); }
     Object.assign(PRIO, PRIO0, this.state.prioC || {});
     TASKS.forEach(x => this.kenn(x));
     const { t, accent, accentText } = this.theme();
@@ -1255,14 +1387,15 @@ class Component extends DCLogic {
     ];
 
     // Projekt-Tabs
-    const TABK = ['uebersicht', 'aufgaben', 'planung', 'team', 'analyse', 'dokumente', 'finanzen'];
+    const TABK0 = ['uebersicht', 'aufgaben', 'planung', 'team', 'analyse', 'dokumente', 'finanzen'], TABK = ['uebersicht', 'aufgaben', 'planung', 'team', 'analyse', 'zeiten', 'kapazitaet', 'status', 'dokumente', 'finanzen', 'aenderungen', 'verlauf'];
+    const TLBL = { analyse: 'Risiken', zeiten: 'Zeiten', kapazitaet: 'Kapazität', status: 'Statusbericht', aenderungen: 'Change Requests', verlauf: 'Verlauf' }, tlbl = k => TLBL[k] || tr.tabs[TABK0.indexOf(k)];
     const PSc = Object.assign({}, PSET0[s.proj] || { stufe: 2, mods: {} }, (s.psetBy || {})[s.proj] || {});
     const modC = k => { const m = P_MODS.find(x => x[0] === k); return PSc.mods && PSc.mods[k] !== undefined ? PSc.mods[k] : (m ? m[2] <= PSc.stufe : true); };
-    const TABMOD = { planung: ['plan'], analyse: ['risk', 'raci', 'status'], dokumente: ['docs'], finanzen: ['budget'] };
-    const ptabs = TABK.map((k, i) => ({ k, label: tr.tabs[i], sel: s.ptab === k ? 'true' : 'false', line: s.ptab === k ? accent : 'transparent', fg: s.ptab === k ? t.text : t.muted, fw: s.ptab === k ? 700 : 500, go: () => this.setState({ ptab: k }), show: (!TABMOD[k] || TABMOD[k].some(modC)) && !((s.pTabMe || {})[s.proj] || {})[k] }));
-    const pTabMeOpts = TABK.map((k, i) => [k, tr.tabs[i]]).filter(([k]) => !['uebersicht', 'aufgaben', 'team'].includes(k) && (!TABMOD[k] || TABMOD[k].some(modC))).map(([k, l]) => { const h = (s.pTabMe || {})[s.proj] || {}, on = !h[k]; return { label: (on ? '✓ ' : '+ ') + l, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => this.setState({ pTabMe: Object.assign({}, s.pTabMe, { [s.proj]: Object.assign({}, h, { [k]: on }) }) }) }; });
+    const TABMOD = { planung: ['plan'], analyse: ['risk'], zeiten: ['zeit'], kapazitaet: ['res'], status: ['status'], aenderungen: ['cr'], verlauf: ['audit'], dokumente: ['docs'], finanzen: ['budget'] };
+    const ptabs = TABK.map((k, i) => ({ k, label: tlbl(k), sel: s.ptab === k ? 'true' : 'false', line: s.ptab === k ? accent : 'transparent', fg: s.ptab === k ? t.text : t.muted, fw: s.ptab === k ? 700 : 500, go: () => this.setState({ ptab: k, mxMsg: '' }), show: (!TABMOD[k] || TABMOD[k].some(modC)) && !((s.pTabMe || {})[s.proj] || {})[k] }));
+    const pTabMeOpts = TABK.map(k => [k, tlbl(k)]).filter(([k]) => !['uebersicht', 'aufgaben', 'team'].includes(k) && (!TABMOD[k] || TABMOD[k].some(modC))).map(([k, l]) => { const h = (s.pTabMe || {})[s.proj] || {}, on = !h[k]; return { label: (on ? '✓ ' : '+ ') + l, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => this.setState({ pTabMe: Object.assign({}, s.pTabMe, { [s.proj]: Object.assign({}, h, { [k]: on }) }) }) }; });
     const isSm = s.proj === 'sm42';
-    const ptl = this.layUI('team:' + s.proj, ['mitglieder', 'raci', 'akv'], { mitglieder: 'Mitglieder', raci: 'RACI-Matrix', akv: 'AKV' }, ['mitglieder'], t, accent);
+    const ptl = this.layUI('team:' + s.proj, ['mitglieder', 'auslastung', 'raci', 'akv', 'abwesend', 'kontakte'], { mitglieder: 'Mitglieder', auslastung: 'Auslastung', raci: 'RACI-Matrix', akv: 'AKV', abwesend: 'Abwesenheiten', kontakte: 'Kontakte' }, ['mitglieder'], t, accent);
     const pTabMeOpen = !!s.pTabMeOpen, pTabMeToggle = () => this.setState({ pTabMeOpen: !s.pTabMeOpen });
     const pt = {}; TABK.forEach(k => { pt[k] = s.ptab === k; });
     pt.gantt = isSm && s.ptab === 'planung';
@@ -1621,11 +1754,12 @@ class Component extends DCLogic {
     // Stacey
     const zoneOf = (x, y) => { const v = x + y; return v <= 2 ? 'Einfach' : (v <= 4 ? 'Kompliziert' : (v <= 6 ? 'Komplex' : 'Chaotisch')); };
     const ZC = { 'Einfach': '#DDF0DE', 'Kompliziert': '#DCEAF7', 'Komplex': '#FCEBCB', 'Chaotisch': '#F7D9DC' };
-    const stacey = [];
+    const stacey = [], staceyW = [];
     for (let y = 4; y >= 0; y--) for (let x = 0; x <= 4; x++) {
       const z = zoneOf(x, y), selC = s.sx === x && s.sy === y;
       const corner = (x === 0 && y === 0) || (x === 4 && y === 4) || (x === 2 && y === 2) || (x === 3 && y === 0);
-      stacey.push({ zone: z, bg: ZC[z], sel: selC, showZone: !selC && corner, ring: selC ? accent : 'transparent', aria: 'Anforderungen ' + (y + 1) + ' von 5 unklar, Lösung ' + (x + 1) + ' von 5 unsicher, ' + z, pick: () => this.setState({ sx: x, sy: y }) });
+      staceyW.push({ x, y, zone: z, bg: ZC[z] });
+      stacey.push({ mark: selC ? '●' : (corner ? z : ''), zone: z, bg: ZC[z], sel: selC, showZone: !selC && corner, ring: selC ? accent : 'transparent', aria: 'Anforderungen ' + (y + 1) + ' von 5 unklar, Lösung ' + (x + 1) + ' von 5 unsicher, ' + z, pick: () => this.setState({ sx: x, sy: y }) });
     }
     const staceyZone = zoneOf(s.sx, s.sy);
     let staceyRec = s.sy < 2 && s.sx < 2 ? 'Wasserfall' : (s.sy < 2 ? 'V-Modell' : (s.sx < 2 ? 'Inkrementell' : 'Scrum'));
@@ -1756,8 +1890,8 @@ class Component extends DCLogic {
     }[mode];
     const stepL = FLOW[0];
     const NKIND = [['aufgabe', '☐', 'Aufgabe'], ['ms', '◆', 'Meilenstein'], ['gate', '◈', 'Quality Gate'], ['phase', '▭', 'Phase / Arbeitspaket'], ['projekt', '▣', 'Projekt'], ['antrag', '✚', 'Projektantrag']], NSHORT = { aufgabe: 'Aufgabe', ms: 'Meilenstein', gate: 'Gate', phase: 'Phase', projekt: 'Projekt', antrag: 'Antrag' };
-    const nKind = nts.kind || 'aufgabe', isNodeK = ['ms', 'gate', 'phase'].includes(nKind);
     const ctxPk = nts.ctx && PNAME_OF[nts.ctx] ? nts.ctx : null, nPk = PK_OF[nts.proj] || ctxPk || 'sm42';
+    const nKind = !ctxPk && ['ms', 'gate', 'phase'].includes(nts.kind) ? 'aufgabe' : (nts.kind || 'aufgabe'), isNodeK = ['ms', 'gate', 'phase'].includes(nKind);
     const isoN = x => x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
     const addDays = (iso, d) => { const x = D(iso); x.setDate(x.getDate() + d); return isoN(x); };
     const NDATES = [['2026-11-20', '20.11.'], ['2026-11-27', '27.11.'], ['2026-12-04', '04.12.'], ['2026-12-18', '18.12.'], ['2027-01-15', '15.01.'], ['2027-02-26', '26.02.']];
@@ -1766,7 +1900,7 @@ class Component extends DCLogic {
     const ownersN = (PMEMBERS[nPk] || []).map(m => m[0]).filter(n => n !== 'Kunde').concat(nKind === 'gate' ? ['Geschäftsführung', 'Kunde', 'Qualität'] : []);
     const nodeTitle = (nts.title || '').trim() || ({ ms: 'Neuer Meilenstein', gate: 'Neues Quality Gate', phase: 'Neue Phase' })[nKind] || '';
     const nt = {
-      kinds: NKIND.filter(k => !(ctxPk && (k[0] === 'antrag' || k[0] === 'projekt'))).map(([k, icon, label]) => ({ icon, label, short: NSHORT[k], pressed: nKind === k ? 'true' : 'false', ring: nKind === k ? accent : t.border, bg: nKind === k ? t.soft : t.surface,
+      nodeHint: !ctxPk, kinds: NKIND.filter(k => (ctxPk ? !(k[0] === 'antrag' || k[0] === 'projekt') : !['ms', 'gate', 'phase'].includes(k[0]))).map(([k, icon, label]) => ({ icon, label, short: NSHORT[k], pressed: nKind === k ? 'true' : 'false', ring: nKind === k ? accent : t.border, bg: nKind === k ? t.soft : t.surface,
         go: setNt(Object.assign({ kind: k, parent: null, owner: 'Du' }, ['ms', 'gate', 'phase'].includes(k) && nts.proj === 'Ohne Projekt' ? { proj: 'SM42 Schraubstation' } : {})) })),
       inProjHint: !!ctxPk, ctxText: ctxPk ? 'Du bist im Projekt ' + PNAME_OF[ctxPk] + '. Was du hier anlegst, gehört zu diesem Projekt.' : '',
       leaveProj: setNt({ ctx: null, proj: 'Ohne Projekt', kind: 'aufgabe' }),
@@ -2877,7 +3011,7 @@ class Component extends DCLogic {
       lblAdd: () => { const v = (this.state.lblNew || '').trim(); if (!v) return this.setState({ setMsg: 'Erst einen Namen eingeben, z. B. „Wartet auf Kunde“.' }); const PAL = ['#B4009E', '#33691E', '#8A3707', '#0E6E7A', '#5C5C5C', '#C50F1F'], cur = (this.state.lblX || {})[SK] || [];
         this.setState({ lblX: Object.assign({}, this.state.lblX, { [SK]: cur.concat([['x' + Date.now().toString(36), v, PAL[cur.length % PAL.length]]]) }), lblNew: '', setMsg: 'Etikett „' + v + '“ angelegt. An einer Aufgabe unter „Etiketten“ zuweisen, im Board und in Listen filtern.' }); }, lbls: this.labelsOf(SK).map(([k, l, c]) => ({ c, del: () => this.setState({ lblDel: Object.assign({}, s.lblDel, { [SK]: Object.assign({}, (s.lblDel || {})[SK] || {}, { [k]: true }) }), setMsg: '„' + this.lblName(SK, k) + '“ gelöscht. Aufgaben verlieren nur dieses Etikett.' }), name: this.lblName(SK, k), rename: lblRen(SK, k), count: (n0 => n0 + (n0 === 1 ? ' Aufgabe' : ' Aufgaben'))(lblCount(this.pnm(SK), k)) })),
       isSicht: s.setSub === 'sicht',
-      sichtRows: [['planung', 'Planung'], ['risiken', 'Analyse'], ['dokumente', 'Dokumente'], ['budget', 'Finanzen'], ['anf', 'Anforderungen']].map(([k, l]) => ({ name: l, cells: ['Bearbeiter', 'Mitwirkender', 'Leser', 'Gast'].map(r => { const on = this.tabSeen(SK, r, k);
+      sichtRows: [['planung', 'Planung'], ['risiken', 'Risiken'], ['zeiten', 'Zeiten'], ['kapazitaet', 'Kapazität'], ['status', 'Statusbericht'], ['dokumente', 'Dokumente'], ['budget', 'Finanzen'], ['aenderungen', 'Change Requests'], ['anf', 'Anforderungen'], ['verlauf', 'Verlauf']].map(([k, l]) => ({ name: l, cells: ['Bearbeiter', 'Mitwirkender', 'Leser', 'Gast'].map(r => { const on = this.tabSeen(SK, r, k);
         return { v: on ? '✓' : '–', bg: on ? '#107C10' : t.surface2, fg: on ? '#FFFFFF' : t.muted, aria: l + ' für ' + r + (on ? ' sichtbar' : ' verborgen'), go: () => { const cur = (this.state.pTabRole || {})[SK] || {}; this.setState({ pTabRole: Object.assign({}, this.state.pTabRole, { [SK]: Object.assign({}, cur, { [r]: Object.assign({}, cur[r] || {}, { [k]: !on }) }) }), setMsg: l + (on ? ' ist für ' + r + ' jetzt verborgen.' : ' ist für ' + r + ' jetzt sichtbar.') }); } }; }) })),
       asRoles: ['Owner', 'Bearbeiter', 'Mitwirkender', 'Leser', 'Gast'].map(r => ({ label: r, pressed: ((s.pnAs || {})[SK] || 'Owner') === r ? 'true' : 'false', ring: ((s.pnAs || {})[SK] || 'Owner') === r ? accent : t.border, bg: ((s.pnAs || {})[SK] || 'Owner') === r ? t.soft : t.surface, go: () => this.setState({ pnAs: Object.assign({}, s.pnAs, { [SK]: r === 'Owner' ? null : r }), setMsg: r === 'Owner' ? 'Vorschau beendet.' : 'Das Projekt zeigt jetzt die Reiter, die ein ' + r + ' sieht.' }) })),
       canModel: !!SKU, models: ['Liste und Board', 'Kanban mit WIP-Limits', 'Wasserfall mit Quality Gates', 'V-Modell', 'Scrum'].map(m => ({ label: m, pressed: SKU && SKU.model === m ? 'true' : 'false', ring: SKU && SKU.model === m ? accent : t.border, bg: SKU && SKU.model === m ? t.soft : t.surface,
@@ -2896,11 +3030,11 @@ class Component extends DCLogic {
           this.setState({ uprojs: (this.state.uprojs || []).map(u0 => (u0.key === SK ? Object.assign({}, u0, { model: m }) : u0)), psetBy: Object.assign({}, this.state.psetBy, { [SK]: Object.assign({}, psetOf(SK), { mods: Object.assign({}, psetOf(SK).mods, P.mods) }) }), rev: (this.state.rev || 0) + 1,
             setMsg: 'Vorgehen jetzt: ' + m + '. ' + done.join(', ') + '. Aufgaben, Termine und Dokumente bleiben erhalten.', pnMsg: 'Vorgehen auf ' + m + ' umgestellt: ' + done.join(', ') + '.' }); } })),
       isStamm: s.setSub === 'stamm', isStufe: s.setSub === 'stufe', isModell: s.setSub === 'modell', isArch: s.setSub === 'arch',
-      pname: PJS.name, pcode: PJS.code, kst: PS.kst || ({ sm42: '4711-SM', rl2: '4712-RL', pd: '4713-PD', ih: '4720-IH' })[SK] || '', setKst: e => setPs(SK, { kst: e && e.target ? e.target.value : '' }),
+      pname: PJS.name, pcode: PJS.code, kst: this.kstOf(SK), setKst: e => setPs(SK, { kst: e && e.target ? e.target.value : '' }), ia: this.iaOf(SK), setIa: e => setPs(SK, { ia: e && e.target ? e.target.value : '' }),
       colors: PCOLORS.map(c => ({ c, pressed: (PS.color || '') === c ? 'true' : 'false', ring: (PS.color || '') === c ? t.text : 'transparent', go: () => setPs(SK, { color: c }, 'Farbe geändert. Gilt in Projektliste, Kalender und Karten.') })),
       stufen: STUFEN.map(([n, name, desc]) => ({ n: String(n), name, desc, pressed: PS.stufe === n ? 'true' : 'false', ring: PS.stufe === n ? accent : t.border, bg: PS.stufe === n ? t.soft : t.surface,
         go: () => setPs(SK, { stufe: n }, 'Stufe ' + n + ' · ' + name + '. ' + (n < PS.stufe ? 'Ausgeblendete Bereiche behalten ihre Daten.' : 'Neue Bereiche sind jetzt sichtbar.')) })),
-      modGroups: this.modGroups(PS, (k, on, label) => setPs(SK, { mods: Object.assign({}, PS.mods, { [k]: !on }) }, label + (on ? ' ausgeblendet.' : ' eingeschaltet.')), t, accent, false),
+      modGroups: this.modGroups(PS, (k, on, label) => setPs(SK, { mods: Object.assign({}, PS.mods, { [k]: !on }) }, label + (on ? ' ausgeblendet.' : ' eingeschaltet.')), t, accent, !!SKU, /V-Modell/.test(MODEL[SK] || (SKU ? SKU.model : ''))),
       mods: P_MODS.map(([k, label, lv]) => { const on = modOn(PS, k), extra = PS.mods && PS.mods[k] !== undefined; return { label: (on ? '✓ ' : '+ ') + label + (extra ? (on ? ' (zugeschaltet)' : ' (abgeschaltet)') : ''), pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface,
         go: () => { if (k === 'tasks') return this.setState({ setMsg: 'Aufgaben sind die Grundlage und bleiben immer an.' }); setPs(SK, { mods: Object.assign({}, PS.mods, { [k]: !on }) }, label + (on ? ' ausgeblendet.' : ' eingeschaltet.')); } }; }),
       model: (MODEL[SK] || (SKU ? SKU.model : "")), modelText: (MODELTXT[SK] || 'Eigenes Projekt, Vorgehen ' + (SKU ? SKU.model : '') + '.') + (SKU ? ' Du kannst das Vorgehen jederzeit wechseln; Daten bleiben erhalten.' : ' Beispielprojekt: Vorgehen fest.'),
@@ -2936,7 +3070,8 @@ class Component extends DCLogic {
       tplList: Object.keys(P_TPL).concat(Object.keys(UTPL)).filter(k => !/^(leer|kan0|wf0|v0|sc0)$/.test(k)).map(k => { const x = P_TPL[k] || UTPL[k], hid = !!(s.tplHide || {})[k], own = !!UTPL[k];
         return { name: (x.icon || '') + ' ' + x.name, sub: own ? 'eigene Vorlage' : 'mitgeliefert', act: own ? 'Löschen' : (hid ? 'Wieder anzeigen' : 'Ausblenden'), state: hid ? '· ausgeblendet' : '',
           go: () => (own ? this.setState({ userTpl: (s.userTpl || []).filter(ut => ut.key !== k), newP: Object.assign({}, nw, { tpl: nw.tpl === k ? 'leer' : nw.tpl }) }) : this.setState({ tplHide: Object.assign({}, s.tplHide, { [k]: !hid }), newP: Object.assign({}, nw, { tpl: nw.tpl === k ? 'leer' : nw.tpl }) })) }; }),
-      stOpen: !!nw.stOpen, stToggle: () => setNw({ stOpen: !nw.stOpen }),
+      stOpen: nw.stOpen !== false, stToggle: () => setNw({ stOpen: nw.stOpen === false }), stBtn: nw.stOpen === false ? '🧭 Hilfe: Stacey-Matrix einblenden' : '🧭 Stacey-Matrix ausblenden',
+      stGrid: staceyW.map(c => { const sel = (nw.sx || 0) === c.x && (nw.sy || 0) === c.y, corner = (c.x === 0 && c.y === 0) || (c.x === 4 && c.y === 4) || (c.x === 2 && c.y === 2) || (c.x === 3 && c.y === 0); return { bg: c.bg, ring: sel ? accent : 'transparent', sel: sel ? 'true' : 'false', mark: sel ? '●' : (corner ? c.zone : ''), aria: 'Anforderungen ' + (c.y + 1) + ' von 5 unklar, Technik ' + (c.x + 1) + ' von 5 neu, ' + c.zone, pick: () => setNw({ sx: c.x, sy: c.y }) }; }),
       stY: ['klar', 'eher klar', 'teils offen', 'unklar', 'völlig offen'].map((l, i) => ({ label: l, pressed: (nw.sy || 0) === i ? 'true' : 'false', ring: (nw.sy || 0) === i ? accent : t.border, bg: (nw.sy || 0) === i ? t.soft : t.surface, go: () => setNw({ sy: i }) })),
       stX: ['bekannt', 'eher bekannt', 'teils neu', 'neu', 'völlig neu'].map((l, i) => ({ label: l, pressed: (nw.sx || 0) === i ? 'true' : 'false', ring: (nw.sx || 0) === i ? accent : t.border, bg: (nw.sx || 0) === i ? t.soft : t.surface, go: () => setNw({ sx: i }) })),
       ...(() => { const x0 = nw.sx || 0, y0 = nw.sy || 0, v = x0 + y0, zone = v <= 2 ? 'Einfach' : (v <= 4 ? 'Kompliziert' : (v <= 6 ? 'Komplex' : 'Chaotisch'));
@@ -2955,7 +3090,7 @@ class Component extends DCLogic {
       colors: PCOLORS.map(c => ({ c, pressed: nw.color === c ? 'true' : 'false', ring: nw.color === c ? t.text : 'transparent', go: () => setNw({ color: c }) })),
       people: PPL.map(n => { const on = nw.members.includes(n); return { label: (on ? '✓ ' : '+ ') + (n === 'Du' ? 'Du (Projektleitung)' : n), pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => { if (n === 'Du') return; setNw({ members: on ? nw.members.filter(m => m !== n) : nw.members.concat([n]) }); } }; }),
       stufen: STUFEN.map(([n, name, desc]) => ({ n: String(n), name, desc: desc + (n === TP.stufe ? ' · empfohlen für diese Vorlage' : ''), pressed: nwStufe === n ? 'true' : 'false', ring: nwStufe === n ? accent : t.border, bg: nwStufe === n ? t.soft : t.surface, go: () => setNw({ stufe: n, mods: {} }) })),
-      modGroups: this.modGroups(nwPs, (k, on) => setNw({ mods: Object.assign({}, nw.mods, { [k]: !on }) }), t, accent, true),
+      modGroups: this.modGroups(nwPs, (k, on) => setNw({ mods: Object.assign({}, nw.mods, { [k]: !on }) }), t, accent, true, curFam === 'v'),
       sumTitle: nw.name.trim() ? '„' + nw.name.trim() + '“ wird angelegt' : 'Noch ohne Name',
       sum: (P_FAM.find(f => f[0] === curFam) || ['', '', ''])[2] + (TP.name === 'Leer' ? ' (leer)' : ' · Beispiel ' + TP.name) + ' · Stufe ' + nwStufe + ' · ' + P_MODS.filter(m => modOn(nwPs, m[0])).length + ' Module · ' + nw.members.length + (nw.members.length === 1 ? ' Mitglied' : ' Mitglieder')
         + (TP.phases.length ? ' · ' + TP.phases.length + (TP.phases.length === 1 ? ' Phase mit ' : ' Phasen mit ') + TP.phases.filter(p => p[3]).length + (TP.phases.filter(p => p[3]).length === 1 ? ' Quality Gate' : ' Quality Gates') + ' (Termine ab ' + fmt(D(nw.start)) + ')' : '') + (TP.tasks.length ? ' · ' + TP.tasks.length + ' Startaufgaben' : '') + '. Du bist Projektleitung; die Mitglieder sehen das Projekt sofort.',
@@ -2983,7 +3118,8 @@ class Component extends DCLogic {
     if (upCur) { const u = upCur, ups = Object.assign({ stufe: u.stufe, mods: u.mods || {} }, (s.psetBy || {})[u.key] || {}), on = k => modOn(ups, k);
       const updU = (patch, msg) => this.setState({ uprojs: (this.state.uprojs || []).map(x => (x.key === u.key ? Object.assign({}, x, typeof patch === 'function' ? patch(x) : patch) : x)), pnMsg: msg || '', boardMsg: '' });
       const setUps = (patch, msg) => this.setState({ psetBy: Object.assign({}, s.psetBy, { [u.key]: Object.assign({}, ups, patch) }), pnMsg: msg || '' });
-      const TABS0 = [['uebersicht', 'Übersicht', true], ['aufgaben', 'Aufgaben', true], ['planung', 'Planung', on('plan')], ['team', 'Team', true], ['risiken', 'Analyse', on('risk')], ['dokumente', 'Dokumente', on('docs')], ['budget', 'Finanzen', on('budget')], ['anf', 'Anforderungen', on('req') || on('test')]].filter(x => x[2]);
+      const isVu = /V-Modell/.test(u.model);
+      const TABS0 = [['uebersicht', 'Übersicht', true], ['aufgaben', 'Aufgaben', true], ['planung', 'Planung', on('plan')], ['team', 'Team', true], ['risiken', 'Risiken', on('risk')], ['zeiten', 'Zeiten', on('zeit')], ['kapazitaet', 'Kapazität', on('res')], ['status', 'Statusbericht', on('status')], ['dokumente', 'Dokumente', on('docs')], ['budget', 'Finanzen', on('budget')], ['aenderungen', 'Change Requests', on('cr')], ['anf', 'Anforderungen', isVu && (on('req') || on('test'))], ['verlauf', 'Verlauf', on('audit')]].filter(x => x[2]);
       const myRoleP = ((PMEMBERS[u.key] || []).find(x => x[0] === 'Du') || [])[1] || 'Owner', asRole = (s.pnAs || {})[u.key] || myRoleP, meHide = (s.pTabMe || {})[u.key] || {};
       const TABS = TABS0.filter(x => this.tabSeen(u.key, asRole, x[0]) && !meHide[x[0]]);
       const tab = TABS.some(x => x[0] === s.upTab) ? s.upTab : 'uebersicht', tasks = TASKS.filter(x => x.proj === u.name), byDue2 = (a, b) => (a.due < b.due ? -1 : 1);
@@ -3003,14 +3139,14 @@ class Component extends DCLogic {
         asInfo: asRole !== myRoleP ? 'Vorschau: so sieht ein ' + asRole + ' das Projekt.' : '', hasAs: asRole !== myRoleP, asReset: () => this.setState({ pnAs: Object.assign({}, s.pnAs, { [u.key]: null }) }),
         meOpen: !!s.pTabMeOpen, meToggle: () => this.setState({ pTabMeOpen: !s.pTabMeOpen }),
         meOpts: TABS0.filter(x => x[0] !== 'uebersicht' && x[0] !== 'aufgaben' && x[0] !== 'team' && this.tabSeen(u.key, asRole, x[0])).map(([k, l]) => { const on2 = !meHide[k]; return { label: (on2 ? '✓ ' : '+ ') + l, pressed: on2 ? 'true' : 'false', ring: on2 ? accent : t.border, bg: on2 ? t.soft : t.surface, go: () => this.setState({ pTabMe: Object.assign({}, s.pTabMe, { [u.key]: Object.assign({}, meHide, { [k]: on2 }) }) }) }; }),
-        tabs: TABS.map(([k, l]) => ({ label: l, sel: tab === k ? 'true' : 'false', line: tab === k ? accent : 'transparent', fg: tab === k ? t.text : t.muted, fw: tab === k ? 700 : 500, go: () => this.setState({ upTab: k, pnMsg: '', boardMsg: '' }) })),
+        tabs: TABS.map(([k, l]) => ({ label: l, sel: tab === k ? 'true' : 'false', line: tab === k ? accent : 'transparent', fg: tab === k ? t.text : t.muted, fw: tab === k ? 700 : 500, go: () => this.setState({ upTab: k, pnMsg: '', boardMsg: '', mxMsg: '' }) })),
         is: { dokumente: tab === 'dokumente', team: tab === 'team', uebersicht: tab === 'uebersicht', aufgaben: tab === 'aufgaben', planung: tab === 'planung', risiken: tab === 'risiken', budget: tab === 'budget', anf: tab === 'anf', einst: tab === 'einst' },
         hasMsg: !!(s.pnMsg || s.boardMsg), msg: s.pnMsg || s.boardMsg || '',
         addTask: () => this.setState({ upTab: 'aufgaben', upView: 'board', qa: 'pn|' + bks[0].key, qaText: '', pnMsg: '' }),
         kpis: [{ label: 'Offene Aufgaben', value: String(open.length), sub: (tasks.length - open.length) + ' erledigt', color: t.text, go: () => this.setState({ upTab: 'aufgaben' }) },
           { label: 'Überfällig', value: String(open.filter(x => x.due < '2026-11-13').length), sub: 'nach Fälligkeit', color: open.some(x => x.due < '2026-11-13') ? RED : t.text, go: () => this.setState({ upTab: 'aufgaben', upView: 'liste' }) }]
           .concat(on('plan') ? [{ label: 'Nächster Termin', value: nextG ? fmt(D(nextG.end)) : '–', sub: nextG ? nextG.name : 'keine Meilensteine', color: t.text, go: () => this.setState({ upTab: 'planung' }) }] : [])
-          .concat(on('risk') ? [{ label: 'Risiken', value: String(u.risks.length), sub: u.risks.filter(r => r.w * r.a >= 12).length + ' hoch', color: u.risks.some(r => r.w * r.a >= 12) ? RED : t.text, go: () => this.setState({ upTab: 'risiken' }) }] : [])
+          .concat(on('risk') ? (() => { const RK = this.risksOf(u.key).filter(r => r.st !== 'geschlossen'), hi = RK.filter(r => r.w * r.a >= 12).length; return [{ label: 'Risiken', value: String(RK.length), sub: hi + ' hoch', color: hi ? RED : t.text, go: () => this.setState({ upTab: 'risiken' }) }]; })() : [])
           .concat(on('budget') ? [{ label: 'Budget verbraucht', value: u.budget ? Math.round(costSum / u.budget * 100) + ' %' : '–', sub: fE(costSum) + ' von ' + fE(u.budget), color: u.budget && costSum > u.budget ? RED : t.text, go: () => this.setState({ upTab: 'budget' }) }] : []),
         modList: P_MODS.filter(m => on(m[0])).map(m => m[1]),
         views: [['board', 'Board'], ['liste', 'Liste']].map(([k, l]) => ({ label: l, pressed: view === k ? 'true' : 'false', ring: view === k ? accent : t.border, bg: view === k ? t.soft : t.surface, go: () => this.setState({ upView: k }) })),
@@ -3119,7 +3255,7 @@ class Component extends DCLogic {
         rqText: s.upRq || '', setRq: e => this.setState({ upRq: e && e.target ? e.target.value : '' }),
         addReq: () => { const tt = (s.upRq || '').trim(); if (!tt) return; updU(x => ({ reqs: x.reqs.concat([{ id: u.code + '-A' + (x.reqs.length + 1), text: tt }]) }), 'Anforderung angelegt.'); this.setState({ upRq: '' }); },
         stufen: STUFEN.map(([n, name, desc]) => ({ n: String(n), name, desc, pressed: ups.stufe === n ? 'true' : 'false', ring: ups.stufe === n ? accent : t.border, bg: ups.stufe === n ? t.soft : t.surface, go: () => setUps({ stufe: n }, 'Stufe ' + n + ' · ' + name + '. Die Reiter oben passen sich an.') })),
-        modGroups: this.modGroups(ups, (k, o2, label) => setUps({ mods: Object.assign({}, ups.mods, { [k]: !o2 }) }, label + (o2 ? ' ausgeblendet. Daten bleiben erhalten.' : ' eingeschaltet.')), t, accent, true),
+        modGroups: this.modGroups(ups, (k, o2, label) => setUps({ mods: Object.assign({}, ups.mods, { [k]: !o2 }) }, label + (o2 ? ' ausgeblendet. Daten bleiben erhalten.' : ' eingeschaltet.')), t, accent, true, /V-Modell/.test(u.model)),
         rename: e => { const v = e && e.target ? e.target.value : u.name; if (!v.trim()) return; TASKS.forEach(x => { if (x.proj === u.name) x.proj = v; }); delete PK_OF[u.name]; PK_OF[v] = u.key; updU({ name: v }); },
         colors: PCOLORS.map(c => ({ c, pressed: (ups.color || u.color) === c ? 'true' : 'false', ring: (ups.color || u.color) === c ? t.text : 'transparent', go: () => setUps({ color: c }) })),
         people: PPL.map(n => { const o2 = u.members.includes(n); return { label: (o2 ? '✓ ' : '+ ') + n, pressed: o2 ? 'true' : 'false', ring: o2 ? accent : t.border, bg: o2 ? t.soft : t.surface,
@@ -3146,7 +3282,7 @@ class Component extends DCLogic {
                 sum: !B0 ? 'Noch kein Budget eingetragen.' : (prog > B0 ? '! Prognose ' + Math.round((prog / B0 - 1) * 100) + ' % über Budget' : '✓ Prognose im Budget (' + Math.round(prog / B0 * 100) + ' %)'), sumBg: !B0 ? t.strong : (prog > B0 ? RED : GREEN),
                 open: offen ? fE(offen) + ' in offenen Change Requests (noch nicht genehmigt)' : '', hasOpen: offen > 0, hours: hrs ? (Math.round(hrs * 10) / 10).toLocaleString('de-DE') + ' h gebucht (aus Zeiterfassung)' : '', hasHours: hrs > 0,
                 nach: nach.filter(([n0]) => /Nachtrag/.test(n0)).map(([n0, t0]) => ({ text: n0 + ' · ' + t0 })), hasNach: nach.some(([n0]) => /Nachtrag/.test(n0)) }; })(),
-            tl: this.layUI('team:' + u.key, ['mitglieder', 'raci', 'akv'], { mitglieder: 'Mitglieder und Rollen', raci: 'RACI-Matrix', akv: 'AKV' }, ['mitglieder'], t, accent), mbr: this.memberUI(u.key, t, accent, on('raci')), raciOn: on('raci'), raciOff: !on('raci'), raciCols: '220px repeat(' + u.members.length + ', minmax(60px, 1fr))', raciHead: u.members.map(m => (m === 'Du' ? 'ich' : m)),
+            tl: this.layUI('team:' + u.key, ['mitglieder', 'auslastung', 'raci', 'akv', 'abwesend', 'kontakte'], { mitglieder: 'Mitglieder und Rollen', auslastung: 'Auslastung', raci: 'RACI-Matrix', akv: 'AKV', abwesend: 'Abwesenheiten', kontakte: 'Kontakte' }, ['mitglieder'], t, accent), mbr: this.memberUI(u.key, t, accent, on('raci')), raciOn: on('raci'), raciOff: !on('raci'), raciCols: '220px repeat(' + u.members.length + ', minmax(60px, 1fr))', raciHead: u.members.map(m => (m === 'Du' ? 'ich' : m)),
             inv: (() => { const list = (s.pInv || {})[u.key] || [], F = Object.assign({ sup: '', amt: '', kind: 'Material', where: '', beleg: '' }, (s.pInvF || {})[u.key] || {}), open = s.pInvOpen === u.key, fE2 = v => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
               const myRole = ((PMEMBERS[u.key] || []).find(x => x[0] === 'Du') || [])[1], am = (s.mbrAkv || {})[u.key] || {}, myLim = am.Du !== undefined ? am.Du : (myRole === 'Owner' ? 5000 : 0);
               const setF = patch => this.setState({ pInvF: Object.assign({}, this.state.pInvF, { [u.key]: Object.assign({}, F, (this.state.pInvF || {})[u.key] || {}, patch) }) }), val = e => (e && e.target ? e.target.value : '');
@@ -3779,7 +3915,7 @@ class Component extends DCLogic {
         canJump: !!w.okey, jump: () => w.okey && this.openProject(w.okey)
       });
     } else if (pan && pan.kind === 'new') {
-      p = Object.assign(p, { isNew: true, kindLabel: 'Neu', title: s.nt.ctx && PNAME_OF[s.nt.ctx] ? 'Neu in ' + PNAME_OF[s.nt.ctx] : 'Neu anlegen', dates: 'Aufgabe, Meilenstein, Quality Gate, Phase oder Projektantrag' });
+      p = Object.assign(p, { isNew: true, kindLabel: 'Neu', title: s.nt.ctx && PNAME_OF[s.nt.ctx] ? 'Neu in ' + PNAME_OF[s.nt.ctx] : 'Neu anlegen', dates: s.nt.ctx && PNAME_OF[s.nt.ctx] ? 'Aufgabe, Meilenstein, Quality Gate oder Phase' : 'Aufgabe, Projekt oder Projektantrag' });
     } else if (pan && pan.kind === 'settings') {
       p = Object.assign(p, { isSettings: true, kindLabel: 'Projekteinstellungen', title: set.title, crumbs: [{ label: PJS.name, open: () => (SKU ? this.setState({ panel: null }) : this.openProject(SK)) }] });
     }
@@ -3794,6 +3930,9 @@ class Component extends DCLogic {
       ibl: Object.assign(ibl, { kiCount: String(DRAFTS.length) }), dashX, dashLayouts, dashReset, editDash: s.editDash, toggleEdit: () => this.setState({ editDash: !s.editDash }), editBtn, wBorder, palette, focus, inboxPreview, inTab, inTabs, inOpenCls: s.inOpen ? 'open' : '', inClose: () => this.setState({ inOpen: false }), myLoad, loadLine, week,
       inboxFilters, inboxList, ib, gateChecks, timesheet, criteria,
       teamTabs, tm, kws: KWS,
+      mx: (() => { const TM = { analyse: 'risk', risiken: 'risk', zeiten: 'zeit', kapazitaet: 'res', status: 'status', aenderungen: 'cr', verlauf: 'audit' };
+        if (s.screen === 'pn' && s.upSel) { const U0 = (s.uprojs || []).find(u => u.key === s.upSel); if (U0) { const ps0 = Object.assign({ stufe: U0.stufe, mods: U0.mods || {} }, (s.psetBy || {})[U0.key] || {}); return this.modX(U0.key, TM[s.upTab] || '', t, accent, k => { const m = P_MODS.find(x => x[0] === k); return ps0.mods && ps0.mods[k] !== undefined ? ps0.mods[k] : (m ? m[2] <= ps0.stufe : true); }); } }
+        return this.modX(s.screen === 'projekt' ? s.proj : null, TM[s.ptab] || '', t, accent, modC); })(),
       mbr: this.memberUI(OVK, t, accent, modC('raci')), projects: projectsAll, ptabs: ptabs.filter(x => x.show !== false), pnw, pn, pt, msCounters, nextMs, projOverdue, team, board,
       members, raciCols: PRACI[OVK].cols, raciRows, akv, akvBtn, akvIsTable: s.akv === 'tabelle' ? 'true' : 'false', akvIsDiagram: s.akv === 'diagramm' ? 'true' : 'false',
       akvShowTable: s.akv === 'tabelle', akvShowDiagram: s.akv === 'diagramm',
@@ -3838,7 +3977,7 @@ class Component extends DCLogic {
       aHasMsg: !!s.aMsg, aMsg: s.aMsg, aDraft: () => this.setState({ aMsg: 'Entwurf gespeichert. Du findest ihn unter Projekte › Meine Anträge.' }),
       openAntrag: () => this.setState({ screen: 'antrag', aStep: 1, panel: null, aMsg: '' }), goProjekte: () => this.setState({ screen: 'projekte' }),
       nt, reqMe, reqMeCount: REQ_ME.length, sent, hasSent: s.sent.length > 0, reqLoad,
-      openNew: () => { const inP = s.screen === 'projekt' && PNAME_OF[s.proj]; this.setState({ panel: { kind: 'new', id: 'new', from: s.screen }, nt: Object.assign({}, s.nt, { who: 'ich', title: '', parent: null, owner: 'Du', ctx: inP ? s.proj : null, proj: inP ? PNAME_OF[s.proj] : 'Ohne Projekt', kind: 'aufgabe', co: [], due: '2026-11-20' }) }); },
+      openNew: () => { const inP = s.screen === 'projekt' && PNAME_OF[s.proj], inU = s.screen === 'pn' && (s.uprojs || []).find(u => u.key === s.upSel); this.setState({ panel: { kind: 'new', id: 'new', from: s.screen }, nt: Object.assign({}, s.nt, { who: 'ich', title: '', parent: null, owner: 'Du', ctx: inP ? s.proj : null, proj: inP ? PNAME_OF[s.proj] : (inU ? inU.name : 'Ohne Projekt'), kind: 'aufgabe', co: [], due: '2026-11-20' }) }); },
       rViews, rv1, rKpis, rHasMsg: !!s.rMsg, rMsg: s.rMsg, rFilterOn: s.rFilter !== 'alle', rFilterLabel: RF[s.rFilter] || '',
       rClearFilter: () => this.setState({ rFilter: 'alle' }), portRows, portEmpty: portRows.length === 0, portAll,
       rMonths, rToday: rp('2026-11-13'), roadRows, capRows, reportRows, rAutoBtn, rAutoPressed: s.rAuto ? 'true' : 'false',
