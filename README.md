@@ -20,6 +20,8 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 
 ## Neu nach der fünften Testrunde (17.11.2026)
 
+- **Meilenstein als Termin oder Zeitraum:** Im Detail eines Meilensteins schaltest du unter „Art“ zwischen „◆ Termin (Stichtag)“ und „▬ Zeitraum (von–bis)“ um. Beim Anlegen gibt es „Meilenstein (Termin)“ und „Meilenstein (von–bis)“.
+- Die Meldung vom Anlegen verschwindet, wenn du ein anderes Element öffnest.
 - **Gantt-Grenzen:** Ein Untermeilenstein liegt immer im Zeitraum seines Meilensteins, ein Meilenstein immer in seiner Phase.
   - Verschieben, Verlängern und Datumseingaben stoppen an der Grenze, und eine Meldung nennt die Grenze.
   - Die übergeordnete Phase ändert sich dabei nicht mehr.

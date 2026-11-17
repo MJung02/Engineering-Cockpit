@@ -5647,6 +5647,7 @@ input,textarea,select{font-size:16px!important}
                 </div></sc-if>
                 <sc-if value="{{ak.ppl.hasNote}}" hint-placeholder-val="{{false}}"><div style="font-size: 12px; color: {{t.muted}}">{{ak.ppl.note}}</div></sc-if>
             </div>
+            <sc-if value="{{p.msModeShow}}" hint-placeholder-val="{{false}}"><div role="group" aria-label="Meilenstein-Art" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px"><span style="font-size: 13px; color: {{t.muted}}; width: 110px">Art</span><sc-for list="{{p.msModes}}" as="pmm" hint-placeholder-count="2"><button onClick="{{pmm.go}}" aria-pressed="{{pmm.pressed}}" style="padding: 5px 12px; border-radius: 999px; border: 2px solid {{pmm.ring}}; background: {{pmm.bg}}; color: {{t.text}}; font-size: 13px; font-weight: 600; cursor: pointer">{{pmm.label}}</button></sc-for></div></sc-if>
             <sc-if value="{{p.nodeDateEdit}}" hint-placeholder-val="{{true}}">
               <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
                 <sc-if value="{{p.nodeIsPoint}}" hint-placeholder-val="{{false}}"><label style="font-size: 13px; color: {{t.muted}}; width: 110px">Termin</label><input type="date" value="{{p.nodeEndIso}}" onInput="{{p.setNodeEnd}}" aria-label="Termin" style="height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font: inherit"></sc-if>
@@ -6037,8 +6038,8 @@ input,textarea,select{font-size:16px!important}
   </main>
 </div>
 </template>
-<script src="dc-runtime.js?v=17.11.2026_1224"></script>
-<script src="app.js?v=17.11.2026_1224"></script>
+<script src="dc-runtime.js?v=17.11.2026_1333"></script>
+<script src="app.js?v=17.11.2026_1333"></script>
 <script>
 (function () {
   var props = {"accent": "#0F6CBD", "dark": false, "density": "normal"};

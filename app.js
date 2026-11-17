@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 17.11.2026 12:24 */
+/* Engineering Cockpit – Entwurf, Stand 17.11.2026 13:33 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -1010,7 +1010,7 @@ class Component extends DCLogic {
     const expanded = Object.assign({}, this.state.expanded);
     let p = PARENT[nodeId]; while (p) { expanded[p] = true; p = PARENT[p]; }
     const mview = Object.assign({}, this.state.mview, { sm42p: 'gantt' });
-    this.setState({ screen: 'projekt', proj: 'sm42', ptab: 'planung', ampel: 'alle', expanded, highlight: nodeId, mview, panel: { kind: 'node', id: nodeId, from: 'planung' } });
+    this.setState({ screen: 'projekt', proj: 'sm42', ptab: 'planung', ampel: 'alle', expanded, highlight: nodeId, mview, panel: { kind: 'node', id: nodeId, from: 'planung' }, akMsg: '' });
   }
   toggleDone(id) {
     const t = TASK[id];
@@ -1749,7 +1749,7 @@ class Component extends DCLogic {
         hasKids, noKids: !hasKids, expanded: s.expanded[n.id] ? 'true' : 'false', chev: s.expanded[n.id] ? 'rotate(90deg)' : 'none',
         toggleLabel: (s.expanded[n.id] ? 'Zuklappen: ' : 'Aufklappen: ') + n.name,
         toggle: () => { const e = Object.assign({}, s.expanded); e[n.id] = !e[n.id]; this.setState({ expanded: e }); },
-        open: () => this.setState({ highlight: n.id, panel: { kind: 'node', id: n.id, from: 'planung' } }),
+        open: () => this.setState({ highlight: n.id, panel: { kind: 'node', id: n.id, from: 'planung' }, akMsg: '' }),
         hasHint: hint > 0 && status !== 'ueberfaellig', hint: hint + ' überfällig', chip: ch,
         left: pct(dd(START, a) / SPAN * 100), width: point ? '16px' : pct(Math.max((dd(a, b) + 1) / SPAN * 100, 0.8)),
         barH: point ? '16px' : (n.type === 'phase' ? '22px' : '16px'), barMt: point ? '-8px' : (n.type === 'phase' ? '-11px' : '-8px'),
@@ -2880,7 +2880,7 @@ class Component extends DCLogic {
       teamein: { icon: '👥', title: 'Team-Eingang', desc: 'Offene Aufgaben eines Teams', optLabel: 'Team', opts: Object.keys(TEAMS).map(k => [k, TEAMS[k].name]), def: 'automatisierung',
         rows: o => TEAMS[o].inbox.concat((s.teamAdd || {})[o] || []).filter(it => !s.claimed[it.id]).map(it => ({ label: it.title, sub: it.type + ' · ' + it.needs, val: 'fällig ' + it.due, color: it.typeBg, go: () => this.setState({ screen: 'teams', team: o, tpH: 'woche', tpSel: it.id }) })), empty: '✓ Nichts offen.' },
       meilen: { icon: '◆', title: 'Meilensteine und Gates', desc: 'Was in den nächsten Tagen ansteht', optLabel: 'Zeitraum', opts: [[14, '14 Tage'], [30, '30 Tage'], [90, '90 Tage']], def: 30,
-        rows: o => gates.filter(n => dd(TODAY, D(n.end)) >= -7 && dd(TODAY, D(n.end)) <= o).sort((x, y) => (x.end < y.end ? -1 : 1)).map(n => { const dl = dd(TODAY, D(n.end)); return { label: (n.msPoint ? '◆ ' : '◈ ') + n.name, sub: (n.owner || '') + ' · ' + fmt(D(n.end)), val: dl < 0 ? 'überfällig' : (dl === 0 ? 'heute' : 'in ' + dl + ' T.'), color: dl < 0 ? RED : (dl <= 7 ? '#A33F06' : accent), go: () => this.setState({ panel: { kind: 'node', id: n.id, from: 'start' } }) }; }), empty: 'Nichts in diesem Zeitraum.' },
+        rows: o => gates.filter(n => dd(TODAY, D(n.end)) >= -7 && dd(TODAY, D(n.end)) <= o).sort((x, y) => (x.end < y.end ? -1 : 1)).map(n => { const dl = dd(TODAY, D(n.end)); return { label: (n.msPoint ? '◆ ' : '◈ ') + n.name, sub: (n.owner || '') + ' · ' + fmt(D(n.end)), val: dl < 0 ? 'überfällig' : (dl === 0 ? 'heute' : 'in ' + dl + ' T.'), color: dl < 0 ? RED : (dl <= 7 ? '#A33F06' : accent), go: () => this.setState({ panel: { kind: 'node', id: n.id, from: 'start' }, akMsg: '' }) }; }), empty: 'Nichts in diesem Zeitraum.' },
       zert: { icon: '🎓', title: 'Zertifikate laufen ab', desc: 'Schulungen und Berechtigungen aller Teams', optLabel: 'Ablauf in', opts: [[60, '60 Tage'], [180, '6 Monate'], [365, '1 Jahr']], def: 180,
         rows: o => certAll.filter(c => dd(TODAY, D(c.until)) <= o).sort((x, y) => (x.until < y.until ? -1 : 1)).map(c => { const dl = dd(TODAY, D(c.until)); return { label: c.name + ': ' + c.cert, sub: 'Team ' + c.team, val: dl + ' Tage', color: dl <= 30 ? RED : (dl <= 60 ? '#A33F06' : GREEN), go: () => this.setState({ screen: 'teams' }) }; }), empty: 'Nichts läuft ab.' },
       kivor: { icon: '✨', title: 'KI-Vorschläge', desc: 'Entwürfe und Wissens-Vorschläge, die auf dich warten', opts: null,
@@ -3842,7 +3842,12 @@ class Component extends DCLogic {
         nein: { label: 'Nicht bestanden', title: 'Begründung und was bis zum Nachtermin passieren muss', chips: ['Nachtermin in 2 Wochen', 'Punkte aus der Checkliste offen', 'Kunde nicht einverstanden'], send: 'Nicht bestanden speichern', err: 'Bitte begründen, damit das Team weiß, was fehlt.' } };
       const gOpen = Object.keys(GATE_DEF).find(k => s.cmpOpen === 'gt:' + n.id + ':' + k);
       const hasKidsN = !!(n.children && n.children.length);
-      Object.assign(p, { nodeDateEdit: !hasKidsN, nodeDateFixed: hasKidsN, nodeIsPoint: n.type === 'gate', nodeStartIso: n.start, nodeEndIso: n.end, notPoint: n.type !== 'gate',
+      const isMsN = n.kindLabel === 'Meilenstein' || (n.type === 'gate' && n.msPoint), isPt = n.type === 'gate';
+      const msTo = rangeOn => { const P0 = NODE[PARENT[n.id]]; if (rangeOn) { let st = this.isoAdd(n.end, -7); if (P0 && st < P0.start) st = P0.start; Object.assign(n, { type: 'ms', msPoint: false, start: st, children: n.children || [], kindLabel: 'Meilenstein' }); }
+        else { Object.assign(n, { type: 'gate', msPoint: true, start: n.end, kindLabel: 'Meilenstein' }); delete n.children; }
+        this.setState({ rev: (this.state.rev || 0) + 1, akMsg: rangeOn ? '„' + n.name + '“ hat jetzt einen Zeitraum: ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + '. Beginn und Ende darunter ändern.' : '„' + n.name + '“ ist jetzt ein Termin am ' + fmt(D(n.end)) + '.' }); };
+      Object.assign(p, { msModeShow: isMsN && !hasKidsN, msModes: [[true, '◆ Termin (Stichtag)'], [false, '▬ Zeitraum (von–bis)']].map(([pt, l]) => ({ label: l, pressed: isPt === pt ? 'true' : 'false', ring: isPt === pt ? accent : t.border, bg: isPt === pt ? t.soft : t.surface, go: () => { if (isPt !== pt) msTo(!pt); } })),
+        nodeDateEdit: !hasKidsN, nodeDateFixed: hasKidsN, nodeIsPoint: n.type === 'gate', nodeStartIso: n.start, nodeEndIso: n.end, notPoint: n.type !== 'gate',
         setNodeStart: e => this.setNodeDate(n.id, 'start', e && e.target ? e.target.value : ''), setNodeEnd: e => this.setNodeDate(n.id, 'end', e && e.target ? e.target.value : '') });
       const isGate = n.type === 'gate' && !n.msPoint;
       if (isGate) Object.assign(p, {
@@ -3878,20 +3883,20 @@ class Component extends DCLogic {
         ntWho: nMem.slice(0, 7).map(m => ({ name: m, short: m === 'Du' ? 'ich' : m.split(' ').pop(), ini: ini(m), av: AV[m] || accent, pressed: ntW === m ? 'true' : 'false', ring: ntW === m ? accent : t.border, go: () => this.setState({ ntWho: m }) })),
         kidsShow: n.type === 'phase' || n.type === 'ms' || kids.length > 0, noKids: kids.length === 0, kidsTitle: n.type === 'phase' ? 'Arbeitspakete, Meilensteine und Gates' : 'Untermeilensteine und Gates', kidsSum: kids.length ? kids.filter(k => k.chip.label === '✓ Erledigt' || /erledigt/i.test(k.chip.label)).length + ' von ' + kids.length + ' erledigt' : '',
         ...(() => { const nk = s.nkKind || 'ms', nkS = (s.nkStartBy || {})[n.id] || n.start, nkE = (s.nkEndBy || {})[n.id] || n.end, nkW = nMem.includes(s.nkWho) ? s.nkWho : (nMem.includes(n.owner) ? n.owner : 'Du');
-          const KINDS = [['ms', '◆', 'Meilenstein'], ['gate', '◈', 'Quality Gate'], ['ap', '▭', 'Arbeitspaket']];
+          const KINDS = [['ms', '◆', 'Meilenstein (Termin)'], ['msr', '▬', 'Meilenstein (von–bis)'], ['gate', '▣', 'Quality Gate'], ['ap', '▭', 'Arbeitspaket']], rng = nk === 'ap' || nk === 'msr';
           const setBy = (key, v) => this.setState({ [key]: Object.assign({}, this.state[key], { [n.id]: v }) });
           return { nkKinds: KINDS.map(([k, ic, l]) => ({ icon: ic, label: l, pressed: nk === k ? 'true' : 'false', ring: nk === k ? accent : t.border, bg: nk === k ? t.soft : t.surface, go: () => this.setState({ nkKind: k }) })),
-            nkName: s.nkName || '', setNkName: e => this.setState({ nkName: e && e.target ? e.target.value : '' }), nkPh: ({ ms: 'z. B. Grundgestell ausgerichtet', gate: 'z. B. Abnahme Montage', ap: 'z. B. Pneumatik verschlauchen' })[nk],
-            nkIsAp: nk === 'ap', nkIsGate: nk === 'gate', nkStart: nkS, nkEnd: nkE, nkDateLabel: nk === 'ap' ? 'Ende' : 'Termin', setNkStart: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) setBy('nkStartBy', v); }, setNkEnd: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) setBy('nkEndBy', v); },
+            nkName: s.nkName || '', setNkName: e => this.setState({ nkName: e && e.target ? e.target.value : '' }), nkPh: ({ ms: 'z. B. Grundgestell ausgerichtet', msr: 'z. B. Mechanik montiert', gate: 'z. B. Abnahme Montage', ap: 'z. B. Pneumatik verschlauchen' })[nk],
+            nkIsAp: rng, nkIsGate: nk === 'gate', nkStart: nkS, nkEnd: nkE, nkDateLabel: rng ? 'Ende' : 'Termin', setNkStart: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) setBy('nkStartBy', v); }, setNkEnd: e => { const v = e && e.target ? e.target.value : ''; if (/^\d{4}-\d\d-\d\d$/.test(v)) setBy('nkEndBy', v); },
             nkWhoLabel: nk === 'gate' ? 'Entscheidet' : 'Verantwortlich', nkWho: nMem.concat(nk === 'gate' ? ['Geschäftsführung'] : []).slice(0, 8).map(m => ({ name: m, short: m === 'Du' ? 'ich' : m.split(' ').pop(), ini: ini(m), av: AV[m] || '#5C5C5C', pressed: nkW === m ? 'true' : 'false', ring: nkW === m ? accent : t.border, go: () => this.setState({ nkWho: m }) })),
-            nkBtn: ({ ms: 'Meilenstein anlegen', gate: 'Gate anlegen', ap: 'Arbeitspaket anlegen' })[nk],
-            nkAdd: () => { const name = (this.state.nkName || '').trim(); if (!name) return this.setState({ akMsg: 'Erst einen Namen eingeben.' }); if (nk === 'ap' && nkE < nkS) return this.setState({ akMsg: 'Das Ende liegt vor dem Beginn.' });
-              const id = 'nk' + (s.rev || 0) + '_' + Object.keys(NODE).length, kl = ({ ms: 'Meilenstein', gate: 'Quality Gate', ap: 'Arbeitspaket' })[nk];
-              const c = { id, name, type: nk === 'ap' ? 'ms' : 'gate', start: nk === 'ap' ? nkS : nkE, end: nkE, owner: nkW, tasks: [], done: false, kindLabel: kl, msPoint: nk === 'ms', checks: nk === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
-              if (nk === 'ap') c.children = [];
+            nkBtn: ({ ms: 'Meilenstein anlegen', msr: 'Meilenstein anlegen', gate: 'Gate anlegen', ap: 'Arbeitspaket anlegen' })[nk],
+            nkAdd: () => { const name = (this.state.nkName || '').trim(); if (!name) return this.setState({ akMsg: 'Erst einen Namen eingeben.' }); if (rng && nkE < nkS) return this.setState({ akMsg: 'Das Ende liegt vor dem Beginn.' });
+              const id = 'nk' + (s.rev || 0) + '_' + Object.keys(NODE).length, kl = ({ ms: 'Meilenstein', msr: 'Meilenstein', gate: 'Quality Gate', ap: 'Arbeitspaket' })[nk];
+              const c = { id, name, type: rng ? 'ms' : 'gate', start: rng ? nkS : nkE, end: nkE, owner: nkW, tasks: [], done: false, kindLabel: kl, msPoint: nk === 'ms', checks: nk === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
+              if (rng) c.children = [];
               n.children = (n.children || []).concat([c]); NODE[id] = c; PARENT[id] = n.id;
               const fitM = this.fitInto(c, n);
-              this.setState({ rev: (s.rev || 0) + 1, nkName: '', akMsg: kl + ' „' + name + '“ unter „' + n.name + '“ angelegt, ' + (nk === 'ap' ? fmt(D(nkS)) + ' bis ' + fmt(D(nkE)) : 'Termin ' + fmt(D(nkE))) + ' Steht sofort im Gantt' + (nkW !== 'Du' ? ', ' + nkW + ' ist benachrichtigt' : '') + '.' + fitM }); } }; })(),
+              this.setState({ rev: (s.rev || 0) + 1, nkName: '', akMsg: kl + ' „' + name + '“ unter „' + n.name + '“ angelegt, ' + (rng ? fmt(D(c.start)) + ' bis ' + fmt(D(c.end)) : 'Termin ' + fmt(D(c.end))) + '. Steht sofort im Gantt' + (nkW !== 'Du' ? ', ' + nkW + ' ist benachrichtigt' : '') + '.' + fitM }); } }; })(),
         ntAdd: ntAddF, ntHasLoose: loose.length > 0, ntLoose: loose.map(x => ({ label: x.title, title: x.title + ' · fällig ' + fmt(D(x.due)) + ' · ' + this.ownerOf(x), go: () => linkTask(x.id, '„' + x.title + '“ gehört jetzt zu „' + n.name + '“.') })),
         kids, hasKids: kids.length > 0, shiftBtns: [['◀ 1 Woche früher', 'move', -7], ['1 Woche später ▶', 'move', 7]].concat(n.type !== 'gate' ? [['Start +1 Woche (kürzer)', 'start', 7], ['Ende −1 Woche (kürzer)', 'end', -7], ['Ende +1 Woche (länger)', 'end', 7]] : []).map(([label, md, d]) => ({ label, go: () => this.shiftNode(n.id, md, d) })), tasks: tks, hasTasks: tks.length > 0, canJump: !inPlanung, jump: () => this.jumpTo(n.id)
       });
