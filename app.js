@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 16.11.2026 15:58 */
+/* Engineering Cockpit – Entwurf, Stand 17.11.2026 08:53 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -20,7 +20,8 @@ if (typeof document !== 'undefined' && !window.__ecKeys) { window.__ecKeys = tru
 const PCODE = { 'SM42 Schraubstation': 'SM42', 'Retrofit Linie 2': 'RL2', 'Prüfstand Drehmoment': 'PD', 'Instandhaltung Halle 2': 'IH', 'Ohne Projekt': 'ICH', 'MES-Anbindung Halle 1': 'MES' }, KCNT = {};
 const LNK_SEED = { t12: [['blockiert durch', 't1']] };
 const HIST_SEED = { 't:t1': [['12.11. 15:40', 'T. Brandt', 'Angelegt', '', 'Stromlaufplan Schutztür freigeben'], ['12.11. 15:42', 'T. Brandt', 'Verantwortlich', 'T. Brandt', 'Du'], ['13.11. 08:05', 'Du', 'Bucket', 'Backlog', 'Fokus']], 'n:m42': [['04.11. 10:20', 'Du', 'Ende', '27.11.', '04.12.'], ['11.11. 14:05', 'L. Wagner', 'Doku', '', 'Grundgestell geliefert']] };
-const PRIO = { 'Dringend': '#C50F1F', 'Hoch': '#5B2D90', 'Mittel': '#0E6E7A', 'Niedrig': '#5C5C5C' };
+const ARB_T = [['aufgaben', '☰', 'Meine Aufgaben', false], ['fokus', '★', 'Fokus', true], ['tag', '🕘', 'Mein Tag planen', true], ['besprechung', '🗒', 'Besprechungsnotizen', true]];
+const PRIO = { 'Dringend': '#C50F1F', 'Hoch': '#5B2D90', 'Mittel': '#0E6E7A', 'Niedrig': '#5C5C5C' }; const PRIO0 = Object.assign({}, PRIO);
 const LABELS = [['mech', 'Mechanik', '#0F6CBD'], ['elek', 'Elektrik', '#C19C00'], ['sw', 'Software', '#0E7A6E'], ['kunde', 'Kunde', '#5B2D90'], ['eink', 'Einkauf', '#A33F06'], ['sich', 'Sicherheit', '#C50F1F']];
 const LBL_SEED = { t1: ['elek', 'sich'], t2: ['eink'], t3: ['sw'], t12: ['mech'] };
 const CHK_SEED = { t1: [['Schutztürkreis K3 prüfen', true], ['Schutztürkreis K7 prüfen', false], ['Anmerkungen ins PDF', false], ['Freigabe an T. Brandt', false]], t3: [['Testfälle aus Lastenheft', true], ['Simulation PLCSIM', true], ['Test an der Maschine', false]] };
@@ -303,6 +304,10 @@ const WK = {}; WISSEN.forEach(w => { WK[w.id] = w; });
 const BOSS = { 'Du': 'H. Lorenz', 'S. Keller': 'Du', 'L. Wagner': 'Du', 'T. Brandt': 'L. Wagner', 'M. Yilmaz': 'S. Keller', 'J. Novak': 'S. Keller', 'K. Weber': 'R. Fischer' };
 const TEAM_OF = { 'Du': 'Automatisierung', 'S. Keller': 'Automatisierung', 'M. Yilmaz': 'Automatisierung', 'J. Novak': 'Automatisierung', 'L. Wagner': 'Konstruktion', 'T. Brandt': 'Konstruktion', 'K. Weber': 'Instandhaltung', 'R. Fischer': 'Instandhaltung' };
 const LOAD47 = { 'Du': 86, 'S. Keller': 92, 'L. Wagner': 90, 'T. Brandt': 82, 'M. Yilmaz': 68, 'J. Novak': 74, 'K. Weber': 75 };
+const DIR = (() => { const F = ['Anna', 'Ben', 'Clara', 'David', 'Elena', 'Felix', 'Greta', 'Hannes', 'Ida', 'Jonas', 'Katrin', 'Lukas', 'Mara', 'Nils', 'Olga', 'Paul', 'Rita', 'Sven', 'Tanja', 'Uwe', 'Vera', 'Willi', 'Yasemin', 'Zoe', 'Ahmet'];
+  const L = ['Bauer', 'Becker', 'Braun', 'Fuchs', 'Hahn', 'Hartmann', 'Hoffmann', 'Jung', 'Kaiser', 'Klein', 'Koch', 'Krause', 'Lang', 'Lehmann', 'Meyer', 'Müller', 'Neumann', 'Peters', 'Richter', 'Schmitz'];
+  const T = [['Konstruktion', 'L. Wagner'], ['Elektroplanung', 'T. Brandt'], ['Instandhaltung', 'R. Fischer'], ['Qualität', 'H. Lorenz'], ['Einkauf', 'H. Lorenz'], ['Logistik', 'H. Lorenz'], ['Produktion', 'H. Lorenz'], ['IT', 'H. Lorenz'], ['Automatisierung', 'S. Keller'], ['Vertrieb', 'H. Lorenz']];
+  const out = []; for (let i = 0; i < 500; i++) { const n = F[i % F.length] + ' ' + L[Math.floor(i / F.length) % L.length], tm = T[(i * 7) % T.length]; out.push([n, tm[0]]); BOSS[n] = tm[1]; TEAM_OF[n] = tm[0]; LOAD47[n] = 40 + ((i * 37) % 70); } return out; })();
 const NT_PEOPLE = ['M. Yilmaz', 'J. Novak', 'S. Keller', 'L. Wagner', 'K. Weber'];
 const P_FAM = [['liste', '☐', 'Liste und Board', 'Aufgaben als Liste und Board mit Buckets. Für kleine Vorhaben ohne Ballast.', '#5C5C5C'], ['kanban', '▥', 'Kanban', 'Laufende Arbeit im Fluss mit WIP-Limits, z. B. Instandhaltung, Support.', '#A33F06'],
   ['wf', '▭', 'Wasserfall', 'Phasen, Meilensteine und Quality Gates im Gantt. Klassisch für Anlagen und Maschinen.', '#0F6CBD'], ['v', 'V', 'V-Modell', 'Anforderungen bis Validierung mit Verfolgbarkeit, z. B. Sicherheitsfunktionen.', '#5B2D90'], ['scrum', '⟳', 'Scrum', 'Sprints mit Backlog, Planning und Review, z. B. Software.', '#0E7A6E']];
@@ -514,7 +519,7 @@ class Component extends DCLogic {
       rview: 'portfolio', rFilter: 'alle', rMsg: '', rAuto: false, porder: ['sm42', 'rl2', 'pd', 'ih', 'mes', 'ets'],
       wcat: 'alle', wtag: null, wHelp: {}, wMsg: '',
       nt: { who: 'ich', person: 'M. Yilmaz', proj: 'Ohne Projekt', h: 4, due: '2026-11-20', co: [], rep: 'nie', kind: 'aufgabe', title: '', ctx: null, parent: null, date: '2026-11-27', dur: 14, owner: 'Du', check: 'Konstruktionsfreigabe' },
-      arbTab: 'tag', panelW: 420, panelMax: false, descEdit: null, themeMode: 'system', accentOv: null, densOv: null, profMsg: '', prof: { title: 'Projektingenieur Automatisierung', site: 'Werk 1', phone: '+49 2722 62-0', pic: '#5B2D90', photo: false, levels: { 'TIA Portal': 3, 'Safety': 3, 'KUKA': 1, 'Profinet': 2, 'WinCC': 2, 'Projektmanagement': 3 }, extra: [], certs: [['Safety-Schulung (TÜV)', '2027-01-05']], hours: 35, days: [true, true, true, true, true], share: 80, start: '07:00', deputy: 'S. Keller' }, notif: { mail: true, push: true, teams: false, digest: true, quiet: true, mention: true }, cal: { outlook: true, block: true, ical: false, fokusFree: true }, kiPref: { outlook: true, drafts: true, replies: true, mails: true, termine: true, status: true, wissen: true, team: true }, drState: {}, drSlot: {}, drMsg: '', drVar: {}, q: '', drIdx: 0, kmState: {}, kmIdx: 0, kmMsg: '', tpH: 'woche', tpKi: false, tdKi: false, tpW: 0, tpZoom: 'w1', teamAdd: {}, tdPlan: {}, tdSel: null, recurAdd: {}, pSub: 'details', akte: {}, akMsg: '', akTyp: 'Notiz', akH: 1, akD: 'heute', akWho: 'Du', akSup: 'Würth', akSupQ: '', supAdd: [], akView: null, akKind: 'Material', akAmt: '', akBeleg: false, nodeCo: { m42: ['T. Brandt'], m23: ['T. Brandt', 'L. Wagner'] }, invAdd: {}, coOv: { t12: ['L. Wagner'], t5: ['S. Keller'], t10: ['Du'], t3: ['S. Keller'] }, kiSkip: {},
+      arbTab: 'aufgaben', panelW: 420, panelMax: false, descEdit: null, themeMode: 'system', accentOv: null, densOv: null, profMsg: '', prof: { title: 'Projektingenieur Automatisierung', site: 'Werk 1', phone: '+49 2722 62-0', pic: '#5B2D90', photo: false, levels: { 'TIA Portal': 3, 'Safety': 3, 'KUKA': 1, 'Profinet': 2, 'WinCC': 2, 'Projektmanagement': 3 }, extra: [], certs: [['Safety-Schulung (TÜV)', '2027-01-05']], hours: 35, days: [true, true, true, true, true], share: 80, start: '07:00', deputy: 'S. Keller' }, notif: { mail: true, push: true, teams: false, digest: true, quiet: true, mention: true }, cal: { outlook: true, block: true, ical: false, fokusFree: true }, kiPref: { outlook: true, drafts: true, replies: true, mails: true, termine: true, status: true, wissen: true, team: true }, drState: {}, drSlot: {}, drMsg: '', drVar: {}, q: '', drIdx: 0, kmState: {}, kmIdx: 0, kmMsg: '', tpH: 'woche', tpKi: false, tdKi: false, tpW: 0, tpZoom: 'w1', teamAdd: {}, tdPlan: {}, tdSel: null, recurAdd: {}, pSub: 'details', akte: {}, akMsg: '', akTyp: 'Notiz', akH: 1, akD: 'heute', akWho: 'Du', akSup: 'Würth', akSupQ: '', supAdd: [], akView: null, akKind: 'Material', akAmt: '', akBeleg: false, nodeCo: { m42: ['T. Brandt'], m23: ['T. Brandt', 'L. Wagner'] }, invAdd: {}, coOv: { t12: ['L. Wagner'], t5: ['S. Keller'], t10: ['Du'], t3: ['S. Keller'] }, kiSkip: {},
       txt: {}, cmpOpen: null, cmpErr: null, reqTxt: {}, gateRes: {}, wait: { t2: { who: 'Lieferant', why: 'Angebot Servoantriebe, angefragt am 04.11.', until: '18.11.', since: '04.11.' }, t12: { who: 'L. Wagner', why: 'Überarbeiteter Pneumatikplan, Ventilinsel neu dimensionieren', until: '16.11.', since: '10.11.' } }, waitAsk: null, waitEdit: null, waitDraft: {}, comments: {}, pMsg: '',
       tplan: {}, tpSel: null, tpMsg: '', meetDay: {}, weekMsg: '', daySel: '2026-11-13', daySel2: null, dayMsg: '', dayPlan: { '2026-11-13': [{ id: 't2', start: 7, h: 0.5 }, { id: 't3', start: 8.5, h: 1 }] }, ovBy: {}, ovEdit: false, kiSum: {}, kiUse: { mail: true, status: true, risiko: true, ll: true, sum: true }, sent: [], reqObj: {}, reqAns: {},
       aStep: 1, aClar: 1, aTech: 2, aTeams: { auto: true }, aEff: 1, aStartI: 1, aSent: false, aAnswered: false, aMsg: '',
@@ -524,7 +529,7 @@ class Component extends DCLogic {
       focus: { qual: 2, umwelt: 1, audit: 1, kosten: 3, prod: 2, ress: 1, entl: 1, arb: 1 }, aThemeSel: ['prod', 'entl'],
       mview: { arbeit: 'liste', sm42: 'board', sm42p: 'gantt', pd: 'liste', pdp: 'vmodel', rl2: 'board', rl2p: 'scrum', ih: 'kanban', ihp: 'gantt' }, bk: {}, fSort: [],
       blane: {}, calP: {}, ownerOv: {}, dragOver: null, mvMsg: '', raciBy: {}, rev: 0,
-      dOrder: ['aufgaben', 'fokus', 'eingang', 'projekte', 'last', 'woche'], dSize: {}, dHidden: {}, dashMsg: '', dH: {}, dExtra: [], dOpt: {}, dOptOpen: null, dNote: '', ibl: {}, iblOpen: false, detMode: 'seite', upAddK: 'phase', upDur: 28, upRole: {}, upAkv: {}, upRaci: {}, impRaw: '', impMap: {}, impOff: {}, impProj: 'SM42 Schraubstation', impMsg: '', impDone: false, impLast: null, blOn: true, blBy: {}, blMsg: '', crBy: {}, crNew: null, crMsg: '', chatMode: 'auto', chat: null, chatOpen: false, chatIn: '', kiToneBy: {}, kiNoteBy: {}, hist: {}, lnk: null, lnkOpen: false, lnkQ: '', lnkType: 'blockiert durch', delAsk: null, trash: [], trashOpen: false, trMsg: '', ko: null, koMsg: '', koErr: '', koEf: '', koUsR: '', koUsZ: '', koUsN: '', koOut: '', koRisk: '', nkKind: 'ms', nkName: '', nkWho: null, nkStartBy: {}, nkEndBy: {}, mvg: {}, svBy: {}, ntText: '', ntDue: '', ntWho: null, mvf: {}, mvfOpen: {}, lblNames: {}, propOpen: null, lbl: {}, lblEdit: false, chk: {}, chkNew: '', pplOpen: null, pplQ: '', newP: null, uprojs: [], upSel: null, upTab: 'uebersicht', upView: 'board', upGate: {}, psetBy: {}, userTpl: [], qa: null, qaText: '', qaDue: '', pnMsg: '', absAdd: [], absKind: 'Urlaub', absFrom: '2026-12-21', absTo: '2026-12-23', absMsg: '', absLast: null, absDone: {}, ntfOpen: false, ntfRead: {}, ntfF: 'alle', mtSel: 'mt2', mtNotes: {}, mtProt: {}, mtMsg: '',
+      dOrder: ['aufgaben', 'fokus', 'eingang', 'projekte', 'last', 'woche'], dSize: {}, dHidden: {}, dashMsg: '', dH: {}, dExtra: [], dOpt: {}, dOptOpen: null, dNote: '', ibl: {}, iblOpen: false, detMode: 'popup', upAddK: 'phase', upDur: 28, upRole: {}, upAkv: {}, upRaci: {}, impRaw: '', impMap: {}, impOff: {}, impProj: 'SM42 Schraubstation', impMsg: '', impDone: false, impLast: null, blOn: true, blBy: {}, blMsg: '', crBy: {}, crNew: null, crMsg: '', chatMode: 'auto', chat: null, chatOpen: false, chatIn: '', kiToneBy: {}, kiNoteBy: {}, hist: {}, lnk: null, lnkOpen: false, lnkQ: '', lnkType: 'blockiert durch', delAsk: null, trash: [], trashOpen: false, trMsg: '', ko: null, koMsg: '', koErr: '', koEf: '', koUsR: '', koUsZ: '', koUsN: '', koOut: '', koRisk: '', nkKind: 'ms', nkName: '', nkWho: null, nkStartBy: {}, nkEndBy: {}, mvg: {}, svBy: {}, ntText: '', ntDue: '', ntWho: null, mvf: {}, mvfOpen: {}, lblNames: {}, propOpen: null, lbl: {}, lblEdit: false, chk: {}, chkNew: '', pplOpen: null, pplQ: '', newP: null, uprojs: [], upSel: null, upTab: 'uebersicht', upView: 'board', upGate: {}, psetBy: {}, userTpl: [], qa: null, qaText: '', qaDue: '', pnMsg: '', absAdd: [], absKind: 'Urlaub', absFrom: '2026-12-21', absTo: '2026-12-23', absMsg: '', absLast: null, absDone: {}, ntfOpen: false, ntfRead: {}, ntfF: 'alle', mtSel: 'mt2', mtNotes: {}, mtProt: {}, mtMsg: '',
       setSub: null, bucketsBy: {}, rightsBy: {}, rolesExtra: {}, rulesBy: {}, rb: { trig: 0, obj: 1, act: 0, to: 0 }, setMsg: '', asRole: 'Leser',
       moScreen: 'list', moSel: 'k7', moChecks: {}, moTimer: false, moBooked: 0, moPhoto: 0, moArt: 0, moDring: 0, moMsg: '', moMsgOk: true };
   }
@@ -650,6 +655,8 @@ class Component extends DCLogic {
     const m0 = '„' + n.name + '“ ' + (n.type === 'gate' ? 'ist jetzt am ' + fmt(D(n.end)) + D(n.end).getFullYear() : 'liegt jetzt von ' + fmt(D(n.start)) + ' bis ' + fmt(D(n.end)) + D(n.end).getFullYear()) + ' (von Hand eingetragen). Die Baseline bleibt zum Vergleich erhalten.';
     this.setState({ rev: (this.state.rev || 0) + 1, mvMsg: m0, pnMsg: m0 });
   }
+  tabSeen(pk, role, k) { if (k === 'uebersicht' || k === 'aufgaben' || role === 'Owner') return true; const rv = ((this.state.pTabRole || {})[pk] || {})[role]; if (rv && rv[k] !== undefined) return rv[k];
+    return role === 'Bearbeiter' ? true : ({ Mitwirkender: ['dokumente'], Leser: [], Gast: [] }[role] || []).includes(k); }
   canPlan(pk) { const r = (PMEMBERS[pk] || []).find(x => x[0] === 'Du'); return !r || r[1] === 'Owner' || r[1] === 'Bearbeiter'; }
   dateEdit(n, can) { const pt = n.type === 'gate', ok = v => /^\d{4}-\d\d-\d\d$/.test(v || '') && +v.slice(0, 4) >= 2020 && +v.slice(0, 4) <= 2100, val = e => (e && e.target ? e.target.value : '');
     return { edit: !!can, ro: !can, roTitle: can ? '' : 'Nur lesen: Termine ändern dürfen Owner und Bearbeiter.', range: !pt, a: n.start, b: n.end, aLabel: 'Beginn ' + n.name, bLabel: (pt ? 'Termin ' : 'Ende ') + n.name, bTitle: pt ? 'Termin ändern' : 'Ende ändern',
@@ -694,7 +701,7 @@ class Component extends DCLogic {
     return { subject, text: (text.charAt(0).toUpperCase() + text.slice(1)) }; }
   pnm(pk) { return PNAME_OF[pk] || ((this.state.uprojs || []).find(u => u.key === pk) || {}).name || ''; }
   modGroups(ps, toggle, t, accent, own) { const INFO = { tasks: ['Liste, Board, Kalender, Personen, Dateien an jeder Aufgabe', 'Reiter Aufgaben'], plan: ['Phasen, Meilensteine, Quality Gates, Arbeitspakete', 'Reiter Planung'], zeit: ['Zeiten an Aufgaben buchen, Wochenzettel', 'Aufgabe › Zeiten'], docs: ['Dokumente und Fotos am Projekt', 'Aufgabe › Dateien'],
-      res: ['Auslastung der Mitglieder, Projektanteile', 'Reiter Team'], budget: ['Budget, Kosten, Rechnungen, Nachträge', own ? 'Reiter Budget' : 'Reiter Finanzen'], risk: ['Risikoregister mit Wahrscheinlichkeit × Auswirkung', own ? 'Reiter Risiken' : 'Reiter Analyse'], raci: ['Wer führt aus, verantwortet, wird gefragt, informiert; Freigabegrenzen', 'Reiter Team'],
+      res: ['Auslastung der Mitglieder, Projektanteile', 'Reiter Team'], budget: ['Budget, Kosten, Rechnungen, Nachträge', 'Reiter Finanzen'], risk: ['Risikoregister mit Wahrscheinlichkeit × Auswirkung', 'Reiter Analyse'], raci: ['Wer führt aus, verantwortet, wird gefragt, informiert; AKV mit Freigabegrenzen', 'Reiter Team › RACI und AKV'],
       status: ['Statusbericht für Auftraggeber und Portfolio', 'Berichte'], req: ['Anforderungen mit Nachweis', own ? 'Reiter Anforderungen' : 'Planung › V-Modell'], cr: ['Änderungen an Umfang, Termin, Kosten mit Freigabe', 'Planung › Change Requests'], test: ['Testfälle zu Anforderungen, Nachweis je Anforderung', own ? 'Reiter Anforderungen' : 'Planung › Verfolgbarkeit'], audit: ['Prüfpfad aller Änderungen', 'Verlauf an jedem Objekt'] };
     const isOn = k => { const m = P_MODS.find(x => x[0] === k); return ps.mods && ps.mods[k] !== undefined ? ps.mods[k] : (m ? m[2] <= ps.stufe : true); };
     return [[1, 'Immer dabei'], [2, 'Ab Stufe 2 · Projekt'], [3, 'Ab Stufe 3 · Gesteuert'], [4, 'Stufe 4 · Reguliert']].map(([lv, title]) => ({ title, items: P_MODS.filter(m => m[2] === lv).map(([k, label]) => { const on = isOn(k), fixed = k === 'tasks', soon = /kommt/.test(INFO[k][1]);
@@ -711,12 +718,13 @@ class Component extends DCLogic {
     const inv = s.mbrInv === pk, q = (s.mbrQ || '').trim(), ql = q.toLowerCase(), have = new Set(L.map(x => x[0])), who = s.mbrWho && !have.has(s.mbrWho) ? s.mbrWho : null, role = s.mbrRole || 'Bearbeiter', pct = s.mbrPct || '20 %';
     const cands = Object.keys(AV).filter(n => !['System', 'Kunde'].includes(n) && !have.has(n)).map(n => ({ n, isT: false, sub: teamOf(n), color: AV[n], code: ini0(n) }))
       .concat(TM.filter(T => !have.has('Team ' + T.name)).map(T => ({ n: 'Team ' + T.name, isT: true, sub: 'ganzes Team · ' + T.members.length + ' Personen · Leitung ' + T.lead, color: T.color, code: T.code })))
+      .concat(ql ? DIR.filter(d => !have.has(d[0]) && !AV[d[0]]).map(d => ({ n: d[0], isT: false, sub: d[1], color: '#5C5C5C', code: ini0(d[0]) })) : [])
       .filter(c => !ql || c.n.toLowerCase().includes(ql) || c.sub.toLowerCase().includes(ql));
     const add = (name, isT, r, p0, tm) => commit(L.concat([[name, r, tm, p0, isT]]), (isT ? name + ' ist als ' + r + ' im Projekt. Aufgaben kannst du jetzt an das ganze Team geben; die Teamleitung verteilt sie.' : name + ' ist als ' + r + ' im Projekt' + (p0 !== '–' ? ' (' + p0 + ')' : '') + '.') + ' Benachrichtigung geht per Mail raus (im Entwurf simuliert).', { mbrInv: null, mbrWho: null, mbrQ: '' });
     return { akvOn: !!akvOn, akvCol: akvOn ? '130px' : '0px', count: L.length + (L.length === 1 ? ' Mitglied' : ' Mitglieder'), hasMsg: !!s.mbrMsg && s.mbrMsgPk === pk, msg: s.mbrMsg || '',
       inv: { open: inv, openA: inv ? 'true' : 'false', btn: inv ? '✕ Einladen schließen' : '+ Person oder Team einladen', btnBg: inv ? t.soft : t.surface, toggle: () => this.setState({ mbrInv: inv ? null : pk, mbrQ: '', mbrWho: null, mbrMsg: '' }),
         q, setQ: e => this.setState({ mbrQ: e && e.target ? e.target.value : '' }),
-        cands: cands.slice(0, 9).map(c => ({ label: c.n, sub: c.sub, ini: c.code, color: c.color, round: c.isT ? '8px' : '50%', pressed: who === c.n ? 'true' : 'false', ring: who === c.n ? accent : t.border, bg: who === c.n ? t.soft : t.surface, go: () => this.setState({ mbrWho: who === c.n ? null : c.n }) })),
+        candInfo: ql ? cands.length + ' Treffer' + (cands.length > 9 ? ', die ersten 9. Genauer suchen.' : '') : 'Vorschläge. Die Suche findet alle 500 Kollegen nach Name, Team oder Abteilung.', cands: cands.slice(0, 9).map(c => ({ label: c.n, sub: c.sub, ini: c.code, color: c.color, round: c.isT ? '8px' : '50%', pressed: who === c.n ? 'true' : 'false', ring: who === c.n ? accent : t.border, bg: who === c.n ? t.soft : t.surface, go: () => this.setState({ mbrWho: who === c.n ? null : c.n }) })),
         none: !cands.length, canGuest: q.length > 2, guestLabel: '„' + q + '“ als Gast (extern) einladen', guest: () => add(q, false, 'Gast', '–', 'extern'),
         roles: R5.map(r => chip(role === r, () => this.setState({ mbrRole: r }), r)), roleHint: RH[role], pcts: PC.map(p0 => chip(pct === p0, () => this.setState({ mbrPct: p0 }), p0)),
         sendLabel: who ? who + ' als ' + role + ' einladen' : 'Erst Person oder Team wählen', sendBg: who ? accent : t.strong,
@@ -847,11 +855,12 @@ class Component extends DCLogic {
     if (t.kb) return this.kbTo(t.kb, this.isDone(t) ? 'arbeit' : 'erledigt');
     const done = Object.assign({}, this.state.done), was = this.isDone(t); done[id] = !was; this.setState({ done }); this.logH('t:' + id, 'Status', was ? 'erledigt' : 'offen', was ? 'offen' : 'erledigt');
   }
-  openInbox(id) { const read = Object.assign({}, this.state.read); read[id] = true; this.setState({ screen: 'eingang', inSel: id, read, panel: null }); }
+  openInbox(id) { const read = Object.assign({}, this.state.read); read[id] = true; this.setState({ screen: 'eingang', inSel: id, read, panel: null, inTab: 'msg', inFilter: 'alle', navOpen: false }); }
   isUnread(m) { return !this.state.read[m.id] && ['i1', 'i8', 'i2', 'i3', 'i4'].includes(m.id); }
   decide(id, text) { const result = Object.assign({}, this.state.result); result[id] = text; this.setState({ result }); }
 
   renderVals() {
+    Object.assign(PRIO, PRIO0, this.state.prioC || {});
     TASKS.forEach(x => this.kenn(x));
     const { t, accent, accentText } = this.theme();
     const s = this.state;
@@ -881,7 +890,7 @@ class Component extends DCLogic {
     const nav = {};
     keys.forEach(k => {
       const on = navScreen === k;
-      nav[k] = { bg: on ? t.soft : 'transparent', fw: on ? 700 : 500, ic: on ? accent : t.muted, go: () => this.setState({ screen: k, panel: null }) };
+      nav[k] = { bg: on ? t.soft : 'transparent', fw: on ? 700 : 500, ic: on ? accent : t.muted, go: () => this.setState({ screen: k, panel: null, navOpen: false }) };
     });
     const is = { start: s.screen === 'start', arbeit: s.screen === 'arbeit', projekte: s.screen === 'projekte', projekt: s.screen === 'projekt', teams: s.screen === 'teams', eingang: s.screen === 'eingang', berichte: s.screen === 'berichte', wissen: s.screen === 'wissen', antrag: s.screen === 'antrag', admin: s.screen === 'admin', mobil: s.screen === 'mobil', profil: s.screen === 'profil', pnew: s.screen === 'pnew', pn: s.screen === 'pn', kickoff: s.screen === 'kickoff', import: s.screen === 'import' };
     is.other = !Object.values(is).some(Boolean);
@@ -904,7 +913,7 @@ class Component extends DCLogic {
     ];
     const counters = C.map(c => ({ label: c.label, count: c.count, dot: c.dot, dotBd: c.dotBd, numColor: c.num, pressed: s.filter === c.key ? 'true' : 'false', ring: s.filter === c.key ? accent : t.border,
       pick: () => this.setState({ filter: s.filter === c.key ? 'alle' : c.key }),
-      goArbeit: () => this.setState({ screen: 'arbeit', filter: c.key, panel: null }) }));
+      goArbeit: () => this.setState({ screen: 'arbeit', arbTab: 'aufgaben', filter: c.key, panel: null }) }));
     const groupOf = a => {
       if (a.s === 'erledigt' || a.s === 'ueberfaellig' || a.s === 'heute') return a.s;
       return dd(TODAY, D(a.x.due)) <= 7 ? 'woche' : 'spaeter';
@@ -955,6 +964,9 @@ class Component extends DCLogic {
 
     // Posteingang
     const unreadCount = INBOX.filter(m => this.isUnread(m)).length;
+    const inTabK = s.inTab || 'msg', nUnread = INBOX.filter(m => this.isUnread(m)).length;
+    const inTab = { msg: inTabK === 'msg', anf: inTabK === 'anf', ent: inTabK === 'ent' };
+    const inTabs = [['msg', 'Nachrichten', nUnread], ['anf', 'Neue Aufgaben für dich', 0], ['ent', 'Entwürfe', 0]].map(([k, l, n]) => { const on = inTabK === k; return { label: l, sel: on ? 'true' : 'false', bg: on ? t.surface : 'transparent', fg: on ? t.text : t.muted, sh: on ? '0 1px 2px rgba(0,0,0,0.12)' : 'none', hasN: n > 0, n: String(n), go: () => this.setState({ inTab: k }) }; });
     const inboxPreview = INBOX.slice(0, 4).map(m => ({ title: m.title, typeLabel: m.typeLabel, time: m.time, ini: ini(m.from), avColor: AV[m.from] || accent, unread: this.isUnread(m), open: () => this.openInbox(m.id) }));
     const IF = [['alle', 'Alle'], ['erwaehnung', 'Erwähnungen'], ['freigabe', 'Freigaben'], ['antrag', 'Anträge'], ['system', 'System']];
     const inboxFilters = IF.map(([k, l]) => ({ label: l, count: k === 'alle' ? INBOX.length : INBOX.filter(m => m.type === k).length, sel: s.inFilter === k ? 'true' : 'false', ring: s.inFilter === k ? accent : t.border, pick: () => this.setState({ inFilter: k }) }));
@@ -1524,9 +1536,9 @@ class Component extends DCLogic {
     const setOv = patch => { const cur = Object.assign({ order: OV_ALL, hidden: { mine: true, budget: true, log: true, themen: true, ki: true }, size: {} }, (this.state.ovBy || {})[OVK] || {}); const p2 = typeof patch === 'function' ? patch(cur) : patch; this.setState({ ovBy: Object.assign({}, this.state.ovBy, { [OVK]: Object.assign({}, cur, p2) }) }); };
     const ovw = {};
     OV_ALL.forEach(k => { const sz = ovS.size[k] !== undefined ? ovS.size[k] : 0, hot = s.dragOver === 'ov|' + k;
-      ovw[k] = { order: ovS.order.indexOf(k), disp: ovS.hidden[k] ? 'none' : 'block', flex: OSZ[sz][0], sizeLabel: OSZ[sz][1], border: hot ? '3px solid ' + accent : '1px solid ' + t.border, draggable: s.ovEdit ? 'true' : 'false',
-        start: s.ovEdit ? this.dragStart('ov:' + k) : () => {}, over: s.ovEdit ? this.dragOver('ov|' + k) : () => {},
-        drop: s.ovEdit ? this.dropOn('ov|' + k, id => { if (typeof id !== 'string' || id.indexOf('ov:') !== 0) return; const from = id.slice(3); if (from === k) return; setOv(cur => { const o = cur.order.filter(x => x !== from); o.splice(o.indexOf(k), 0, from); return { order: o }; }); }) : () => {},
+      ovw[k] = { order: ovS.order.indexOf(k), disp: ovS.hidden[k] ? 'none' : 'block', flex: OSZ[sz][0], sizeLabel: OSZ[sz][1], border: hot ? '3px solid ' + accent : '1px solid ' + t.border, draggable: 'true',
+        start: e => { if (e && e.target !== e.currentTarget) return; this.dragStart('ov:' + k)(e); }, over: this.dragOver('ov|' + k),
+        drop: true ? this.dropOn('ov|' + k, id => { if (typeof id !== 'string' || id.indexOf('ov:') !== 0) return; const from = id.slice(3); if (from === k) return; setOv(cur => { const o = cur.order.filter(x => x !== from); o.splice(o.indexOf(k), 0, from); return { order: o }; }); }) : () => {},
         smaller: () => setOv(cur => ({ size: Object.assign({}, cur.size, { [k]: Math.max(0, (cur.size[k] || 0) - 1) }) })), wider: () => setOv(cur => ({ size: Object.assign({}, cur.size, { [k]: Math.min(OSZ.length - 1, (cur.size[k] || 0) + 1) }) })),
         hide: () => setOv(cur => ({ hidden: Object.assign({}, cur.hidden, { [k]: true }) })) }; });
     const ovPal = OV_ALL.filter(k => ovS.hidden[k]).map(k => ({ label: '+ ' + OV_T[k], go: () => setOv(cur => { const h = Object.assign({}, cur.hidden); delete h[k]; return { hidden: h }; }) }));
@@ -1743,7 +1755,9 @@ class Component extends DCLogic {
       more: !!nts.more, moreOpen: nts.more ? 'true' : 'false', moreIcon: nts.more ? '▾' : '▸', moreToggle: setNt({ more: !nts.more }),
       moreSum: [(nts.rep || 'nie') !== 'nie' ? '🔁 ' + nts.rep : 'einmalig', (nts.co || []).length ? '👥 ' + nts.co.join(', ') : ''].filter(Boolean).join(' · '),
       forBtns: [['ich', 'Ich'], ['andere', 'Eine Person'], ['team', 'Ein Team']].map(([k, label]) => ({ label, pressed: nts.who === k ? 'true' : 'false', bg: nts.who === k ? t.surface : 'transparent', fg: nts.who === k ? t.text : t.muted, go: setNt({ who: k }) })),
-      people: NT_PEOPLE.map(n => Object.assign(pick(nts.person === n, n, { person: n }), { name: n, ini: ini(n), av: AV[n] || accent, boss: (TEAM_OF[n] === TEAM_OF['Du'] ? 'Dein Team' : 'Team ' + TEAM_OF[n]) + ' · Chef: ' + (BOSS[n] === 'Du' ? 'du' : BOSS[n]), load: LOAD47[n] + ' %', loadColor: LOAD47[n] >= 90 ? '#A33F06' : t.text })),
+      pq: nts.pq || '', setPq: e => this.setState({ nt: Object.assign({}, this.state.nt, { pq: e && e.target ? e.target.value : '' }) }),
+      pqInfo: (q0 => q0 ? (h0 => h0 + ' Treffer' + (h0 > 8 ? ', die ersten 8. Genauer suchen, z. B. mit Abteilung.' : ''))(NT_PEOPLE.concat(DIR.map(d => d[0])).filter(n => (n + ' ' + (TEAM_OF[n] || '')).toLowerCase().includes(q0)).length) : 'Vorschläge: dein Umfeld. Die Suche findet alle 500 Kollegen nach Name oder Abteilung.')((nts.pq || '').trim().toLowerCase()),
+      people: ((q0 => q0 ? NT_PEOPLE.concat(DIR.map(d => d[0])).filter(n => (n + ' ' + (TEAM_OF[n] || '')).toLowerCase().includes(q0)).slice(0, 8) : NT_PEOPLE.concat(nts.person && !NT_PEOPLE.includes(nts.person) ? [nts.person] : []))((nts.pq || '').trim().toLowerCase())).map(n => Object.assign(pick(nts.person === n, n, { person: n }), { name: n, ini: ini(n), av: AV[n] || accent, boss: (TEAM_OF[n] === TEAM_OF['Du'] ? 'Dein Team' : 'Team ' + TEAM_OF[n]) + ' · Chef: ' + (BOSS[n] === 'Du' ? 'du' : BOSS[n]), load: (LOAD47[n] || 50) + ' %', loadColor: (LOAD47[n] || 50) >= 90 ? '#A33F06' : t.text })),
       projs: (ctxPk ? [PNAME_OF[ctxPk]] : NT_PROJ).map(n => pick(nts.proj === n, n, { proj: n })),
       hours: NT_H.map(h => pick(nts.h === h, h + ' h', { h })),
       steps: stepL.map((l, i) => stepOf(l, i, stepL.length)),
@@ -1949,7 +1963,10 @@ class Component extends DCLogic {
 
     // Themen und Fokus
     const fW = k => FOCUS_W[s.focus[k] || 0];
-    const focusRows = THEMES.map(([k, name, color]) => ({ name, color, aria: 'Fokus ' + name,
+    const thOrd = (s.thOrder || THEMES.map(x => x[0])), THS = THEMES.slice().sort((a, b) => thOrd.indexOf(a[0]) - thOrd.indexOf(b[0]));
+    const focusRows = THS.map(([k, name, color], ti) => ({ name, color, aria: 'Fokus ' + name, rank: String(ti + 1), drag: this.dragStart('th:' + k), dragEnd: this.dragEnd(), over: this.dragOver('th|' + k),
+      rowBg: s.dragOver === 'th|' + k ? t.soft : 'transparent', rowBd: s.dragOver === 'th|' + k ? accent : 'transparent',
+      drop: this.dropOn('th|' + k, id => { if (typeof id !== 'string' || id.indexOf('th:') !== 0) return; const from = id.slice(3); if (from === k) return; const o = thOrd.filter(x => x !== from); o.splice(o.indexOf(k), 0, from); this.setState({ thOrder: o }); }),
       lv: FOCUS_L.map((label, i) => ({ label, pressed: s.focus[k] === i ? 'true' : 'false', bg: s.focus[k] === i ? (i === 3 ? accent : t.surface) : 'transparent', fg: s.focus[k] === i ? (i === 3 ? '#FFFFFF' : t.text) : t.muted,
         go: () => { const f = Object.assign({}, s.focus); f[k] = i; this.setState({ focus: f }); } })) }));
     const thHours = {}; let thTotal = 0;
@@ -2331,7 +2348,11 @@ class Component extends DCLogic {
       planText: 'Planbar: ' + (Math.round(PF.hours * PF.days.filter(Boolean).length / 5 * PF.share / 10) / 10).toLocaleString('de-DE') + ' h pro Woche. Der Rest ist Puffer für Störungen, Mails und Unvorhergesehenes.',
       starts: ['06:00', '07:00', '08:00'].map(h => pk4(PF.start === h, 'ab ' + h, () => setPf({ start: h }))),
       sites: SITES.map(([k, l]) => { const on = ((s.siteBy || {})['Du'] || SITE0['Du'] || 'NW') === k; return { label: l, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => this.setState({ siteBy: Object.assign({}, s.siteBy, { Du: k }), absMsg: 'Standort: ' + l + '. Teamplanung, Kapazität und Fälligkeiten rechnen mit diesen Feiertagen.' }) }; }), deputies: ['S. Keller', 'M. Yilmaz', 'J. Novak'].map(n => pk4(PF.deputy === n, n, () => setPf({ deputy: n }))),
-      detModes: [['seite', '▐ Am rechten Rand (Liste bleibt sichtbar)'], ['popup', '⧉ Als Pop-up in der Mitte']].map(([k, l]) => pk4((s.detMode || 'seite') === k, l, () => this.setState({ detMode: k, profMsg: k === 'popup' ? 'Details öffnen ab jetzt als Pop-up. Umschalten geht auch direkt im Detail mit ⇥.' : 'Details öffnen ab jetzt am rechten Rand.' }))),
+      navOpts: [['projekte', 'Projekte'], ['teams', 'Teams'], ['wissen', 'Wissen'], ['berichte', 'Berichte'], ['eingang', 'Posteingang']].map(([k, l]) => { const on = !(s.navHide || {})[k]; return pk4(on, (on ? '✓ ' : '+ ') + l, () => this.setState({ navHide: Object.assign({}, s.navHide, { [k]: on }), profMsg: l + (on ? ' ist im Menü ausgeblendet. Über „⚙ Menü anpassen“ holst du es zurück.' : ' ist wieder im Menü.') })); }),
+      arbOpts: ARB_T.filter(x => x[3]).map(([k, ic, l]) => { const on = !(s.arbHide || {})[k]; return pk4(on, (on ? '✓ ' : '+ ') + l, () => this.setState({ arbHide: Object.assign({}, s.arbHide, { [k]: on }), profMsg: '„' + l + '“ ' + (on ? 'ist in Meine Arbeit ausgeblendet.' : 'ist wieder sichtbar.') })); }),
+      prioC: ['Dringend', 'Hoch', 'Mittel', 'Niedrig'].map(n => ({ name: n, color: PRIO[n], set: e => { const v = e && e.target ? e.target.value : ''; if (/^#[0-9a-fA-F]{6}$/.test(v)) this.setState({ prioC: Object.assign({}, this.state.prioC, { [n]: v }) }); } })),
+      prioReset: () => this.setState({ prioC: {}, profMsg: 'Prioritätsfarben zurückgesetzt.' }),
+      detModes: [['seite', '▐ Am rechten Rand (Liste bleibt sichtbar)'], ['popup', '⧉ Als Pop-up in der Mitte']].map(([k, l]) => pk4((s.detMode || 'popup') === k, l, () => this.setState({ detMode: k, profMsg: k === 'popup' ? 'Details öffnen ab jetzt als Pop-up. Umschalten geht auch direkt im Detail mit ⇥.' : 'Details öffnen ab jetzt am rechten Rand.' }))),
       ...(() => { const ABSC = { Urlaub: '#0F6CBD', Schulung: '#5B2D90', Dienstreise: '#0E6E7A', Gleittag: '#8A3707', Krank: '#A4262C' }, dep = PF.deputy || 'S. Keller';
         const fmtR = (f, u) => f.slice(8, 10) + '.' + f.slice(5, 7) + '.' + (f === u ? f.slice(0, 4) : ' bis ' + u.slice(8, 10) + '.' + u.slice(5, 7) + '.' + u.slice(0, 4));
         const mine = (tp_ABS['Du'] || []).map(x => ({ f: x[0], u: x[1], k: x[2], src: 'aus Zeitwirtschaft', i: -1 })).concat((s.absAdd || []).map((x, i) => ({ f: x[0], u: x[1], k: x[2], src: 'von dir eingetragen', i, who: x[3] })).filter(x => x.who === 'Du'));
@@ -2421,7 +2442,7 @@ class Component extends DCLogic {
 
     // Rechtes Feld: Breite ziehen, groß machen
     const PW = s.panelW || 420;
-    const popup = (s.detMode || 'seite') === 'popup';
+    const popup = (s.detMode || 'popup') === 'popup';
     const PWM = popup ? { pos: 'fixed', top: '4vh', left: '50%', tf: 'translateX(-50%)', w: 'min(980px, 94vw)', h: 'auto', maxH: '92vh', z: '90', rad: '14px', sh: '0 24px 64px rgba(0,0,0,0.35)', pad: '24px', role: 'dialog', modal: 'true' }
       : { pos: 'relative', top: 'auto', left: 'auto', tf: 'none', w: 'auto', h: '100%', maxH: 'none', z: 'auto', rad: '0', sh: 'none', pad: '20px', role: 'complementary', modal: 'false' };
     const pw = Object.assign({}, PWM, { popup, side: !popup, modeIcon: popup ? '⇥' : '⧉', modeLabel: popup ? 'Als Feld am rechten Rand zeigen' : 'Als Pop-up in der Mitte zeigen',
@@ -2565,6 +2586,7 @@ class Component extends DCLogic {
           bg: ts === 'erledigt' ? GREEN : (past ? '#A33F06' : accent), fg: '#FFFFFF', edge: ts === 'ueberfaellig' ? RED : '#0C3B5E', isTask: true, draggable: 'true', drag: this.dragStart('dp:' + p.id), dragEnd: this.dragEnd(), cursor: 'grab',
           pe: 'auto', left: '6px', z: '2', bstyle: 'solid', shorter: resize(-0.5), longer: resize(0.5), remove: () => setPlan(dPlan.filter(q => q.id !== p.id), '„' + x.title + '“ wieder ausgeplant.'), open: () => this.openTask(p.id, 'arbeit'), aria: x.title }; }));
     const dy = {
+      kiOpen: !!s.dyKi, kiOpenA: s.dyKi ? 'true' : 'false', kiBtn: s.dyKi ? '💡 Vorschläge ausblenden' : '💡 Vorschläge für freie Lücken', kiToggle: () => this.setState({ dyKi: !this.state.dyKi }),
       days: DAYS2.map(([iso, label]) => ({ label, pressed: dIso === iso ? 'true' : 'false', ring: dIso === iso ? accent : t.border, bg: dIso === iso ? t.soft : t.surface, go: () => this.setState({ daySel: iso, dayMsg: '' }) })),
       H: ((H1 - H0) * PX) + 'px', hours: Array.from({ length: (H1 - H0) * 2 + 1 }, (_, i) => ({ label: i % 2 ? ':30' : hhmm(H0 + i / 2), top: (i * PX / 2 - 7) + 'px', fs: i % 2 ? '10px' : '11px', op: i % 2 ? '0.6' : '1' })), slots, blocks,
       showNow: isToday, nowTop: ((NOW - H0) * PX) + 'px',
@@ -2667,9 +2689,9 @@ class Component extends DCLogic {
       const sz = s.dSize[k] !== undefined ? s.dSize[k] : DSIZE0[k], hot = s.dragOver === 'dash|' + k;
       const setSize = d => () => { const o = Object.assign({}, s.dSize); o[k] = Math.max(0, Math.min(DSIZES.length - 1, sz + d)); this.setState({ dSize: o }); };
       dash[k] = { order: s.dOrder.indexOf(k), disp: s.dHidden[k] ? 'none' : 'block', flex: DSIZES[sz][0], sizeLabel: DSIZES[sz][1],
-        border: hot ? '3px solid ' + accent : wBorder, draggable: s.editDash ? 'true' : 'false',
-        start: s.editDash ? this.dragStart('w:' + k) : noop, over: s.editDash ? this.dragOver('dash|' + k) : noop,
-        drop: s.editDash ? this.dropOn('dash|' + k, id => { if (typeof id !== 'string' || id.indexOf('w:') !== 0) return; const from = id.slice(2); if (from === k) return; const o = s.dOrder.filter(x => x !== from); o.splice(o.indexOf(k), 0, from); this.setState({ dOrder: o }); }) : noop,
+        border: hot ? '3px solid ' + accent : wBorder, draggable: 'true',
+        start: e => { if (e && e.target !== e.currentTarget) return; this.dragStart('w:' + k)(e); }, over: this.dragOver('dash|' + k),
+        drop: true ? this.dropOn('dash|' + k, id => { if (typeof id !== 'string' || id.indexOf('w:') !== 0) return; const from = id.slice(2); if (from === k) return; const o = s.dOrder.filter(x => x !== from); o.splice(o.indexOf(k), 0, from); this.setState({ dOrder: o }); }) : noop,
         smaller: setSize(-1), wider: setSize(1), hide: () => { const o = Object.assign({}, s.dHidden); o[k] = true; this.setState({ dHidden: o }); } };
       Object.assign(dash[k], dCommon(k));
     });
@@ -2825,6 +2847,12 @@ class Component extends DCLogic {
     const lblRen = (pk, k) => e => { const v = e && e.target ? e.target.value : ''; this.setState({ lblNames: Object.assign({}, s.lblNames, { [pk]: Object.assign({}, (s.lblNames || {})[pk] || {}, { [k]: v }) }) }); };
     const lblCount = (pname, k) => TASKS.filter(x => x.proj === pname && ((s.lbl || {})[x.id] || LBL_SEED[x.id] || []).includes(k)).length;
     Object.assign(set, { isLbl: s.setSub === 'lbl', lbls: LABELS.map(([k, l, c]) => ({ c, name: this.lblName(SK, k), rename: lblRen(SK, k), count: (n0 => n0 + (n0 === 1 ? ' Aufgabe' : ' Aufgaben'))(lblCount(this.pnm(SK), k)) })),
+      isSicht: s.setSub === 'sicht',
+      sichtRows: [['planung', 'Planung'], ['team', 'Team'], ['risiken', 'Analyse'], ['dokumente', 'Dokumente'], ['budget', 'Finanzen'], ['anf', 'Anforderungen']].map(([k, l]) => ({ name: l, cells: ['Bearbeiter', 'Mitwirkender', 'Leser', 'Gast'].map(r => { const on = this.tabSeen(SK, r, k);
+        return { v: on ? '✓' : '–', bg: on ? '#107C10' : t.surface2, fg: on ? '#FFFFFF' : t.muted, aria: l + ' für ' + r + (on ? ' sichtbar' : ' verborgen'), go: () => { const cur = (this.state.pTabRole || {})[SK] || {}; this.setState({ pTabRole: Object.assign({}, this.state.pTabRole, { [SK]: Object.assign({}, cur, { [r]: Object.assign({}, cur[r] || {}, { [k]: !on }) }) }), setMsg: l + (on ? ' ist für ' + r + ' jetzt verborgen.' : ' ist für ' + r + ' jetzt sichtbar.') }); } }; }) })),
+      asRoles: ['Owner', 'Bearbeiter', 'Mitwirkender', 'Leser', 'Gast'].map(r => ({ label: r, pressed: ((s.pnAs || {})[SK] || 'Owner') === r ? 'true' : 'false', ring: ((s.pnAs || {})[SK] || 'Owner') === r ? accent : t.border, bg: ((s.pnAs || {})[SK] || 'Owner') === r ? t.soft : t.surface, go: () => this.setState({ pnAs: Object.assign({}, s.pnAs, { [SK]: r === 'Owner' ? null : r }), setMsg: r === 'Owner' ? 'Vorschau beendet.' : 'Das Projekt zeigt jetzt die Reiter, die ein ' + r + ' sieht.' }) })),
+      canModel: !!SKU, models: ['Liste und Board', 'Kanban mit WIP-Limits', 'Wasserfall mit Quality Gates', 'V-Modell', 'Scrum'].map(m => ({ label: m, pressed: SKU && SKU.model === m ? 'true' : 'false', ring: SKU && SKU.model === m ? accent : t.border, bg: SKU && SKU.model === m ? t.soft : t.surface,
+        go: () => { if (!SKU) return; this.setState({ uprojs: (this.state.uprojs || []).map(u0 => (u0.key === SK ? Object.assign({}, u0, { model: m }) : u0)), setMsg: 'Vorgehen jetzt: ' + m + '. Aufgaben, Termine und Dokumente bleiben erhalten. ' + ({ 'Scrum': 'Die Planung zeigt dann Sprints und Release als Zeitplan.', 'Kanban mit WIP-Limits': 'Tipp: Buckets mit WIP-Limit im Board anlegen.', 'V-Modell': 'Tipp: Module „Anforderungen“ und „Testfälle“ einschalten.', 'Wasserfall mit Quality Gates': 'Tipp: Phasen und Gates in der Planung anlegen.' }[m] || '') }); } })),
       isStamm: s.setSub === 'stamm', isStufe: s.setSub === 'stufe', isModell: s.setSub === 'modell', isArch: s.setSub === 'arch',
       pname: PJS.name, pcode: PJS.code, kst: PS.kst || ({ sm42: '4711-SM', rl2: '4712-RL', pd: '4713-PD', ih: '4720-IH' })[SK] || '', setKst: e => setPs(SK, { kst: e && e.target ? e.target.value : '' }),
       colors: PCOLORS.map(c => ({ c, pressed: (PS.color || '') === c ? 'true' : 'false', ring: (PS.color || '') === c ? t.text : 'transparent', go: () => setPs(SK, { color: c }, 'Farbe geändert. Gilt in Projektliste, Kalender und Karten.') })),
@@ -2833,7 +2861,7 @@ class Component extends DCLogic {
       modGroups: this.modGroups(PS, (k, on, label) => setPs(SK, { mods: Object.assign({}, PS.mods, { [k]: !on }) }, label + (on ? ' ausgeblendet.' : ' eingeschaltet.')), t, accent, false),
       mods: P_MODS.map(([k, label, lv]) => { const on = modOn(PS, k), extra = PS.mods && PS.mods[k] !== undefined; return { label: (on ? '✓ ' : '+ ') + label + (extra ? (on ? ' (zugeschaltet)' : ' (abgeschaltet)') : ''), pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface,
         go: () => { if (k === 'tasks') return this.setState({ setMsg: 'Aufgaben sind die Grundlage und bleiben immer an.' }); setPs(SK, { mods: Object.assign({}, PS.mods, { [k]: !on }) }, label + (on ? ' ausgeblendet.' : ' eingeschaltet.')); } }; }),
-      model: (MODEL[SK] || (SKU ? SKU.model : "")), modelText: (MODELTXT[SK] || 'Eigenes Projekt aus dem Assistenten, Vorgehen ' + (SKU ? SKU.model : '') + '.') + ' Das Vorgehensmodell wird beim Anlegen gewählt. Für ein anderes Modell ein neues Projekt aus Vorlage anlegen und Aufgaben übernehmen.',
+      model: (MODEL[SK] || (SKU ? SKU.model : "")), modelText: (MODELTXT[SK] || 'Eigenes Projekt, Vorgehen ' + (SKU ? SKU.model : '') + '.') + (SKU ? ' Du kannst das Vorgehen jederzeit wechseln; Daten bleiben erhalten.' : ' Beispielprojekt: Vorgehen fest.'),
       saveTpl: () => this.setState({ userTpl: (s.userTpl || []).concat([{ key: 'ut' + (s.userTpl || []).length, name: PJS.name + ' (Vorlage)', stufe: PS.stufe, model: (MODEL[SK] || (SKU ? SKU.model : "")), from: SK }]), setMsg: 'Als Vorlage gespeichert: Struktur, Dauern und Abhängigkeiten, ohne Zeiten, Kommentare und Personen. Steht ab jetzt unter „+ Neues Projekt“.' }),
       archText: PS.archived ? 'Das Projekt ist archiviert: nur lesbar, nicht mehr in Listen und Auswertungen.' : 'Archivieren macht das Projekt nur lesbar und blendet es aus Listen und Auswertungen aus. Wiederherstellen geht jederzeit. Gelöschte Projekte liegen 30 Tage im Papierkorb.',
       archLabel: PS.archived ? 'Wiederherstellen' : 'Archivieren', archive: () => setPs(SK, { archived: !PS.archived }, PS.archived ? 'Wiederhergestellt.' : 'Archiviert. In der Projektliste unter „archiviert“.'),
@@ -2842,6 +2870,7 @@ class Component extends DCLogic {
       ['Stammdaten', PJS.name + ' · Farbe, Kostenstelle', 'stamm'], ['Stufe und Module', 'Stufe ' + PS.stufe + ' · ' + P_MODS.filter(m => modOn(PS, m[0])).length + ' von ' + P_MODS.length + ' Modulen an', 'stufe'], ['Vorgehensmodell', (MODEL[SK] || (SKU ? SKU.model : "")), 'modell'],
       ['Etiketten', LABELS.map(l => this.lblName(SK, l[0])).join(', '), 'lbl'],
       ['Buckets', FIXED[SK] ? 'Spalten des ' + (SK === 'rl2' ? 'Sprint-Boards' : 'Kanban-Boards') : bks.map(b => b.name).join(', '), 'buckets'],
+      ['Sichtbarkeit der Reiter', 'Wer welche Reiter sieht, z. B. Elektriker nur Übersicht und Aufgaben', 'sicht'],
       ['Mitglieder, Rollen und Rechte', PMEMBERS[SK].length + ' Mitglieder · ' + ROLES_P.length + ' Rollen', 'rollen'],
       ['Automatisierungen', autoRules.filter(r => r.on).length + ' aktive Regeln', 'auto'], ['Archivieren oder löschen', PS.archived ? 'archiviert' : 'Papierkorb 30 Tage', 'arch']
     ].map(([name, sub, k]) => ({ name, sub, go: k ? setGo(k) : () => this.setState({ setMsg: name + ': im Entwurf nur angedeutet.' }) }));
@@ -2861,6 +2890,16 @@ class Component extends DCLogic {
     const UP = s.uprojs || [];
     const pnw = {
       open: () => this.setState({ screen: 'pnew', panel: null, newP: Object.assign({}, NW0) }), back: () => this.setState({ screen: 'projekte' }),
+      stOpen: !!nw.stOpen, stToggle: () => setNw({ stOpen: !nw.stOpen }),
+      stY: ['klar', 'eher klar', 'teils offen', 'unklar', 'völlig offen'].map((l, i) => ({ label: l, pressed: (nw.sy || 0) === i ? 'true' : 'false', ring: (nw.sy || 0) === i ? accent : t.border, bg: (nw.sy || 0) === i ? t.soft : t.surface, go: () => setNw({ sy: i }) })),
+      stX: ['bekannt', 'eher bekannt', 'teils neu', 'neu', 'völlig neu'].map((l, i) => ({ label: l, pressed: (nw.sx || 0) === i ? 'true' : 'false', ring: (nw.sx || 0) === i ? accent : t.border, bg: (nw.sx || 0) === i ? t.soft : t.surface, go: () => setNw({ sx: i }) })),
+      ...(() => { const x0 = nw.sx || 0, y0 = nw.sy || 0, v = x0 + y0, zone = v <= 2 ? 'Einfach' : (v <= 4 ? 'Kompliziert' : (v <= 6 ? 'Komplex' : 'Chaotisch'));
+        const fk = y0 < 2 && x0 < 2 ? 'wf' : (y0 < 2 ? 'v' : 'scrum'), nm0 = (P_FAM.find(f => f[0] === fk) || ['', '', ''])[2];
+        const why = { wf: 'Ziel und Weg sind klar: Phasen mit Quality Gates, fester Termin.', v: 'Was gebaut wird ist klar, die Technik neu: jede Ebene wird gegen ihre Testebene geprüft.', scrum: 'Was gebaut wird, ist noch offen: in kurzen Sprints liefern und nachsteuern.' }[fk];
+        return { stZone: zone, stRec: nm0, stWhy: why + (zone === 'Chaotisch' ? ' Vorher mit einem Prototyp Klarheit schaffen.' : '') + ' Laufende Arbeit ohne Ende (Wartung, Support): Kanban.', stTake: () => { const ex0 = Object.keys(ALLTPL).filter(k => famOf(k) === fk); setNw({ tpl: ex0[0], stufe: null, mods: {}, stOpen: false }); } }; })(),
+      ...(() => { const myT = (TEAMS.automatisierung.members || []).map(m => m[0]), foreign = (nw.members || []).filter(m => m !== 'Du' && !myT.includes(m)), why = [];
+        if (nwStufe >= 3) why.push('Stufe ' + nwStufe + ' bringt Budget mit'); if (foreign.length) why.push('Leute aus anderen Teams (' + foreign.join(', ') + ') brauchen das OK ihrer Teamleitung');
+        return { apNeed: why.length > 0, apOk: !why.length, apText: why.length ? 'Freigabe nötig: ' + why.join('; ') + '. Lege es als Entwurf an oder reiche es gleich mit Freigabe ein.' : 'Ohne Freigabe: Stufe 1 oder 2, kein Budget, nur Leute aus deinem Team. Das Projekt ist sofort aktiv.' }; })(),
       fams: P_FAM.map(([fk, ic, nm2, ds, col]) => { const on = curFam === fk, ex = Object.keys(ALLTPL).filter(k => famOf(k) === fk); return { icon: ic, name: nm2, desc: ds, iconBg: col, meta: ex.length > 1 ? (ex.length === 2 ? 'Beispiel: ' : 'Beispiele: ') + ex.filter(k => !/^(leer|kan0|wf0|v0|sc0)$/.test(k)).map(k => ALLTPL[k].name).join(', ') : 'leer starten',
         pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => setNw({ tpl: on ? nw.tpl : ex[0], stufe: null, mods: {} }) }; }),
       exHead: 'Beispiele für ' + (P_FAM.find(f => f[0] === curFam) || ['', '', ''])[2] + ', mit fertiger Struktur:',
@@ -2898,7 +2937,9 @@ class Component extends DCLogic {
     if (upCur) { const u = upCur, ups = Object.assign({ stufe: u.stufe, mods: u.mods || {} }, (s.psetBy || {})[u.key] || {}), on = k => modOn(ups, k);
       const updU = (patch, msg) => this.setState({ uprojs: (this.state.uprojs || []).map(x => (x.key === u.key ? Object.assign({}, x, typeof patch === 'function' ? patch(x) : patch) : x)), pnMsg: msg || '', boardMsg: '' });
       const setUps = (patch, msg) => this.setState({ psetBy: Object.assign({}, s.psetBy, { [u.key]: Object.assign({}, ups, patch) }), pnMsg: msg || '' });
-      const TABS = [['uebersicht', 'Übersicht', true], ['aufgaben', 'Aufgaben', true], ['planung', 'Planung', on('plan')], ['team', 'Team', true], ['risiken', 'Analyse', on('risk')], ['dokumente', 'Dokumente', on('docs')], ['budget', 'Finanzen', on('budget')], ['anf', 'Anforderungen', on('req') || on('test')]].filter(x => x[2]);
+      const TABS0 = [['uebersicht', 'Übersicht', true], ['aufgaben', 'Aufgaben', true], ['planung', 'Planung', on('plan')], ['team', 'Team', true], ['risiken', 'Analyse', on('risk')], ['dokumente', 'Dokumente', on('docs')], ['budget', 'Finanzen', on('budget')], ['anf', 'Anforderungen', on('req') || on('test')]].filter(x => x[2]);
+      const myRoleP = ((PMEMBERS[u.key] || []).find(x => x[0] === 'Du') || [])[1] || 'Owner', asRole = (s.pnAs || {})[u.key] || myRoleP, meHide = (s.pTabMe || {})[u.key] || {};
+      const TABS = TABS0.filter(x => this.tabSeen(u.key, asRole, x[0]) && !meHide[x[0]]);
       const tab = TABS.some(x => x[0] === s.upTab) ? s.upTab : 'uebersicht', tasks = TASKS.filter(x => x.proj === u.name), byDue2 = (a, b) => (a.due < b.due ? -1 : 1);
       const view = s.upView || 'board', bks = this.bucketsOf(u.key);
       const cardO = (x, i, list) => { const o = this.ownerOf(x), ts = this.taskStatus(x); return { title: x.title, owner: nm(o), ini: ini(o), av: AV[o] || accent, due: fmt(D(x.due)), edge: stc(ts), strike: ts === 'erledigt' ? 'line-through' : 'none', open: () => this.openTask(x.id, 'pn'), drag: this.dragStart(x.id), dragEnd: this.dragEnd(),
@@ -2913,6 +2954,9 @@ class Component extends DCLogic {
         chips: [ovd + otk ? chipC(RED, '#FFFFFF', RED, '! Termin: ' + (ovd + otk) + ' überfällig') : chipC(GREEN, '#FFFFFF', GREEN, '✓ Termine im Plan')]
           .concat(on('budget') ? [u.budget && costSum > u.budget ? chipC(RED, '#FFFFFF', RED, '! Kosten über Budget') : chipC(GREEN, '#FFFFFF', GREEN, '✓ Kosten im Budget')] : [])
           .concat(nextG ? [chipC(t.surface, t.text, t.strong, 'Qualität: ' + nextG.name.replace(/^Gate /, 'Gate ') + ' offen')] : []),
+        asInfo: asRole !== myRoleP ? 'Vorschau: so sieht ein ' + asRole + ' das Projekt.' : '', hasAs: asRole !== myRoleP, asReset: () => this.setState({ pnAs: Object.assign({}, s.pnAs, { [u.key]: null }) }),
+        meOpen: !!s.pTabMeOpen, meToggle: () => this.setState({ pTabMeOpen: !s.pTabMeOpen }),
+        meOpts: TABS0.filter(x => x[0] !== 'uebersicht' && x[0] !== 'aufgaben' && this.tabSeen(u.key, asRole, x[0])).map(([k, l]) => { const on2 = !meHide[k]; return { label: (on2 ? '✓ ' : '+ ') + l, pressed: on2 ? 'true' : 'false', ring: on2 ? accent : t.border, bg: on2 ? t.soft : t.surface, go: () => this.setState({ pTabMe: Object.assign({}, s.pTabMe, { [u.key]: Object.assign({}, meHide, { [k]: on2 }) }) }) }; }),
         tabs: TABS.map(([k, l]) => ({ label: l, sel: tab === k ? 'true' : 'false', line: tab === k ? accent : 'transparent', fg: tab === k ? t.text : t.muted, fw: tab === k ? 700 : 500, go: () => this.setState({ upTab: k, pnMsg: '', boardMsg: '' }) })),
         is: { dokumente: tab === 'dokumente', team: tab === 'team', uebersicht: tab === 'uebersicht', aufgaben: tab === 'aufgaben', planung: tab === 'planung', risiken: tab === 'risiken', budget: tab === 'budget', anf: tab === 'anf', einst: tab === 'einst' },
         hasMsg: !!(s.pnMsg || s.boardMsg), msg: s.pnMsg || s.boardMsg || '',
@@ -3085,7 +3129,9 @@ class Component extends DCLogic {
                   aAuto: Rn.length ? 'führt aus (R): ' + Rn.join(', ') : '', hasAAuto: Rn.length > 0, vAuto: An.length ? 'verantwortet (A): ' + An.join(', ') : '', hasVAuto: An.length > 0,
                   kAuto: lim ? 'Rechnungen und Nachträge freigeben bis ' + lim.toLocaleString('de-DE') + ' €' : 'gibt keine Rechnungen frei', warn: weak }; });
               return { rows, hasWarn: rows.some(r0 => r0.warn) }; })(),
-            raciRows: acts.map(n => { const aCount = u.members.filter(m => rc[n.id + '|' + m] === 'A').length; return { name: (n.type === 'gate' ? (n.msPoint ? '◆ ' : '◈ ') : '') + n.name, warn: aCount === 0 ? 'noch kein A' : (aCount > 1 ? aCount + '× A, nur eines erlaubt' : ''), warnColor: aCount === 1 ? GREEN : '#A33F06',
+            raciAddTxt: s.raciT || '', setRaciT: e => this.setState({ raciT: e && e.target ? e.target.value : '' }), raciNone: !acts.length && !((s.raciX || {})[u.key] || []).length,
+            raciAdd: () => { const v = (this.state.raciT || '').trim(); if (!v) return this.setState({ pnMsg: 'Bitte eine Tätigkeit eingeben, z. B. „Bestellung freigeben“.' }); const L0 = (this.state.raciX || {})[u.key] || []; this.setState({ raciX: Object.assign({}, this.state.raciX, { [u.key]: L0.concat([{ id: u.key + 'rx' + L0.length, name: v, type: 'act' }]) }), raciT: '', pnMsg: '„' + v + '“ steht jetzt in der RACI-Matrix. Je Zeile genau ein A vergeben.' }); },
+            raciRows: acts.concat((s.raciX || {})[u.key] || []).map(n => { const aCount = u.members.filter(m => rc[n.id + '|' + m] === 'A').length; return { name: (n.type === 'gate' ? (n.msPoint ? '◆ ' : '◈ ') : '') + n.name, warn: aCount === 0 ? 'noch kein A' : (aCount > 1 ? aCount + '× A, nur eines erlaubt' : ''), warnColor: aCount === 1 ? GREEN : '#A33F06',
               cells: u.members.map(m => { const v0 = rc[n.id + '|' + m] || ''; return { v: v0 || '·', bg: RC[v0][0], fg: RC[v0][1], aria: n.name + ', ' + m + ': ' + (v0 || 'leer'), go: () => setK('upRaci', n.id + '|' + m, cyc[v0]) }; }) }; }) }; })(),
         lbls: LABELS.map(([k, l, c]) => ({ c, name: this.lblName(u.key, k), rename: e => { const v = e && e.target ? e.target.value : ''; this.setState({ lblNames: Object.assign({}, s.lblNames, { [u.key]: Object.assign({}, (s.lblNames || {})[u.key] || {}, { [k]: v }) }) }); } })),
         archText: ups.archived ? 'Archiviert: nur lesbar und nicht in Listen und Auswertungen.' : 'Archivieren macht das Projekt nur lesbar. Wiederherstellen geht jederzeit.', archLabel: ups.archived ? 'Wiederherstellen' : 'Archivieren',
@@ -3523,7 +3569,19 @@ class Component extends DCLogic {
             lblNone: !lbs.length && !s.lblEdit, lblBtn: s.lblEdit ? 'Fertig' : (lbs.length ? 'Ändern' : '+ Etikett'), lblToggle: () => this.setState({ lblEdit: !s.lblEdit }),
             chk: ck.map((c, i) => ({ text: c.t, checked: c.d ? 'true' : 'false', mark: c.d ? '✓' : '', fill: c.d ? GREEN : 'transparent', ring: c.d ? GREEN : t.strong, strike: c.d ? 'line-through' : 'none',
               toggle: () => setC(ck.map((z, k) => (k === i ? { t: z.t, d: !z.d } : z))), setText: e => setC(ck.map((z, k) => (k === i ? { t: e && e.target ? e.target.value : z.t, d: z.d } : z))),
-              up: () => { if (!i) return; const o = ck.slice(); [o[i - 1], o[i]] = [o[i], o[i - 1]]; setC(o); }, del: () => setC(ck.filter((z, k) => k !== i)) })),
+              up: () => { if (!i) return; const o = ck.slice(); [o[i - 1], o[i]] = [o[i], o[i - 1]]; setC(o); }, del: () => setC(ck.filter((z, k) => k !== i)),
+              ...(() => { const HS = [0.5, 1, 1.5, 2, 3, 4], h0 = c.h || 1, tid = c.task && TASK[c.task] ? c.task : null, inF = !!tid && this.bucketOf(TASK[tid]) === 'Fokus', fmtHh = v => v.toLocaleString('de-DE') + ' h';
+                const patchC = p => setC(((this.state.chk || {})[x.id] || ck).map((z, k) => (k === i ? Object.assign({}, z, p) : z)));
+                const ensure = () => { if (tid) return tid; const nid = this.quickTask({ title: c.t + ' (' + x.title + ')', proj: x.proj, due: x.due < '2026-11-13' ? '2026-11-13' : x.due, owner: 'Du', h: h0, bucket: 'Fokus' }); patchC({ task: nid }); return nid; };
+                const SL = [['Früh 7:00', '2026-11-13', 7], ['Mittag 11:30', '2026-11-13', 11.5], ['Nachmittag 13:30', '2026-11-13', 13.5], ['Morgen 7:00', '2026-11-16', 7]];
+                const planKey = 'ckp:' + x.id + ':' + i, pl = (this.state.ckPlan || {})[planKey];
+                return { hLabel: fmtHh(h0), hCycle: () => { const nh = HS[(HS.indexOf(h0) + 1) % HS.length]; patchC({ h: nh }); if (tid) EST[tid] = nh; },
+                  fokusIc: inF ? '★' : '☆', fokusFg: inF ? accent : t.muted, fokusBd: inF ? accent : t.border, fokusAria: inF ? 'Im Fokus (eigene Aufgabe). Klick nimmt ihn heraus.' : 'Diesen Punkt als eigene Aufgabe in den Fokus legen',
+                  fokus: () => { if (inF) return this.toggleFocus(tid); const nid = ensure(); if (tid) this.toggleFocus(nid); this.setState({ pMsg: '„' + c.t + '“ liegt jetzt als eigene Aufgabe (' + fmtHh(h0) + ') in deinem Fokus.' }); },
+                  planOpen: this.state.ckPlanOpen === planKey, planToggle: () => this.setState({ ckPlanOpen: this.state.ckPlanOpen === planKey ? null : planKey }), hasPlan: !!pl, planText: pl ? '🕘 eingeplant: ' + pl : '',
+                  slots: SL.map(([lab, iso, st]) => ({ label: lab, go: () => { const nid = ensure(); const cur = ((this.state.dayPlan || {})[iso] || []).filter(p => p.id !== nid); let a0 = st; const clash = b => cur.some(p => b < p.start + p.h && b + h0 > p.start); while (clash(a0) && a0 + h0 <= 17) a0 += 0.5;
+                    const hh = v => String(Math.floor(v)).padStart(2, '0') + ':' + (v % 1 ? '30' : '00'), when = (iso === '2026-11-13' ? 'heute ' : 'Mo 16.11. ') + hh(a0) + '–' + hh(a0 + h0);
+                    this.setState({ dayPlan: Object.assign({}, this.state.dayPlan, { [iso]: cur.concat([{ id: nid, start: a0, h: h0 }]) }), ckPlan: Object.assign({}, this.state.ckPlan, { [planKey]: when }), ckPlanOpen: null, pMsg: '„' + c.t + '“ eingeplant: ' + when + (a0 !== st ? ' (nächste freie Zeit)' : '') + '. Steht in Mein Tag planen.' }); } })) }; })() })),
             chkHas: ck.length > 0, chkSum: ck.length ? nDone + ' von ' + ck.length + ' erledigt' : '', chkW: pct(ck.length ? nDone / ck.length * 100 : 0),
             chkNew: s.chkNew || '', setChkNew: e => this.setState({ chkNew: e && e.target ? e.target.value : '' }),
             chkAdd: () => { const tt = (this.state.chkNew || '').trim(); if (!tt) return; setC(ck.concat([{ t: tt, d: false }])); this.setState({ chkNew: '' }); } }; })()
@@ -3682,7 +3740,7 @@ class Component extends DCLogic {
       setDe: () => this.setState({ lang: 'de' }), setEn: () => this.setState({ lang: 'en' }),
       hasOverdue: overdueCount > 0, overdueCount, hasUnread: unreadCount > 0, unreadCount,
       counters, groups, filterHint,
-      ibl: Object.assign(ibl, { kiCount: String(DRAFTS.length) }), dashX, dashLayouts, dashReset, editDash: s.editDash, toggleEdit: () => this.setState({ editDash: !s.editDash }), editBtn, wBorder, palette, focus, inboxPreview, myLoad, loadLine, week,
+      ibl: Object.assign(ibl, { kiCount: String(DRAFTS.length) }), dashX, dashLayouts, dashReset, editDash: s.editDash, toggleEdit: () => this.setState({ editDash: !s.editDash }), editBtn, wBorder, palette, focus, inboxPreview, inTab, inTabs, myLoad, loadLine, week,
       inboxFilters, inboxList, ib, gateChecks, timesheet, criteria,
       teamTabs, tm, kws: KWS,
       mbr: this.memberUI(OVK, t, accent, modC('raci')), projects: projectsAll, ptabs: ptabs.filter(x => x.show !== false), pnw, pn, pt, msCounters, nextMs, projOverdue, team, board,
@@ -3691,8 +3749,11 @@ class Component extends DCLogic {
       akvTable: () => this.setState({ akv: 'tabelle' }), akvDiagram: () => this.setState({ akv: 'diagramm' }),
       anfHint: (n0 => ({ has: n0 > 0, label: n0 + (n0 === 1 ? ' Aufgaben-Anfrage wartet' : ' Aufgaben-Anfragen warten') + ' im Posteingang', go: () => this.setState({ screen: 'eingang', anfOpen: true, panel: null }) }))(reqMe.filter(q2 => q2.acts.length).length),
       anfBox: (n0 => ({ open: s.anfOpen !== false, openA: s.anfOpen !== false ? 'true' : 'false', icon: s.anfOpen !== false ? '▾' : '▸', bg: s.anfOpen !== false ? t.soft : t.surface, count: n0 ? n0 + ' offen' : 'nichts offen', toggle: () => this.setState({ anfOpen: s.anfOpen === false }) }))(reqMe.filter(q2 => q2.acts.length).length),
-      arb: { tag: s.arbTab === 'tag', aufgaben: s.arbTab === 'aufgaben', anfragen: false, besprechung: s.arbTab === 'besprechung' }, mt, ntf,
-      arbTabs: [['tag', '🕘', 'Mein Tag'], ['aufgaben', '☰', 'Meine Aufgaben'], ['besprechung', '🗒', 'Besprechungen']].map(([k, icon, label]) => { const on = s.arbTab === k, n2 = k === 'anfragen' ? reqMe.filter(q2 => q2.acts.length).length : 0;
+      arb: (() => { const hid = s.arbHide || {}, vis = ARB_T.filter(x => !hid[x[0]]).map(x => x[0]), cur = vis.includes(s.arbTab) ? s.arbTab : 'aufgaben';
+        return { tag: cur === 'tag', aufgaben: cur === 'aufgaben', fokus: cur === 'fokus', anfragen: false, besprechung: cur === 'besprechung', fokusInline: cur === 'aufgaben' && !!hid.fokus,
+          cfgOpen: !!s.arbCfg, cfgToggle: () => this.setState({ arbCfg: !s.arbCfg }),
+          opts: ARB_T.filter(x => x[3]).map(([k, ic, l]) => { const on = !hid[k]; return { label: (on ? '✓ ' : '+ ') + l, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => this.setState({ arbHide: Object.assign({}, this.state.arbHide, { [k]: on }) }) }; }) }; })(), mt, ntf,
+      arbTabs: ARB_T.filter(x => !(s.arbHide || {})[x[0]]).map(([k, icon, label]) => { const vis2 = ARB_T.filter(x => !(s.arbHide || {})[x[0]]).map(x => x[0]), cur2 = vis2.includes(s.arbTab) ? s.arbTab : 'aufgaben', on = cur2 === k, n2 = k === 'fokus' ? TASKS.filter(x => x.mine && this.bucketOf(x) === 'Fokus' && !this.isDone(x)).length : 0;
         return { icon, label, sel: on ? 'true' : 'false', bg: on ? t.surface : 'transparent', fg: on ? t.text : t.muted, sh: on ? '0 1px 2px rgba(0,0,0,0.12)' : 'none', hasBadge: n2 > 0, badge: String(n2), go: () => this.setState({ arbTab: k }) }; }),
       imp, crx, crd1, chat, trs: (tl => ({ count: tl.length ? '(' + tl.length + ')' : '', open: !!s.trashOpen, openA: s.trashOpen ? 'true' : 'false', bg: s.trashOpen ? t.soft : t.surface, toggle: () => this.setState({ trashOpen: !s.trashOpen, trMsg: '' }),
         hasMsg: !!s.trMsg, msg: s.trMsg || '', empty: tl.length === 0,
@@ -3715,7 +3776,11 @@ class Component extends DCLogic {
       openMobil: () => this.setState({ screen: 'mobil', panel: null, moScreen: 'list', moMsg: '' }),
       focusRows, themeBars, prioSug, applySug, aThemes, aFocusHint,
       adViews, ad, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
-      adHasMsg: !!s.adMsg, adMsg: s.adMsg, adRing: s.screen === 'admin' || s.screen === 'profil' ? accent : '#FFFFFF', openProfil: () => this.setState({ screen: 'profil', panel: null, profMsg: '' }), prf,
+      adHasMsg: !!s.adMsg, adMsg: s.adMsg, adRing: s.screen === 'admin' || s.screen === 'profil' ? accent : '#FFFFFF', wKiOpen: !!s.wKi, wKiOpenA: s.wKi ? 'true' : 'false', wKiBtn: s.wKi ? '🧠 KI-Vorschläge ausblenden' : '🧠 KI-Vorschläge zum Pflegen', wKiToggle: () => this.setState({ wKi: !s.wKi }),
+      wSideOpen: !!s.wSide, wSideOpenA: s.wSide ? 'true' : 'false', wSideBtn: s.wSide ? 'Häufige Themen und Lessons Learned ausblenden' : 'Häufige Themen und Lessons Learned', wSideToggle: () => this.setState({ wSide: !s.wSide }),
+      navShow: (h => ({ projekte: !h.projekte, teams: !h.teams, wissen: !h.wissen, berichte: !h.berichte, eingang: !h.eingang }))(s.navHide || {}), navCls: s.navOpen ? 'open' : '', navOpen: !!s.navOpen, navOpenA: s.navOpen ? 'true' : 'false',
+      burger: () => this.setState({ navOpen: !s.navOpen }), navClose: () => this.setState({ navOpen: false }), navCfg: () => this.setState({ screen: 'profil', navOpen: false, panel: null, profMsg: 'Unter „Darstellung und Sprache“ legst du fest, welche Bereiche im Menü und welche Reiter in Meine Arbeit erscheinen.' }),
+      openProfil: () => this.setState({ screen: 'profil', panel: null, profMsg: '' }), prf,
       openAdmin: () => this.setState({ screen: 'admin', panel: null, adMsg: '' }),
       vtSave: () => this.setState({ vtSet: true, adMsg: 'Vertretung festgelegt: ' + s.vtBy + ' gibt vom 21.12.2026 bis 06.01.2027 an deiner Stelle frei. ' + s.vtBy + ' ist benachrichtigt.' }),
       aSteps, aIs, aClar, aTech, aZone, aTeams, aEff, aStart, aCap, aNoCap: aCap.length === 0, aSum, aNext, aBack, myAntraege, zt,

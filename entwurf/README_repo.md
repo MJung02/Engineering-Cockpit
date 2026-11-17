@@ -18,6 +18,19 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 
 Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
 
+## Neu nach der zweiten Testrunde (17.11.2026)
+
+- **Handy:** Menü hinter ☰ (Hamburger), Inhalte rücken zusammen.
+- **Menü anpassen:** Projekte, Teams, Wissen, Berichte, Posteingang einzeln ausblendbar (⚙ Menü anpassen bzw. Profil › Darstellung).
+- **Meine Arbeit:** Reiter in der Reihenfolge Meine Aufgaben, Fokus, Mein Tag planen, Besprechungsnotizen; alle außer Meine Aufgaben ausblendbar (⚙). „Liste zeigen: Überfällig · Heute · Im Plan · Erledigt“ steht direkt über der Liste.
+- **Dashboard:** Klick auf Überfällig/Heute/… öffnet Meine Aufgaben schon gefiltert; Klick auf eine Nachricht öffnet sie im Posteingang. Kacheln (Start, Projektübersicht) und Themen lassen sich jederzeit per Ziehen umordnen.
+- **Checklisten:** Jeder Punkt hat eine Dauer, ☆ legt ihn als eigene Aufgabe in den Fokus, 🕘 plant ihn früh, mittags, nachmittags oder morgen ein.
+- **Prioritätsfarben** im Profil frei wählbar; Details öffnen standardmäßig als Pop-up (umschaltbar).
+- **Posteingang** mit Unterreitern (Nachrichten, Neue Aufgaben, Entwürfe); **Wissen** und **Mein Tag** mit zugeklappten Zusatzbereichen.
+- **Neues Projekt:** Stacey-Matrix direkt im Assistenten mit Empfehlung; Hinweis, ob eine Freigabe nötig ist. Vorgehensmodell im Projekt wechselbar (⚙ › Vorgehensmodell).
+- **Sichtbarkeit:** Owner legt je Rolle fest, welche Reiter sichtbar sind (⚙ › Sichtbarkeit der Reiter, mit „Ansicht testen als“); jeder blendet für sich Reiter aus (⚙ Meine Reiter).
+- **RACI/AKV** auch ohne Phasen nutzbar (eigene Zeilen); **Personensuche** über alle 500 Kollegen beim Einladen und beim Vergeben von Aufgaben.
+
 ## Neu nach der ersten Testrunde (16.11.2026)
 
 - **Termine direkt ändern:** In der Planung stehen Beginn, Ende und Termin als Datumsfelder in der Spalte „Termin“ (für Owner und Bearbeiter). Fälligkeiten in der Aufgabenliste ebenso.
