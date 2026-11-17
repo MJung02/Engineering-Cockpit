@@ -20,6 +20,11 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
+- **Offene Punkte und Entscheidungen** (neues Modul ab Stufe 2, Reiter „Offene Punkte“):
+  - **Offene-Punkte-Liste:** wer, was, bis wann. Filter Offen, Überfällig, Alle. Abhaken, und mit einem Klick „→ Aufgabe“.
+  - **Entscheidungslog:** was, warum, wer, wann. Einträge bleiben unverändert.
+  - **Aus Besprechungen:** Meine Arbeit › Besprechungsnotizen › „Ins Projekt übernehmen“ legt Beschlüsse ins Entscheidungslog und offene Maßnahmen als offene Punkte an.
+  - Alles steht auch im Verlauf (Audit).
 - **Ressourcenkonflikte über Projekte hinweg:** Das Cockpit rechnet je Person und Woche (KW 47–52) die Grundlast aus der Linie, die Aufgaben aller Projekte und die Abwesenheiten zusammen.
   - Wer über seine planbare Zeit (32 h/Woche) kommt, steht mit Aufteilung nach Projekt in der Liste.
   - Der Vorschlag nimmt eine Aufgabe aus dem Projekt mit der niedrigsten Priorität. Sie lässt sich um eine Woche verschieben oder an eine Kollegin bzw. einen Kollegen mit Luft im selben Projekt geben.
