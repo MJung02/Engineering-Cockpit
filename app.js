@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 17.11.2026 13:47 */
+/* Engineering Cockpit – Entwurf, Stand 17.11.2026 13:53 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -704,6 +704,29 @@ class Component extends DCLogic {
     return U ? (U.risks || []).map((r, i) => ({ id: 'r' + i, t: r.t, w: r.w, a: r.a, m: r.m || '', o: r.o || 'Du', st: 'offen' })) : (RISK_SEED[pk] || []).map((r, i) => ({ id: 'r' + i, t: r[0], w: r[1], a: r[2], m: r[3], o: r[4], st: 'offen' })); }
   kstOf(pk) { const s = this.state, ps = (s.psetBy || {})[pk] || {}, U = (s.uprojs || []).find(u => u.key === pk); return ps.kst !== undefined ? ps.kst : ((U && U.kst) || KST0[pk] || ''); }
   iaOf(pk) { const s = this.state, ps = (s.psetBy || {})[pk] || {}, U = (s.uprojs || []).find(u => u.key === pk); return ps.ia !== undefined ? ps.ia : ((U && U.ia) || IA0[pk] || ''); }
+  resConf(people, focus, t, accent) { const s = this.state, RED = '#C50F1F', AMB = '#B07B00', est = x => EST[x.id] || x.est || 1, hF = v => (Math.round(v * 10) / 10).toLocaleString('de-DE') + ' h';
+    const W = [0, 1, 2, 3, 4, 5].map(i => { const a = this.isoAdd('2026-11-16', i * 7); return { a, e: this.isoAdd(a, 6), kw: 47 + i }; });
+    const AB = [], abBy = Object.assign({}, ABW_SEED, s.abwBy || {}); Object.keys(abBy).forEach(k => (abBy[k] || []).forEach(x => AB.push(x)));
+    const ord = (s.porder || []).concat(Object.keys(PNAME_OF)), rank = pk => { const i = ord.indexOf(pk); return i < 0 ? 99 : i; };
+    const PC = ['#0F6CBD', '#0E7A6E', '#5B2D90', '#A33F06', '#8A3707', '#107C10'], pcol = pk => PC[Math.max(0, Object.keys(PNAME_OF).indexOf(pk)) % PC.length];
+    const weekOf = (n, w) => { const tw = TASKS.filter(x => !this.isDone(x) && this.ownerOf(x) === n && x.due && x.due >= w.a && x.due <= w.e); let off = 0;
+      for (let d = 0; d < 5; d++) { const day = this.isoAdd(w.a, d); if (AB.some(x => x.n === n && day >= x.von && day <= x.bis)) off++; }
+      const cap = 32 * (5 - off) / 5, base = Math.round(32 * Math.max(0, (LOAD47[n] || 60) - 40) / 100 * (5 - off) / 5 * 10) / 10, byP = {};
+      tw.forEach(x => { const k = PK_OF[x.proj] || 'ohne'; byP[k] = (byP[k] || 0) + est(x); }); return { tw, off, cap, base, byP, hrs: base + Object.values(byP).reduce((a, v) => a + v, 0) }; };
+    const rows = [];
+    people.filter(n => n && n !== 'Kunde').forEach(n => W.forEach(w => { const r = weekOf(n, w); if (!r.tw.length || (r.cap > 0 && r.hrs <= r.cap)) return;
+      const pks = Object.keys(r.byP), cand = r.tw.filter(x => !focus || PK_OF[x.proj] === focus).sort((a, b) => (rank(PK_OF[b.proj]) - rank(PK_OF[a.proj])) || (est(b) - est(a))), over = r.hrs - r.cap, x = cand.find(c => est(c) >= over) || cand.slice().sort((a, b) => est(b) - est(a))[0], partly = !!x && r.cap > 0 && est(x) < over;
+      let give = null; if (x) { const pk = PK_OF[x.proj]; (PMEMBERS[pk] || []).map(m => m[0]).filter(m => m !== n && !/Kunde/.test(m)).forEach(m => { const q = weekOf(m, w), l = q.cap ? (q.hrs + est(x)) / q.cap : 9; if (l <= 0.9 && (!give || l < give.l)) give = { m, l }; }); }
+      const pct = r.cap ? Math.round(r.hrs / r.cap * 100) : 0;
+      rows.push({ wk: w.kw, name: n, kw: 'KW ' + w.kw + ' (' + w.a.slice(8, 10) + '.' + w.a.slice(5, 7) + '.)', why: r.off ? ' · ' + r.off + (r.off === 1 ? ' Tag' : ' Tage') + ' abwesend' : '', load: r.cap ? pct + ' %' : 'abwesend', col: pct > 120 || !r.cap ? RED : AMB,
+        parts: pks.map(k => ({ label: (k === 'ohne' ? 'ohne Projekt' : (PCODE[this.pnm(k)] || this.pnm(k))) + ' ' + hF(r.byP[k]), bg: k === focus ? accent : pcol(k) })).concat(r.base ? [{ label: 'Linie/Grundlast ' + hF(r.base), bg: '#8A8886' }] : []),
+        tip: (r.cap ? hF(r.hrs) + ' verplant bei ' + hF(r.cap) + ' planbarer Zeit.' : 'Abwesend, aber Aufgaben fällig.') + (x ? ' Vorschlag: „' + x.title + '“ (' + this.pnm(PK_OF[x.proj]) + ', Priorität ' + (rank(PK_OF[x.proj]) + 1) + ', ' + hF(est(x)) + ') ' + (give ? 'an ' + give.m + ' geben oder ' : '') + 'eine Woche später.' + (partly ? ' Das allein reicht nicht ganz: Es fehlen danach noch ' + hF(over - est(x)) + '.' : '') : ' Der Konflikt entsteht in anderen Projekten; dort ausgleichen oder mit der Bereichsleitung priorisieren.'),
+        canMv: !!x, mvLabel: x ? '„' + (x.title.length > 26 ? x.title.slice(0, 24) + '…' : x.title) + '“ +1 Woche' : '', canGive: !!(x && give), giveLabel: give ? 'an ' + give.m + ' geben' : '',
+        mv: () => { if (!x) return; const o = x.due; x.due = this.isoAdd(x.due, 7); this.logH('t:' + x.id, 'Fällig', fmt(D(o)), fmt(D(x.due))); this.setState({ rev: (this.state.rev || 0) + 1, rcMsg: '„' + x.title + '“ ist jetzt am ' + fmt(D(x.due)) + ' fällig. ' + n + ' wird in KW ' + w.kw + ' entlastet.' }); },
+        give: () => { if (!x || !give) return; this.logH('t:' + x.id, 'Verantwortlich', n, give.m); this.setState({ ownerOv: Object.assign({}, this.state.ownerOv, { [x.id]: give.m }), rev: (this.state.rev || 0) + 1, rcMsg: '„' + x.title + '“ liegt jetzt bei ' + give.m + '. ' + give.m + ' bekommt eine Benachrichtigung.' }); } }); }));
+    rows.sort((a, b) => a.wk - b.wk);
+    return { rows, empty: !rows.length, count: rows.length ? rows.length + (rows.length === 1 ? ' Konflikt' : ' Konflikte') : 'keine Konflikte', msg: s.rcMsg || '', hasMsg: !!s.rcMsg,
+      hint: 'Je Person und Woche: Grundlast aus der Linie, Aufgaben aller Projekte nach Fälligkeit und Schätzung, Abwesenheiten. Planbar sind 32 h pro Woche (80 % der Sollzeit). Vorschläge betreffen zuerst das Projekt mit der niedrigsten Priorität (Berichte › Portfolio).' }; }
   modX(pk, tab, t, accent, on) { const s = this.state, U = (s.uprojs || []).find(u => u.key === pk), name = this.pnm(pk), RED = '#C50F1F', GRN = '#107C10', AMB = '#B07B00';
     if (!pk || !name) return { is: {}, msg: '', hasMsg: false };
     const tasks = TASKS.filter(x => x.proj === name), open = tasks.filter(x => !this.isDone(x)), mem = (PMEMBERS[pk] || []).filter(m => m[0] !== 'Kunde' && !m[4]).map(m => m[0]);
@@ -813,7 +836,8 @@ class Component extends DCLogic {
       ktAdd: () => { const F2 = this.state.mxF || {}; if (!(F2.kn || '').trim()) return this.setState({ mxMsg: 'Name des Kontakts fehlt.' }); const k = { n: F2.kn.trim(), f: (F2.kf || '').trim(), e: F2.ke || 'mittel', c: (F2.kc || '').trim() };
         setKT(KT.concat([k]), 'Kontakt „' + k.n + '“ hinzugefügt.', ['Kontakt ' + k.n, 'hinzugefügt', '', k.f], { mxF: Object.assign({}, F2, { kn: '', kf: '', kc: '' }) }); } };
     const is = { risk: tab === 'risk', zeit: tab === 'zeit', res: tab === 'res', status: tab === 'status', cr: tab === 'cr', audit: tab === 'audit' };
-    return { is, risk, zeit, res, cr, status, audit, fin, team, resOn: !!(on && on('res')), msg: s.mxMsg || '', hasMsg: !!s.mxMsg }; }
+    const conf = tab === 'res' ? this.resConf(mem, pk, t, accent) : { rows: [], empty: true };
+    return { is, risk, zeit, res, conf, cr, status, audit, fin, team, resOn: !!(on && on('res')), msg: s.mxMsg || '', hasMsg: !!s.mxMsg }; }
   labelsOf(pk) { const del = ((this.state.lblDel || {})[pk]) || {}; return LABELS.concat(((this.state.lblX || {})[pk]) || []).filter(l => !del[l[0]]); }
   layOf(key, def) { const L = (this.state.lay || {})[key] || {}; const order = (L.order || []).filter(k => def.includes(k)).concat(def.filter(k => !(L.order || []).includes(k))); return { order, hide: L.hide || {} }; }
   layUI(key, def, names, fixed, t, accent) { const L = this.layOf(key, def), set = patch => this.setState({ lay: Object.assign({}, this.state.lay, { [key]: Object.assign({}, L, patch) }) });
@@ -1802,12 +1826,13 @@ class Component extends DCLogic {
     if (staceyZone === 'Chaotisch') staceyRec = 'Erst Klarheit schaffen (Prototyp), dann Scrum';
 
     // Berichte: Portfolio, Roadmap, Kapazität, Statusbericht
-    const RV = [['portfolio', 'Portfolio'], ['themen', 'Themen & Fokus'], ['roadmap', 'Roadmap'], ['kapazitaet', 'Kapazität & Priorität'], ['bericht', 'Statusbericht']];
+    const RV = [['portfolio', 'Portfolio'], ['themen', 'Themen & Fokus'], ['roadmap', 'Roadmap'], ['kapazitaet', 'Kapazität & Priorität'], ['konflikte', 'Ressourcenkonflikte'], ['bericht', 'Statusbericht']];
     const rOrd = this.layOf('rep', RV.map(x => x[0])), rCfgOpen = !!s.rCfg;
     const rCfg = { open: rCfgOpen, toggle: () => this.setState({ rCfg: !rCfgOpen }), items: rOrd.order.map(k => { const on = !rOrd.hide[k], l = (RV.find(x => x[0] === k) || ['', k])[1]; return { label: (on ? '✓ ' : '+ ') + l, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => this.setState({ lay: Object.assign({}, s.lay, { rep: { order: rOrd.order, hide: Object.assign({}, rOrd.hide, { [k]: on }) } }) }) }; }) };
     const rViews = rOrd.order.filter(k => !rOrd.hide[k]).map(k => RV.find(x => x[0] === k)).map(([k, label]) => ({ drag: this.dragStart('rv:' + k), dragEnd: this.dragEnd(), over: this.dragOver('rv|' + k),
       drop: this.dropOn('rv|' + k, id => { if (typeof id !== 'string' || id.indexOf('rv:') !== 0) return; const from = id.slice(3); if (from === k) return; const o = rOrd.order.filter(x => x !== from); o.splice(o.indexOf(k), 0, from); this.setState({ lay: Object.assign({}, this.state.lay, { rep: { order: o, hide: rOrd.hide } }) }); }), label, sel: s.rview === k ? 'true' : 'false', bg: s.rview === k ? t.surface : 'transparent', fg: s.rview === k ? t.text : t.muted, sh: s.rview === k ? '0 1px 3px rgba(0,0,0,0.15)' : 'none', go: () => this.setState({ rview: k, rMsg: '' }) }));
     const rv1 = {}; RV.forEach(([k]) => { rv1[k] = s.rview === k; });
+    const rConf = s.rview === 'konflikte' ? this.resConf(Array.from(new Set([].concat(...Object.keys(PNAME_OF).map(k => (PMEMBERS[k] || []).map(m => m[0]))))), null, t, accent) : { rows: [], empty: true };
     const progOf = { sm42: projects[0].progress, rl2: projects[1].progress, pd: projects[2].progress, ih: projects[3].progress, mes: '0%', ets: '0%', tl3: '0%' };
     const ordered = s.porder.map(k => PORTK[k]);
     // Kapazität in Prioritätsreihenfolge verteilen
@@ -4040,7 +4065,7 @@ class Component extends DCLogic {
       openAntrag: () => this.setState({ screen: 'antrag', aStep: 1, panel: null, aMsg: '' }), goProjekte: () => this.setState({ screen: 'projekte' }),
       nt, reqMe, reqMeCount: REQ_ME.length, sent, hasSent: s.sent.length > 0, reqLoad,
       openNew: () => { const inP = s.screen === 'projekt' && PNAME_OF[s.proj], inU = s.screen === 'pn' && (s.uprojs || []).find(u => u.key === s.upSel); this.setState({ panel: { kind: 'new', id: 'new', from: s.screen }, nt: Object.assign({}, s.nt, { who: 'ich', title: '', parent: null, owner: 'Du', ctx: inP ? s.proj : null, proj: inP ? PNAME_OF[s.proj] : (inU ? inU.name : 'Ohne Projekt'), kind: 'aufgabe', co: [], due: '2026-11-20' }) }); },
-      rViews, rv1, rKpis, rHasMsg: !!s.rMsg, rMsg: s.rMsg, rFilterOn: s.rFilter !== 'alle', rFilterLabel: RF[s.rFilter] || '',
+      rViews, rv1, rConf, rKpis, rHasMsg: !!s.rMsg, rMsg: s.rMsg, rFilterOn: s.rFilter !== 'alle', rFilterLabel: RF[s.rFilter] || '',
       rClearFilter: () => this.setState({ rFilter: 'alle' }), portRows, portEmpty: portRows.length === 0, portAll,
       rMonths, rToday: rp('2026-11-13'), roadRows, capRows, reportRows, rAutoBtn, rAutoPressed: s.rAuto ? 'true' : 'false',
       rToggleAuto: () => this.setState({ rAuto: !s.rAuto, rMsg: s.rAuto ? 'Automatischer Versand aus.' : 'Der Statusbericht geht ab jetzt jeden Freitag um 12:00 an die Geschäftsführung.' }),

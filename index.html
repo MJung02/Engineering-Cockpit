@@ -2433,6 +2433,18 @@ input,textarea,select{font-size:16px!important}
                 <sc-for list="{{mx.res.rows}}" as="mrr" hint-placeholder-count="4"><div class="ec-resrow" style="display: grid; grid-template-columns: minmax(160px, 1fr) minmax(140px, 2fr) 120px; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid {{t.border}}"><span style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; background: {{mrr.av}}; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{mrr.ini}}</span><span style="min-width: 0"><b style="font-size: 13px">{{mrr.name}}</b><span style="display: block; font-size: 12px; color: {{t.muted}}">{{mrr.pct}} · {{mrr.n}}</span></span></span><span><span style="display: block; height: 10px; border-radius: 5px; background: {{t.track}}"><span style="display: block; height: 10px; border-radius: 5px; width: {{mrr.w}}; background: {{mrr.col}}"></span></span><span style="display: block; font-size: 12px; color: {{t.muted}}; margin-top: 2px">{{mrr.hrs}}</span></span><span style="text-align: right"><b style="color: {{mrr.col}}">{{mrr.load}}</b><span style="display: block; font-size: 11px; color: {{mrr.totCol}}">{{mrr.tot}}</span></span></div></sc-for>
                 <div style="font-size: 12px; color: {{t.muted}}">{{mx.res.hint}}</div>
               </section>
+              <section style="padding: 16px 18px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-sizing: border-box"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 16px; flex: 1">Ressourcenkonflikte über alle Projekte</h2><span style="font-size: 12px; color: {{t.muted}}">{{mx.conf.count}} · KW 47–52</span></div>
+                <div style="font-size: 12px; color: {{t.muted}}">{{mx.conf.hint}}</div>
+                <sc-if value="{{mx.conf.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; border-radius: 8px; background: {{t.soft}}; border: 1px solid {{accent}}; font-size: 13px; font-weight: 600">{{mx.conf.msg}}</div></sc-if>
+                <sc-for list="{{mx.conf.rows}}" as="rcr" hint-placeholder-count="2"><div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid {{t.border}}">
+                  <span style="flex: 0 1 190px; min-width: 140px"><b>{{rcr.name}}</b><span style="display: block; font-size: 12px; color: {{t.muted}}">{{rcr.kw}}{{rcr.why}}</span></span>
+                  <b style="min-width: 70px; color: {{rcr.col}}">{{rcr.load}}</b>
+                  <div style="flex: 1 1 280px; min-width: 0"><div style="display: flex; flex-wrap: wrap; gap: 4px"><sc-for list="{{rcr.parts}}" as="rcp" hint-placeholder-count="2"><span style="padding: 2px 8px; border-radius: 999px; background: {{rcp.bg}}; color: #FFFFFF; font-size: 12px; font-weight: 600">{{rcp.label}}</span></sc-for></div>
+                    <div style="font-size: 12px; color: {{t.muted}}; margin-top: 4px">{{rcr.tip}}</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px"><sc-if value="{{rcr.canMv}}" hint-placeholder-val="{{true}}"><button onClick="{{rcr.mv}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{rcr.mvLabel}}</button></sc-if><sc-if value="{{rcr.canGive}}" hint-placeholder-val="{{false}}"><button onClick="{{rcr.give}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{rcr.giveLabel}}</button></sc-if></div></div>
+                </div></sc-for>
+                <sc-if value="{{mx.conf.empty}}" hint-placeholder-val="{{false}}"><div style="padding: 10px 12px; border-radius: 10px; border-left: 4px solid #107C10; background: {{t.surface2}}; font-size: 13px; font-weight: 600">✓ Keine Konflikte: niemand ist in den nächsten 6 Wochen über seine planbare Zeit verplant.</div></sc-if>
+              </section>
             </sc-if>
             <sc-if value="{{mx.is.status}}" hint-placeholder-val="{{false}}">
               <section style="padding: 16px 18px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-sizing: border-box"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 16px; flex: 1">Statusbericht</h2><span style="font-size: 12px; color: {{t.muted}}">Stand 13.11.2026</span></div><sc-if value="{{mx.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; border-radius: 8px; background: {{t.soft}}; border: 1px solid {{accent}}; font-size: 13px; font-weight: 600">{{mx.msg}}</div></sc-if>
@@ -4537,6 +4549,21 @@ input,textarea,select{font-size:16px!important}
               </section>
             </sc-if>
 
+            <sc-if value="{{rv1.konflikte}}" hint-placeholder-val="{{false}}">
+              <section style="padding: 16px 18px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-sizing: border-box"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 16px; flex: 1">Ressourcenkonflikte im Bereich</h2><span style="font-size: 12px; color: {{t.muted}}">{{rConf.count}} · KW 47–52</span></div>
+                <div style="font-size: 12px; color: {{t.muted}}">{{rConf.hint}}</div>
+                <sc-if value="{{rConf.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; border-radius: 8px; background: {{t.soft}}; border: 1px solid {{accent}}; font-size: 13px; font-weight: 600">{{rConf.msg}}</div></sc-if>
+                <sc-for list="{{rConf.rows}}" as="rcr" hint-placeholder-count="2"><div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid {{t.border}}">
+                  <span style="flex: 0 1 190px; min-width: 140px"><b>{{rcr.name}}</b><span style="display: block; font-size: 12px; color: {{t.muted}}">{{rcr.kw}}{{rcr.why}}</span></span>
+                  <b style="min-width: 70px; color: {{rcr.col}}">{{rcr.load}}</b>
+                  <div style="flex: 1 1 280px; min-width: 0"><div style="display: flex; flex-wrap: wrap; gap: 4px"><sc-for list="{{rcr.parts}}" as="rcp" hint-placeholder-count="2"><span style="padding: 2px 8px; border-radius: 999px; background: {{rcp.bg}}; color: #FFFFFF; font-size: 12px; font-weight: 600">{{rcp.label}}</span></sc-for></div>
+                    <div style="font-size: 12px; color: {{t.muted}}; margin-top: 4px">{{rcr.tip}}</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px"><sc-if value="{{rcr.canMv}}" hint-placeholder-val="{{true}}"><button onClick="{{rcr.mv}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{rcr.mvLabel}}</button></sc-if><sc-if value="{{rcr.canGive}}" hint-placeholder-val="{{false}}"><button onClick="{{rcr.give}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{rcr.giveLabel}}</button></sc-if></div></div>
+                </div></sc-for>
+                <sc-if value="{{rConf.empty}}" hint-placeholder-val="{{false}}"><div style="padding: 10px 12px; border-radius: 10px; border-left: 4px solid #107C10; background: {{t.surface2}}; font-size: 13px; font-weight: 600">✓ Keine Konflikte: niemand ist in den nächsten 6 Wochen über seine planbare Zeit verplant.</div></sc-if>
+              </section>
+            </sc-if>
+
             <!-- Kapazität und Priorität -->
             <sc-if value="{{rv1.kapazitaet}}" hint-placeholder-val="{{false}}">
               <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
@@ -5132,6 +5159,18 @@ input,textarea,select{font-size:16px!important}
                 <sc-if value="{{mx.res.ok}}" hint-placeholder-val="{{true}}"><div style="padding: 10px 12px; border-radius: 10px; border-left: 4px solid #107C10; background: {{t.surface2}}; font-size: 13px; font-weight: 600">✓ {{mx.res.overText}}</div></sc-if>
                 <sc-for list="{{mx.res.rows}}" as="mrr" hint-placeholder-count="4"><div class="ec-resrow" style="display: grid; grid-template-columns: minmax(160px, 1fr) minmax(140px, 2fr) 120px; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid {{t.border}}"><span style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; background: {{mrr.av}}; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{mrr.ini}}</span><span style="min-width: 0"><b style="font-size: 13px">{{mrr.name}}</b><span style="display: block; font-size: 12px; color: {{t.muted}}">{{mrr.pct}} · {{mrr.n}}</span></span></span><span><span style="display: block; height: 10px; border-radius: 5px; background: {{t.track}}"><span style="display: block; height: 10px; border-radius: 5px; width: {{mrr.w}}; background: {{mrr.col}}"></span></span><span style="display: block; font-size: 12px; color: {{t.muted}}; margin-top: 2px">{{mrr.hrs}}</span></span><span style="text-align: right"><b style="color: {{mrr.col}}">{{mrr.load}}</b><span style="display: block; font-size: 11px; color: {{mrr.totCol}}">{{mrr.tot}}</span></span></div></sc-for>
                 <div style="font-size: 12px; color: {{t.muted}}">{{mx.res.hint}}</div>
+              </section>
+              <section style="padding: 16px 18px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-sizing: border-box"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 16px; flex: 1">Ressourcenkonflikte über alle Projekte</h2><span style="font-size: 12px; color: {{t.muted}}">{{mx.conf.count}} · KW 47–52</span></div>
+                <div style="font-size: 12px; color: {{t.muted}}">{{mx.conf.hint}}</div>
+                <sc-if value="{{mx.conf.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; border-radius: 8px; background: {{t.soft}}; border: 1px solid {{accent}}; font-size: 13px; font-weight: 600">{{mx.conf.msg}}</div></sc-if>
+                <sc-for list="{{mx.conf.rows}}" as="rcr" hint-placeholder-count="2"><div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid {{t.border}}">
+                  <span style="flex: 0 1 190px; min-width: 140px"><b>{{rcr.name}}</b><span style="display: block; font-size: 12px; color: {{t.muted}}">{{rcr.kw}}{{rcr.why}}</span></span>
+                  <b style="min-width: 70px; color: {{rcr.col}}">{{rcr.load}}</b>
+                  <div style="flex: 1 1 280px; min-width: 0"><div style="display: flex; flex-wrap: wrap; gap: 4px"><sc-for list="{{rcr.parts}}" as="rcp" hint-placeholder-count="2"><span style="padding: 2px 8px; border-radius: 999px; background: {{rcp.bg}}; color: #FFFFFF; font-size: 12px; font-weight: 600">{{rcp.label}}</span></sc-for></div>
+                    <div style="font-size: 12px; color: {{t.muted}}; margin-top: 4px">{{rcr.tip}}</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px"><sc-if value="{{rcr.canMv}}" hint-placeholder-val="{{true}}"><button onClick="{{rcr.mv}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{rcr.mvLabel}}</button></sc-if><sc-if value="{{rcr.canGive}}" hint-placeholder-val="{{false}}"><button onClick="{{rcr.give}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{rcr.giveLabel}}</button></sc-if></div></div>
+                </div></sc-for>
+                <sc-if value="{{mx.conf.empty}}" hint-placeholder-val="{{false}}"><div style="padding: 10px 12px; border-radius: 10px; border-left: 4px solid #107C10; background: {{t.surface2}}; font-size: 13px; font-weight: 600">✓ Keine Konflikte: niemand ist in den nächsten 6 Wochen über seine planbare Zeit verplant.</div></sc-if>
               </section>
             </sc-if>
             <sc-if value="{{mx.is.status}}" hint-placeholder-val="{{false}}">
@@ -6045,8 +6084,8 @@ input,textarea,select{font-size:16px!important}
   </main>
 </div>
 </template>
-<script src="dc-runtime.js?v=17.11.2026_1347"></script>
-<script src="app.js?v=17.11.2026_1347"></script>
+<script src="dc-runtime.js?v=17.11.2026_1353"></script>
+<script src="app.js?v=17.11.2026_1353"></script>
 <script>
 (function () {
   var props = {"accent": "#0F6CBD", "dark": false, "density": "normal"};

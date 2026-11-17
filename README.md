@@ -20,6 +20,10 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
+- **Ressourcenkonflikte über Projekte hinweg:** Das Cockpit rechnet je Person und Woche (KW 47–52) die Grundlast aus der Linie, die Aufgaben aller Projekte und die Abwesenheiten zusammen.
+  - Wer über seine planbare Zeit (32 h/Woche) kommt, steht mit Aufteilung nach Projekt in der Liste.
+  - Der Vorschlag nimmt eine Aufgabe aus dem Projekt mit der niedrigsten Priorität. Sie lässt sich um eine Woche verschieben oder an eine Kollegin bzw. einen Kollegen mit Luft im selben Projekt geben.
+  - Zu sehen unter Berichte › Ressourcenkonflikte (ganzer Bereich) und im Projekt-Reiter Kapazität (Personen des Projekts).
 - **Abhängigkeiten im Gantt:** Im Detail jedes Elements legst du unter „Abhängigkeiten · beginnt nach“ mit „+ Vorgänger“ fest, was vorher fertig sein muss (Ende → Anfang). Im Gantt steht dann „↳ nach …“ unter dem Namen.
   - Verschiebt sich ein Vorgänger nach hinten, rücken die Nachfolger automatisch mit. Die Meldung nennt, wer um wie viele Tage gerückt ist.
   - Passt ein Nachfolger dadurch nicht mehr in seine Phase, meldet das Cockpit einen Konflikt.
