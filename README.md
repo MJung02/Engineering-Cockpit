@@ -26,6 +26,11 @@ Auffälligkeiten bitte direkt im Entwurf melden: **„💬 Feedback geben“** (
 
 ## Neu nach der siebten Testrunde (18.11.2026)
 
+- **Termine verschieben, mit System:**
+  - **Zwei Daten je Projektaufgabe:** *Fällig* ist die Zusage im Projekt, *Geplant am* ist dein Arbeitstag. Den Arbeitstag änderst du immer frei, ohne Freigabe.
+  - **Eigene To-dos** (ohne Projekt, Team): Fälligkeit frei verschiebbar.
+  - **Projektaufgaben:** früher geht immer; bis 3 Tage später ohne Freigabe (die Projektleitung wird informiert); mehr oder hinter den zugehörigen Meilenstein braucht die Freigabe der Projektleitung, mit Grund. Bis zur Entscheidung gilt der alte Termin. Die Projektleitung stellt die Toleranz im Projektkalender ein (immer Freigabe, 3, 5 oder 10 Tage) und entscheidet über die Glocke oder im Aufgabendetail.
+  - **Kalender:** Aufgaben per Ziehen auf einen anderen Tag legen, auf dem Handy mit „⇄ Tippen zum Verschieben“. In *Meine Arbeit* plant das den Arbeitstag um, im Projektkalender ändert es die Fälligkeit nach den Regeln oben. Jeder Tag zeigt deine eingeplanten Stunden, rot über 6 h. „⚖ Überlastete Tage ausgleichen“ verteilt auf Tage mit Luft, jeweils vor der Fälligkeit.
 - **Beispielplan SM42 neu aufgebaut:** Jede Phase hat Meilensteine (auch parallel) und endet mit einem Quality Gate oder Abschluss-Meilenstein; die nächste Phase hängt an diesem Gate, nicht mehr Phase an Phase. Parallele Meilensteine laufen beide ins Gate. Die Beschaffung ist bewusst vorgezogen und startet vor Gate G2 (nach der Mechanik-Konstruktion). Bei eingeklappten Phasen setzen die Pfeile an der Phasenzeile an.
 - **Handy:** Die Benachrichtigungen (Glocke) gehen über die volle Breite statt links abgeschnitten.
 - **Word-Berichte** (Export › „📝 Word-Bericht …“): Statusbericht, Abnahmeprotokoll, Abschlussbericht und Besprechungsprotokoll als .docx (A4, mit Tabellen und Seitenzahl).

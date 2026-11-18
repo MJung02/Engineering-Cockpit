@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:01 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:17 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -559,7 +559,7 @@ class Component extends DCLogic {
       nt: { who: 'ich', person: 'M. Yilmaz', proj: 'Ohne Projekt', h: 4, due: '2026-11-20', co: [], rep: 'nie', kind: 'aufgabe', title: '', ctx: null, parent: null, date: '2026-11-27', dur: 14, owner: 'Du', check: 'Konstruktionsfreigabe' },
       arbTab: 'aufgaben', panelW: 420, panelMax: false, descEdit: null, themeMode: 'system', accentOv: null, densOv: null, profMsg: '', prof: { title: 'Projektingenieur Automatisierung', site: 'Werk 1', phone: '+49 2722 62-0', pic: '#5B2D90', photo: false, levels: { 'TIA Portal': 3, 'Safety': 3, 'KUKA': 1, 'Profinet': 2, 'WinCC': 2, 'Projektmanagement': 3 }, extra: [], certs: [['Safety-Schulung (TÜV)', '2027-01-05']], hours: 35, days: [true, true, true, true, true], share: 80, start: '07:00', deputy: 'S. Keller' }, notif: { mail: true, push: true, teams: false, digest: true, quiet: true, mention: true }, cal: { outlook: true, block: true, ical: false, fokusFree: true }, kiPref: { outlook: true, drafts: true, replies: true, mails: true, termine: true, status: true, wissen: true, team: true }, drState: {}, drSlot: {}, drMsg: '', drVar: {}, q: '', drIdx: 0, kmState: {}, kmIdx: 0, kmMsg: '', tpH: 'woche', tpKi: false, tdKi: false, tpW: 0, tpZoom: 'w1', teamAdd: {}, tdPlan: {}, tdSel: null, recurAdd: {}, pSub: 'details', akte: {}, akMsg: '', akTyp: 'Notiz', akH: 1, akD: 'heute', akWho: 'Du', akSup: 'Würth', akSupQ: '', supAdd: [], akView: null, akKind: 'Material', akAmt: '', akBeleg: false, nodeCo: { m42: ['T. Brandt'], m23: ['T. Brandt', 'L. Wagner'] }, invAdd: {}, coOv: { t12: ['L. Wagner'], t5: ['S. Keller'], t10: ['Du'], t3: ['S. Keller'] }, kiSkip: {},
       txt: {}, cmpOpen: null, cmpErr: null, reqTxt: {}, gateRes: {}, wait: { t2: { who: 'Lieferant', why: 'Angebot Servoantriebe, angefragt am 04.11.', until: '18.11.', since: '04.11.' }, t12: { who: 'L. Wagner', why: 'Überarbeiteter Pneumatikplan, Ventilinsel neu dimensionieren', until: '16.11.', since: '10.11.' } }, waitAsk: null, waitEdit: null, waitDraft: {}, comments: {}, pMsg: '',
-      tplan: {}, tpSel: null, tpMsg: '', meetDay: {}, weekMsg: '', daySel: '2026-11-13', daySel2: null, dayMsg: '', dayPlan: { '2026-11-13': [{ id: 't2', start: 7, h: 0.5 }, { id: 't3', start: 8.5, h: 1 }] }, ovBy: {}, ovEdit: false, kiSum: {}, kiUse: { mail: true, status: true, risiko: true, ll: true, sum: true }, sent: [], reqObj: {}, reqAns: {},
+      tplan: {}, tpSel: null, planOv: {}, dueTol: {}, dueWhy: {}, calMove: false, calPick: null, calMsg: '', dueReq: { t12: { from: '2026-11-12', to: '2026-11-19', why: 'Der überarbeitete Pneumatikplan kommt erst am 17.11. vom Konstrukteur.', by: 'S. Keller', pl: 'Du', st: 'offen', rule: '7 Tage später, ohne Freigabe gehen 3' } }, tpMsg: '', meetDay: {}, weekMsg: '', daySel: '2026-11-13', daySel2: null, dayMsg: '', dayPlan: { '2026-11-13': [{ id: 't2', start: 7, h: 0.5 }, { id: 't3', start: 8.5, h: 1 }] }, ovBy: {}, ovEdit: false, kiSum: {}, kiUse: { mail: true, status: true, risiko: true, ll: true, sum: true }, sent: [], reqObj: {}, reqAns: {},
       aStep: 1, aClar: 1, aTech: 2, aTeams: { auto: true }, aEff: 1, aStartI: 1, aSent: false, aAnswered: false, aMsg: '',
       ztOpen: false, tl3: false, zt: { pl: 'M. Yilmaz', model: 'Scrum', vorlage: 'Scrum Standard', rank: 4 },
       adview: 'org', orgSel: 'auto', orgOf: Object.assign({}, ORG_INIT), orgMove: null, orgHist: [], adMsg: '',
@@ -774,7 +774,7 @@ class Component extends DCLogic {
   moveToDay(id, iso, label) {
     if (typeof id !== 'string' || id.indexOf('wk:') !== 0) return;
     const [, kind, ref] = id.match(/^wk:(\w):(.*)$/) || [];
-    if (kind === 't') { const x = TASK[ref]; if (!x || x.due === iso) return; x.due = iso; return this.setState({ rev: (this.state.rev || 0) + 1, weekMsg: '„' + x.title + '“ ist jetzt am ' + label + ' fällig.' }); }
+    if (kind === 't') { const x = TASK[ref]; if (!x) return; return this.dueRule(x, null).proj ? this.setPlan(ref, iso) : this.changeDue(ref, iso); }
     if (kind === 'm') return this.setState({ meetDay: Object.assign({}, this.state.meetDay, { [ref]: iso }), weekMsg: '„' + ref + '“ auf ' + label + ' verschoben. Die Teilnehmer bekommen einen neuen Terminvorschlag.' });
     if (kind === 'n') { const n = NODE[ref]; if (!n) return; const days = Math.round((D(iso) - D(n.end)) / 86400000); if (days) this.shiftNode(ref, 'move', days); this.setState({ weekMsg: '„' + n.name + '“ auf ' + label + ' verschoben. Im Gantt und für alle Beteiligten sofort sichtbar.' }); }
   }
@@ -1261,7 +1261,35 @@ class Component extends DCLogic {
   dateEdit(n, can) { const pt = n.type === 'gate', ok = v => /^\d{4}-\d\d-\d\d$/.test(v || '') && +v.slice(0, 4) >= 2020 && +v.slice(0, 4) <= 2100, val = e => (e && e.target ? e.target.value : '');
     return { edit: !!can, ro: !can, roTitle: can ? '' : 'Nur lesen: Termine ändern dürfen Owner und Bearbeiter.', range: !pt, a: n.start, b: n.end, aLabel: 'Beginn ' + n.name, bLabel: (pt ? 'Termin ' : 'Ende ') + n.name, bTitle: pt ? 'Termin ändern' : 'Ende ändern',
       setA: e => { const v = val(e); if (ok(v)) this.setNodeDate(n.id, 'start', v); }, setB: e => { const v = val(e); if (ok(v)) this.setNodeDate(n.id, pt ? 'start' : 'end', v); } }; }
-  setDue(id, iso) { const x = TASK[id]; if (!x || !/^\d{4}-\d\d-\d\d$/.test(iso || '')) return; this.logH('t:' + id, 'Fällig', fmt(D(x.due)), fmt(D(iso))); x.due = iso; this.setState({ rev: (this.state.rev || 0) + 1, pMsg: 'Fällig jetzt am ' + fmt(D(iso)) + D(iso).getFullYear() + '.' }); }
+  planOf(x) { return ((this.state.planOv || {})[x.id]) || x.due; }
+  dueTolOf(pk) { const v = (this.state.dueTol || {})[pk]; return v === undefined ? 3 : v; }
+  dueRule(x, iso) { const pk = this.pkOf(x), pn = pk ? this.pnm(pk) : '', proj = !!pn && x.proj === pn;
+    if (!proj) return { mode: 'frei', proj: false, hint: 'Eigenes To-do: frei verschiebbar, ohne Freigabe.' };
+    const pl = PL_OF[pk] || 'Du', tol = this.dueTolOf(pk), ms = x.ms && NODE[x.ms] ? NODE[x.ms] : null, d = iso ? this.dayDiff(iso, x.due) : 0, late = !!ms && !!iso && iso > ms.end;
+    const hint = pl === 'Du' ? 'Du leitest das Projekt: Fälligkeit frei änderbar. Liegt sie danach hinter dem Meilenstein' + (ms ? ' „' + ms.name + '“' : '') + ', warnt das Cockpit. Andere brauchen ab ' + (tol + 1) + ' Tagen deine Freigabe.'
+      : 'Projektaufgabe: früher geht immer. Bis ' + tol + ' Tage später ohne Freigabe (' + pl + ' wird informiert); mehr' + (ms ? ' oder nach dem Meilenstein „' + ms.name + '“' : '') + ' braucht die Freigabe von ' + pl + '.';
+    if (!iso || d <= 0) return { mode: 'frei', proj: true, pl, hint };
+    if (pl === 'Du') return { mode: late ? 'warn' : 'frei', proj: true, pl, hint, why: late ? 'liegt nach dem Meilenstein „' + ms.name + '“ (' + fmt(D(ms.end)) + ')' : '' };
+    if (d <= tol && !late) return { mode: 'info', proj: true, pl, hint };
+    return { mode: 'antrag', proj: true, pl, hint, why: late ? 'liegt nach dem Meilenstein „' + ms.name + '“ (' + fmt(D(ms.end)) + ')' : d + ' Tage später, ohne Freigabe gehen ' + tol }; }
+  changeDue(id, iso, why) { const x = TASK[id]; if (!x || !/^\d{4}-\d\d-\d\d$/.test(iso || '') || iso === x.due) return '';
+    const r = this.dueRule(x, iso), s = this.state, F = d0 => fmt(D(d0));
+    if (r.mode === 'antrag') { const why2 = String(why !== undefined ? why : ((s.dueWhy || {})[id] || '')).trim(); this.logH('t:' + id, 'Verschiebung beantragt', F(x.due), F(iso));
+      const m = 'Verschiebung von „' + x.title + '“ auf ' + F(iso) + ' beantragt (' + r.why + '). ' + r.pl + ' entscheidet, bis dahin gilt ' + F(x.due) + (why2 ? '' : ' Tipp: Grund im Aufgabendetail ergänzen.');
+      this.setState({ dueReq: Object.assign({}, s.dueReq, { [id]: { from: x.due, to: iso, why: why2, by: 'Du', pl: r.pl, st: 'offen', rule: r.why } }), pMsg: m, calMsg: m, weekMsg: m }); return 'antrag'; }
+    const o = x.due; this.logH('t:' + id, 'Fällig', F(o), F(iso)); x.due = iso; const pl = Object.assign({}, s.planOv); if (pl[id] && pl[id] > iso) delete pl[id];
+    const req = Object.assign({}, s.dueReq); if (req[id] && req[id].st === 'offen') delete req[id];
+    const m = '„' + x.title + '“ ist jetzt am ' + F(iso) + ' fällig.' + (r.mode === 'info' ? ' ' + r.pl + ' ist informiert (steht im Verlauf).' : '') + (r.mode === 'warn' ? ' Achtung: ' + r.why + '. Meilenstein prüfen.' : '');
+    this.setState({ rev: (s.rev || 0) + 1, planOv: pl, dueReq: req, pMsg: m, calMsg: m, weekMsg: m }); return r.mode; }
+  setDue(id, iso) { return this.changeDue(id, iso); }
+  setPlan(id, iso) { const x = TASK[id]; if (!x || !/^\d{4}-\d\d-\d\d$/.test(iso || '')) return; const pl = Object.assign({}, this.state.planOv); if (iso === x.due) delete pl[id]; else pl[id] = iso;
+    const m = '„' + x.title + '“ eingeplant für ' + fmt(D(iso)) + (iso > x.due ? ', das ist nach der Fälligkeit (' + fmt(D(x.due)) + '). Früher einplanen oder Termin verschieben.' : ' Fällig bleibt ' + fmt(D(x.due)));
+    this.setState({ planOv: pl, pMsg: m, calMsg: m, weekMsg: m }); }
+  decideDue(id, ok) { const s = this.state, r = (s.dueReq || {})[id], x = TASK[id]; if (!r || !x) return; const F = d0 => fmt(D(d0));
+    if (ok) { this.logH('t:' + id, 'Fällig (freigegeben von ' + r.pl + ')', F(x.due), F(r.to)); x.due = r.to; } else this.logH('t:' + id, 'Verschiebung abgelehnt von ' + r.pl, F(r.to), F(x.due));
+    const m = ok ? (r.pl === 'Du' ? 'Freigegeben' : r.pl + ' hat freigegeben') + ': „' + x.title + '“ ist jetzt am ' + F(r.to) + ' fällig.' + (r.by !== 'Du' ? ' ' + r.by + ' wird benachrichtigt.' : '') : (r.pl === 'Du' ? 'Abgelehnt' : r.pl + ' hat abgelehnt') + ': „' + x.title + '“ bleibt am ' + F(x.due) + ' fällig.' + (r.by !== 'Du' ? ' ' + r.by + ' wird benachrichtigt.' : '');
+    this.setState({ rev: (s.rev || 0) + 1, dueReq: Object.assign({}, s.dueReq, { [id]: Object.assign({}, r, { st: ok ? 'genehmigt' : 'abgelehnt' }) }), pMsg: m, calMsg: m }); }
+  dueReqDrop(id) { const r = Object.assign({}, this.state.dueReq); delete r[id]; this.setState({ dueReq: r, pMsg: 'Antrag zurückgezogen. Es gilt weiter die bisherige Fälligkeit.' }); }
   coOf(x) { const o = this.state.coOv && this.state.coOv[x.id]; return o || x.co || []; }
   pkOfNode(id) { let r = id; while (PARENT[r]) r = PARENT[r]; return Object.keys(PTREE_OF).find(k => PTREE_OF[k].some(n => n.id === r)) || 'sm42'; }
   pkOf(x) { return PK_OF[x.proj] || 'arbeit'; }
@@ -2823,13 +2851,29 @@ class Component extends DCLogic {
     const calPeople = [{ label: 'Alle', ini: '∗', av: t.strong, title: 'Alle Beteiligten', pressed: !calSel ? 'true' : 'false', ring: !calSel ? accent : t.border, bg: !calSel ? t.soft : t.surface, go: () => { const o = Object.assign({}, s.calP); o[mvCtx] = null; this.setState({ calP: o }); } }]
       .concat(calOwners.map(p => ({ label: nm(p), ini: ini(p), av: AV[p] || accent, title: ctxTasks.filter(x => ownerOf(x) === p).length + ' Aufgaben', pressed: calSel === p ? 'true' : 'false', ring: calSel === p ? accent : t.border, bg: calSel === p ? t.soft : t.surface,
         go: () => { const o = Object.assign({}, s.calP); o[mvCtx] = calSel === p ? null : p; this.setState({ calP: o }); } })));
-    const C0 = D('2026-10-26');
+    const C0 = D('2026-10-26'), CAL_CAP = 6, calArb = mvCtx === 'arbeit';
+    const calMoveTo = (id, iso) => { if (!/^calt:/.test(String(id))) return; const tid = String(id).slice(5), x = TASK[tid]; if (!x) return; if (calArb && this.dueRule(x, null).proj) return this.setPlan(tid, iso); this.changeDue(tid, iso); };
+    const calBalance = () => { const mine = ctxTasks.filter(x => ownerOf(x) === 'Du' && !this.isDone(x)), est3 = x => EST[x.id] || x.est || 1, plan = Object.assign({}, this.state.planOv), load = {}, pr = { Niedrig: 0, Mittel: 1, Hoch: 2 };
+      const pOf = x => plan[x.id] || x.due; mine.forEach(x => { load[pOf(x)] = (load[pOf(x)] || 0) + est3(x); });
+      const days = Array.from({ length: 42 }, (_, i) => new Date(C0.getFullYear(), C0.getMonth(), C0.getDate() + i)).filter(d => d.getDay() !== 0 && d.getDay() !== 6 && d >= TODAY).map(isoD);
+      let moved = 0, stuck = 0, late = 0; days.forEach(iso => { if ((load[iso] || 0) <= CAL_CAP) return;
+        mine.filter(x => pOf(x) === iso).sort((a, b) => ((pr[a.prio] || 1) - (pr[b.prio] || 1)) || (a.due < b.due ? 1 : -1)).forEach(x => { if ((load[iso] || 0) <= CAL_CAP) return; const e3 = est3(x);
+          const room = d2 => (load[d2] || 0) + e3 <= CAL_CAP, tgt = days.find(d2 => d2 > iso && d2 <= x.due && room(d2)) || days.find(d2 => d2 < iso && room(d2)) || (x.due < iso ? days.find(d2 => d2 > iso && room(d2)) : null);
+          if (!tgt) { stuck++; return; } if (x.due < tgt) late++; if (this.dueRule(x, null).proj) plan[x.id] = tgt; else { x.due = tgt; delete plan[x.id]; } load[iso] -= e3; load[tgt] = (load[tgt] || 0) + e3; moved++; }); });
+      this.setState({ planOv: plan, rev: (this.state.rev || 0) + 1, calMsg: moved ? '⚖ ' + moved + ' Aufgaben auf Tage mit Luft verteilt' + (late ? ', ' + late + ' davon sind schon überfällig und bekommen den nächsten freien Tag' : ', jeweils vor ihrer Fälligkeit') + '. Fälligkeiten im Projekt bleiben gleich.' + (stuck ? ' ' + stuck + ' passen vor ihrer Fälligkeit nirgends mehr hin: Termin verschieben (mit Freigabe) oder abgeben.' : '') : (stuck ? stuck + ' Aufgaben passen nicht mehr vor ihre Fälligkeit: Termin verschieben (mit Freigabe) oder abgeben.' : 'Kein Tag hat mehr als ' + CAL_CAP + ' h. Nichts zu verteilen.') }); };
+    const calPl = mvPk ? (PL_OF[mvPk] || 'Du') : 'Du', calTol = mvPk ? this.dueTolOf(mvPk) : 3;
     const mvCal = Array.from({ length: 42 }, (_, i) => {
       const d = new Date(C0.getFullYear(), C0.getMonth(), C0.getDate() + i), iso = isoD(d), isToday = +d === +TODAY, wk = d.getDay() === 0 || d.getDay() === 6;
-      const items = ctxTasks.filter(x => x.due === iso && (!calSel || ownerOf(x) === calSel || this.coOf(x).includes(calSel))).map(x => { const c = this.chip(this.taskStatus(x), t, accent), o = ownerOf(x), co2 = this.coOf(x); return { label: x.title + (co2.length ? ' (+' + co2.length + ')' : ''), title: x.title + ' · ' + [o].concat(co2).map(nm).join(', ') + ' · ' + c.label, bg: c.bg, fg: c.fg, bd: c.bd, ini: ini(o), av: AV[o] || accent, open: () => this.openTask(x.id, mvFrom) }; })
-        .concat(ctxMs.filter(n => n.end === iso && (!calSel || n.owner === calSel)).map(n => { const c = this.chip(this.nodeStatus(n), t, accent); return { label: '◆ ' + n.name, title: n.name + ' · ' + nm(n.owner) + ' · ' + c.label, bg: t.soft, fg: t.text, bd: c.bd, ini: ini(n.owner), av: AV[n.owner] || accent, open: () => this.openNode(n.id, mvFrom) }; }));
+      const dayK = 'cald|' + mvCtx + '|' + iso, dayOf = x => (calArb ? this.planOf(x) : x.due);
+      const items = ctxTasks.filter(x => dayOf(x) === iso && (!calSel || ownerOf(x) === calSel || this.coOf(x).includes(calSel))).map(x => { const c = this.chip(this.taskStatus(x), t, accent), o = ownerOf(x), co2 = this.coOf(x), rq = ((s.dueReq || {})[x.id] || {}).st === 'offen', moved = calArb && this.planOf(x) !== x.due, pick = s.calPick === x.id;
+        return { label: (rq ? '⏳ ' : '') + x.title + (co2.length ? ' (+' + co2.length + ')' : '') + (moved ? ' · fällig ' + fmt(D(x.due)) : ''), title: x.title + ' · ' + [o].concat(co2).map(nm).join(', ') + ' · ' + c.label + (moved ? ' · eingeplant ' + fmt(D(iso)) + ', fällig ' + fmt(D(x.due)) : '') + (rq ? ' · Verschiebung beantragt' : ''), bg: c.bg, fg: c.fg, bd: pick ? accent : c.bd, ini: ini(o), av: AV[o] || accent,
+          drag: this.dragStart('calt:' + x.id), dragEnd: this.dragEnd(), open: s.calMove ? () => this.setState({ calPick: x.id, calMsg: '„' + x.title + '“ ausgewählt. Jetzt beim Zieltag auf „⇣ hierher“ tippen.' }) : () => this.openTask(x.id, mvFrom) }; })
+        .concat(ctxMs.filter(n => n.end === iso && (!calSel || n.owner === calSel)).map(n => { const c = this.chip(this.nodeStatus(n), t, accent); return { label: '◆ ' + n.name, title: n.name + ' · ' + nm(n.owner) + ' · ' + c.label + ' · Termin im Gantt ändern', bg: t.soft, fg: t.text, bd: c.bd, ini: ini(n.owner), av: AV[n.owner] || accent, drag: () => {}, dragEnd: () => {}, open: () => this.openNode(n.id, mvFrom) }; }));
+      const hrs = wk || !calArb ? 0 : ctxTasks.filter(x => ownerOf(x) === 'Du' && !this.isDone(x) && this.planOf(x) === iso).reduce((a, x) => a + (EST[x.id] || x.est || 1), 0);
       const qk = 'cal|' + mvCtx + '|' + iso, ad = s.qa === qk;
-      return { label: fmt(d), adding: ad, add: () => this.setState({ qa: qk, qaText: '' }), save: qaSave(qk, { proj: qaProj(null), due: iso, owner: calSel || 'Du' }), num: d.getDate() === 1 ? d.getDate() + '. ' + ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'][d.getMonth()] : String(d.getDate()), items,
+      return { over: this.dragOver(dayK), drop: this.dropOn(dayK, id => calMoveTo(id, iso)), ol: s.dragOver === dayK ? '2px dashed ' + accent : 'none', canPick: !!s.calMove && !!s.calPick, pick: () => { const id = this.state.calPick; this.setState({ calPick: null }); calMoveTo('calt:' + id, iso); },
+        load: hrs ? (Math.round(hrs * 10) / 10).toLocaleString('de-DE') + ' h' : '', loadC: hrs > CAL_CAP ? '#C50F1F' : t.muted, loadTitle: hrs > CAL_CAP ? 'Mehr als ' + CAL_CAP + ' h eingeplant: verteilen' : 'Eingeplante Stunden',
+        label: fmt(d), adding: ad, add: () => this.setState({ qa: qk, qaText: '' }), save: qaSave(qk, { proj: qaProj(null), due: iso, owner: calSel || 'Du' }), num: d.getDate() === 1 ? d.getDate() + '. ' + ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'][d.getMonth()] : String(d.getDate()), items,
         bg: isToday ? t.soft : (wk ? t.surface2 : t.surface), bd: isToday ? '2px solid ' + accent : '1px solid ' + t.border, fw: isToday ? 800 : 600, numColor: isToday ? accentText : (d.getMonth() === 10 ? t.text : t.muted) };
     });
 
@@ -3020,6 +3064,10 @@ class Component extends DCLogic {
       cols: mvCols, lanes: mvLanes, laneBtns: laneBtnsMv, laneHint: laneMode === 'person' ? 'Auf eine andere Person ziehen weist die Aufgabe neu zu.' : '',
       boardGrid: 'repeat(' + mvCols.length + ', minmax(230px, 1fr))', boardMinW: (mvCols.length * 245) + 'px',
       cal: mvCal, calPeople, pe, psp,
+      calHint: calArb ? 'Ziehen plant deinen Arbeitstag um („Geplant am“); die Fälligkeit im Projekt bleibt. Eigene To-dos verschiebst du direkt. Oben rechts im Tag: deine Stunden (Ziel höchstens ' + CAL_CAP + ' h).' : (calPl === 'Du' ? 'Ziehen ändert die Fälligkeit. Du leitest das Projekt; andere dürfen bis ' + calTol + ' Tage ohne deine Freigabe verschieben.' : 'Ziehen ändert die Fälligkeit: früher immer, bis ' + calTol + ' Tage später ohne Freigabe, mehr mit Freigabe von ' + calPl + '.'),
+      calIsArb: calArb, calBalance, calMoveOn: s.calMove ? 'true' : 'false', calMoveLabel: s.calMove ? '✓ Tippen zum Verschieben (an)' : '⇄ Tippen zum Verschieben', calMoveToggle: () => this.setState({ calMove: !s.calMove, calPick: null, calMsg: !s.calMove ? 'Erst eine Aufgabe antippen, dann beim Zieltag „⇣ hierher“. Am PC geht auch Ziehen.' : '' }),
+      calHasMsg: !!s.calMsg, calMsg: s.calMsg || '', calCanTol: !calArb && !!mvPk && calPl === 'Du',
+      calTols: [0, 3, 5, 10].map(n => ({ label: n ? n + ' Tage' : 'immer Freigabe', pressed: calTol === n ? 'true' : 'false', ring: calTol === n ? accent : t.border, bg: calTol === n ? t.soft : t.surface, go: () => this.setState({ dueTol: Object.assign({}, this.state.dueTol, { [mvPk]: n }), calMsg: n ? 'Teammitglieder dürfen jetzt bis ' + n + ' Tage ohne deine Freigabe verschieben.' : 'Jede spätere Fälligkeit braucht jetzt deine Freigabe.' }) })),
       msLine, msMonths, msRows, msToday: mp(TODAY), msCol2: mvProj ? 'Phase' : 'Projekt', gantt, tr: trc
     };
     pt.kanban = mvProj && mvPk === 'ih' && s.ptab === 'aufgaben' && mvView === 'kanban';
@@ -3375,6 +3423,7 @@ class Component extends DCLogic {
       ['n5', 'info', '🎓', 'K. Weber: Schaltberechtigung läuft in 15 Tagen ab', 'Team Instandhaltung', 'heute 07:00', () => this.setState({ screen: 'teams', team: 'instandhaltung', panel: null })],
       ['n6', 'info', '✨', 'Die KI hat 3 neue Entwürfe vorbereitet', 'Posteingang', 'gestern', () => this.setState({ screen: 'eingang', panel: null })]]
       .concat(s.ko && s.ko.status !== 'durchgefuehrt' ? [['nko', 'frist', '🚀', 'Kick-off Teileerkennung Linie 3: ' + (s.ko.invited ? 'Termin ' + fmt(D(s.ko.date)) + ' ' + s.ko.time : 'noch kein Termin, Pflicht bis ' + fmt(D(s.ko.due))), 'Projektleitung ' + s.ko.pl, 'gerade eben', () => this.setState({ screen: 'kickoff', panel: null })]] : [])
+      .concat(Object.keys(s.dueReq || {}).filter(k => s.dueReq[k].st === 'offen' && s.dueReq[k].pl === 'Du' && TASK[k]).map(k => ['dr' + k, 'freigabe', '📅', s.dueReq[k].by + ' bittet um Terminverschiebung: „' + TASK[k].title + '“ auf ' + fmt(D(s.dueReq[k].to)), TASK[k].proj + ' · ' + (s.dueReq[k].why || 'ohne Grund'), 'heute', () => { this.setState({ ntfOpen: false }); this.openTask(k, 'eingang'); }]))
       .concat(s.sent.filter(x => x.status === 'team' && x.tq && s.tplan[x.tq]).map((x, k) => ['nt' + x.tq, 'info', '👥', x.boss + ' hat „' + x.title + '“ an ' + s.tplan[x.tq].who + ' gegeben', 'für ' + s.tplan[x.tq].iso.slice(8, 10) + '.' + s.tplan[x.tq].iso.slice(5, 7) + '.', 'gerade eben', () => this.setState({ screen: 'teams', team: Object.keys(TEAMS).find(k2 => 'Team ' + TEAMS[k2].name === x.who) || 'automatisierung', panel: null })]));
     const nf = s.ntfF || 'alle', NTFF = [['alle', 'Alle'], ['mention', '@ Erwähnungen'], ['freigabe', 'Freigaben'], ['frist', 'Fristen']];
     const ntfUnread = NTF.filter(x => !ntRead[x[0]]).length;
@@ -4360,6 +4409,13 @@ class Component extends DCLogic {
       const shareH = estOf0(x) / (1 + co.length);
       p = Object.assign(p, {
         dueIso: x.due, setDue: e => this.setDue(x.id, e && e.target ? e.target.value : ''),
+        ...(() => { const dr = (s.dueReq || {})[x.id], rl = this.dueRule(x, null), F2 = d0 => fmt(D(d0));
+          return { dueHint: rl.hint, showPlan: rl.proj, planIso: this.planOf(x), setPlan: e => this.setPlan(x.id, e && e.target ? e.target.value : ''),
+            planNote: this.planOf(x) !== x.due ? 'Dein Arbeitstag. Die Fälligkeit bleibt die Zusage im Projekt.' : 'Wann du daran arbeitest: nur dein Plan, ohne Freigabe.',
+            dueWhy: (s.dueWhy || {})[x.id] || '', setDueWhy: e => this.setState({ dueWhy: Object.assign({}, this.state.dueWhy, { [x.id]: e && e.target ? e.target.value : '' }) }),
+            hasReq: !!dr && dr.st === 'offen', reqTxt: dr ? (dr.by === 'Du' ? 'Du hast' : dr.by + ' hat') + ' eine Verschiebung beantragt: ' + F2(dr.from) + ' → ' + F2(dr.to) + (dr.why ? ' · Grund: ' + dr.why : '') + (dr.rule ? ' · ' + dr.rule : '') + '. Bis zur Entscheidung gilt ' + F2(x.due) : '',
+            reqPl: !!dr && dr.pl === 'Du', reqOther: !!dr && dr.pl !== 'Du', reqPlName: dr ? dr.pl : '', reqOk: () => this.decideDue(x.id, true), reqNo: () => this.decideDue(x.id, false), reqDel: () => this.dueReqDrop(x.id),
+            hasReqDone: !!dr && dr.st !== 'offen', reqDoneTxt: dr && dr.st !== 'offen' ? (dr.st === 'genehmigt' ? '✓ Verschiebung auf ' + F2(dr.to) + ' freigegeben (' + dr.pl + ')' : '✕ Verschiebung auf ' + F2(dr.to) + ' abgelehnt (' + dr.pl + ')') : '' }; })(),
         multiOk: inProjT, multiNo: !inProjT,
         ownPick: memT.map(n2 => ({ label: n2, pressed: own === n2 ? 'true' : 'false', ring: own === n2 ? accent : t.border, bg: own === n2 ? t.soft : t.surface, go: () => { if (own !== n2) { this.reassign(x.id, n2); this.setState({ coOv: Object.assign({}, this.state.coOv, { [x.id]: co.filter(c2 => c2 !== n2) }) }); } } })),
         coPick: memT.filter(n2 => n2 !== own).map(n2 => { const on = co.includes(n2); return { label: (on ? '✓ ' : '+ ') + n2, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface,
