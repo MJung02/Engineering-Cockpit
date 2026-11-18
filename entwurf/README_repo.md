@@ -22,7 +22,7 @@ Auffälligkeiten bitte direkt im Entwurf melden: **„💬 Feedback geben“** (
 
 - **Echtes Tool:** FastAPI und React mit Datenbank, Anmeldung über Entra ID, Rechten und Speichern.
 - **Schnittstellen:** dokumentierte REST-API v1 und ein **MCP-Server**, damit KI-Assistenten und andere Systeme mit den Rechten des Nutzers lesen und schreiben können.
-- **LPA-Tool:** Maßnahmen aus Layered Process Audits laufen automatisch als Aufgaben ins Cockpit. Statuswechsel und „erledigt“ werden in beiden Apps synchron gehalten und gegenvalidiert; bei Widerspruch gibt es einen Konflikt mit Klärungsaufgabe. Details in `docs/ANFORDERUNGEN.md`, REQ-INT-024 bis -029.
+- **LPA-Tool:** Maßnahmen aus Layered Process Audits laufen automatisch als Aufgaben ins Cockpit. Statuswechsel und „erledigt“ werden in beiden Apps synchron gehalten und gegenvalidiert; bei Widerspruch gibt es einen Konflikt mit Klärungsaufgabe. Details in `docs/ANFORDERUNGEN.md`, REQ-INT-024 bis -032, und im Konzept `docs/LPA_ANBINDUNG.md`.
 
 ## Neu nach der siebten Testrunde (18.11.2026)
 
@@ -34,6 +34,7 @@ Auffälligkeiten bitte direkt im Entwurf melden: **„💬 Feedback geben“** (
   - **Gegenvalidierung:** Erledigt im Cockpit wird gemeldet und wartet auf die Bestätigung durch den Auditor. Lehnt er ab, ist die Aufgabe wieder offen und es entsteht eine Klärungsaufgabe.
   - **Konflikte:** Meldet das LPA-Tool „erledigt“, die Aufgabe ist im Cockpit aber offen: übernehmen oder Klärungsaufgabe. Neue Befunde kommen per Webhook automatisch.
   - Sync-Monitor mit Kennzahlen (übernommen, synchron, wartet, Konflikte) und Protokoll. Karten für REST-API v1 und MCP-Server (geplant).
+  - **Nach der echten LPA-API (18.11.):** neue Maßnahmen mit `nur_neue` holen und per `uebertragen` quittieren, Erledigt als DONE melden, der Auditor bestätigt mit VERIFIED („nicht wirksam“ öffnet wieder), Änderungen per Webhook oder `seit`, Verworfen (REJECTED). „{ } API-Aufrufe zeigen“ blendet die Aufrufe im Protokoll ein. Konzept für das echte Tool: `docs/LPA_ANBINDUNG.md`.
 - **Plan gegen Ist mit Prognose** (Statusbericht, Kurzfassung unter Finanzen): Geplant bis heute, Erreicht und Kosten verbraucht als Balken. Dazu Termintreue und Kostentreue (Earned Value), Prognose für Ende und Gesamtkosten im aktuellen Tempo und eine Kurve geplant / heute / Prognose. „So rechnet das Cockpit“ erklärt die Rechnung. Auch als Platzhalter {{PlanIst}} für PowerPoint und Word.
 
 ## Neu nach der sechsten Testrunde (17.11.2026)
