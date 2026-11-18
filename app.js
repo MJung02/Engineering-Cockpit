@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 08:15 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 08:23 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -91,6 +91,14 @@ const AKTE_SEED = {
   'n:m42': { doku: [['Notiz', 'L. Wagner', '11.11. 14:05', 'Grundgestell ist geliefert, Montage startet nach Freigabe Pneumatikplan.']], files: [['IMG', 'Grundgestell_Anlieferung.jpg', '3,1 MB', 'L. Wagner', '11.11.']], inv: [['Würth', 1480, 'Material', 'freigegeben', 'Normteile, von dir freigegeben']] },
   'n:m23': { doku: [['Protokoll', 'T. Brandt', '10.11. 09:00', 'Gate-Vorbereitung: 4 von 5 Punkten erfüllt, Stromlaufplan offen.']] }
 };
+const LPA_A1 = 'LPA Ebene 2 · Halle 2 · Linie 2 · 09.11.2026', LPA_A2 = 'LPA Ebene 1 · SM42 Vormontage · 12.11.2026';
+const LPA_SEED = [
+  { ext: 'LPA-2026-0412-03', audit: LPA_A1, befund: 'Not-Aus-Taster an Station 4 schwergängig', mass: 'Not-Aus-Taster Station 4 tauschen und prüfen', who: 'Du', due: '2026-11-20', proj: 'Instandhaltung Halle 2', lst: 'offen', prio: 'Hoch' },
+  { ext: 'LPA-2026-0412-05', audit: LPA_A1, befund: 'Arbeitsanweisung AA-17 an Station 2 veraltet (Rev. B statt D)', mass: 'Arbeitsanweisung AA-17 Rev. D aushängen', who: 'R. Fischer', due: '2026-11-17', proj: 'Instandhaltung Halle 2', lst: 'offen', prio: 'Mittel' },
+  { ext: 'LPA-2026-0415-01', audit: LPA_A2, befund: 'Drehmomentschlüssel ohne gültige Prüfplakette', mass: 'Drehmomentschlüssel DS-08 kalibrieren lassen', who: 'L. Wagner', due: '2026-11-19', proj: 'SM42 Schraubstation', lst: 'offen', prio: 'Hoch' },
+  { ext: 'LPA-2026-0415-02', audit: LPA_A2, befund: '5S: Werkzeugschatten an Platz 3 fehlen', mass: 'Schattenbrett Platz 3 ergänzen', who: 'S. Keller', due: '2026-11-25', proj: 'SM42 Schraubstation', lst: 'offen', prio: 'Niedrig' },
+  { ext: 'LPA-2026-0398-04', audit: 'LPA Ebene 3 · Halle 2 · 28.10.2026', befund: 'Ölleckage an Presse 3', mass: 'Dichtung Hydraulik Presse 3 erneuern', who: 'Du', due: '2026-11-06', proj: 'Instandhaltung Halle 2', lst: 'erledigt', prio: 'Hoch' },
+  { ext: 'LPA-2026-0419-01', later: true, audit: 'LPA Ebene 2 · Halle 2 · Linie 2 · 13.11.2026', befund: 'Lichtgitter Station 6 verschmutzt, Abschaltung verzögert', mass: 'Lichtgitter Station 6 reinigen und Ansprechzeit messen', who: 'Du', due: '2026-11-16', proj: 'Instandhaltung Halle 2', lst: 'offen', prio: 'Hoch' }];
 const PL_OF = { sm42: 'Du', rl2: 'T. Brandt', pd: 'N. Becker', ih: 'R. Fischer' };
 const COMMENTS = {
   t1: [['T. Brandt', 'gestern 16:20', 'Review ist durch, zwei Anmerkungen zur Schutztür stehen im PDF. Bitte bis Montag freigeben.'], ['Du', 'heute 08:05', 'Danke, schaue ich mir heute Nachmittag an.']],
@@ -1431,7 +1439,15 @@ class Component extends DCLogic {
     if (t.story) return t.ms ? this.storyTo(t.story, this.isDone(t) ? 'Review' : 'Done') : this.setState({ boardMsg: STORIES[t.story].key + ' liegt im Product Backlog und wird über die Sprint-Planung eingeplant.' });
     if (t.kb) return this.kbTo(t.kb, this.isDone(t) ? 'arbeit' : 'erledigt');
     const done = Object.assign({}, this.state.done), was = this.isDone(t); done[id] = !was; this.setState({ done }); this.logH('t:' + id, 'Status', was ? 'erledigt' : 'offen', was ? 'offen' : 'erledigt');
+    if (t.ext) this.lpaLogPush((was ? '↺ „' : '✓ „') + t.title.replace(/^LPA: /, '') + '“ im Cockpit ' + (was ? 'wieder geöffnet, an das LPA-Tool gemeldet.' : 'erledigt, an das LPA-Tool gemeldet. Wartet auf Bestätigung durch den Auditor.'));
   }
+  lpaLogPush(m, extra) { const L = this.state.lpaLog || [], n = L.length, tm = '13.11. ' + String(10 + Math.floor(n / 6)).padStart(2, '0') + ':' + String((n * 7 + 2) % 60).padStart(2, '0'); this.setState(Object.assign({ lpaLog: [{ t: tm, m }].concat(L).slice(0, 40), igMsg: m }, extra || {})); }
+  lpaTask(x) { const id = 'lpa_' + x.ext.replace(/\W/g, ''); if (TASK[id]) return id;
+    const tk = { id, title: 'LPA: ' + x.mass, proj: x.proj, due: x.due, bucket: 'Backlog', prio: x.prio || 'Hoch', owner: x.who, mine: x.who === 'Du', ms: null, desc: 'Aus dem LPA-Tool · ' + x.audit + ' · Befund: ' + x.befund + ' · Externe ID ' + x.ext + '. „Erledigt“ im Cockpit wird an das LPA-Tool gemeldet; der Auditor bestätigt dort die Wirksamkeit.', est: 1, co: [], ext: x.ext, src: 'LPA' };
+    TASKS.push(tk); TASK[id] = tk; return id; }
+  lpaSync(auto) { const s = this.state, items = s.lpaItems || LPA_SEED.filter(x => !x.later), LS = s.lpaL || {}, T2 = Object.assign({}, s.lpaT || {}); let nNew = 0, nSkip = 0;
+    items.forEach(x => { if (T2[x.ext]) return; if ((LS[x.ext] || x.lst) === 'erledigt') { nSkip++; return; } T2[x.ext] = this.lpaTask(x); nNew++; });
+    this.lpaLogPush((auto ? '⚡ Webhook vom LPA-Tool: ' : '⇄ Abgleich mit dem LPA-Tool: ') + nNew + ' neue Maßnahme' + (nNew === 1 ? '' : 'n') + ' als Aufgabe übernommen' + (nSkip ? ', ' + nSkip + ' dort schon erledigt (nicht übernommen)' : '') + '. Status aller verknüpften Aufgaben geprüft.', { lpaT: T2, lpaSynced: true, rev: (s.rev || 0) + 1 }); return nNew; }
   openInbox(id) { const read = Object.assign({}, this.state.read); read[id] = true; this.setState({ screen: 'eingang', inSel: id, read, panel: null, inTab: 'msg', inFilter: 'alle', navOpen: false, inOpen: true }); }
   isUnread(m) { return !this.state.read[m.id] && ['i1', 'i8', 'i2', 'i3', 'i4'].includes(m.id); }
   decide(id, text) { const result = Object.assign({}, this.state.result); result[id] = text; this.setState({ result }); }
@@ -2487,9 +2503,37 @@ class Component extends DCLogic {
     };
 
     // Verwaltung
-    const AV_TABS = [['org', 'Organigramm'], ['personen', 'Personen'], ['regeln', 'Freigabewege'], ['gruppen', 'Gruppen und Vertretung'], ['ki', 'KI-Modell']];
+    const AV_TABS = [['org', 'Organigramm'], ['personen', 'Personen'], ['regeln', 'Freigabewege'], ['gruppen', 'Gruppen und Vertretung'], ['ki', 'KI-Modell'], ['integ', 'Integrationen']];
     const adViews = AV_TABS.map(([k, label]) => ({ label, sel: s.adview === k ? 'true' : 'false', bg: s.adview === k ? t.surface : 'transparent', fg: s.adview === k ? t.text : t.muted, sh: s.adview === k ? '0 1px 3px rgba(0,0,0,0.15)' : 'none', go: () => this.setState({ adview: k, adMsg: '' }) }));
-    const ad = { org: s.adview === 'org', personen: s.adview === 'personen', regeln: s.adview === 'regeln', gruppen: s.adview === 'gruppen', ki: s.adview === 'ki' };
+    const ad = { org: s.adview === 'org', personen: s.adview === 'personen', regeln: s.adview === 'regeln', gruppen: s.adview === 'gruppen', ki: s.adview === 'ki', integ: s.adview === 'integ' };
+    const ig = (() => { const LI = s.lpaItems || LPA_SEED.filter(x => !x.later), LS = s.lpaL || {}, LT = s.lpaT || {}, lst = x => LS[x.ext] || x.lst, G = '#107C10', A = '#B07B00', R = '#C50F1F', fdd = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.';
+      const setL = (x, v, m, extra) => this.lpaLogPush(m, Object.assign({ lpaL: Object.assign({}, this.state.lpaL, { [x.ext]: v }) }, extra || {}));
+      const clar = (x, why) => { const id = 'lpak' + (s.rev || 0) + '_' + TASKS.length, tk = { id, title: 'Klären: LPA-Maßnahme „' + x.mass + '“ ' + why, proj: x.proj, due: '2026-11-16', bucket: 'Backlog', prio: 'Hoch', owner: 'Du', mine: true, ms: null, desc: 'Konflikt im Abgleich mit dem LPA-Tool (' + x.ext + '). Mit dem Auditor und ' + (x.who === 'Du' ? 'dir' : x.who) + ' klären, dann den Status in beiden Apps gleich setzen.', est: 1, co: [] }; TASKS.push(tk); TASK[id] = tk; return tk; };
+      const rows = LI.filter(x => LT[x.ext] && TASK[LT[x.ext]]).map(x => { const tk = TASK[LT[x.ext]], cd = this.isDone(tk), ls = lst(x); let st, col, acts = [];
+        if (!cd && ls === 'offen') { st = '✓ synchron · offen in beiden Apps'; col = G; }
+        else if (cd && ls === 'offen') { st = '⏳ Im Cockpit erledigt · wartet auf Bestätigung durch den Auditor im LPA-Tool'; col = A;
+          acts = [['✓ Auditor bestätigt (simuliert)', () => setL(x, 'erledigt', '✓ LPA-Tool bestätigt „' + x.mass + '“ (Wirksamkeit geprüft). In beiden Apps erledigt.')],
+            ['✕ Auditor lehnt ab (simuliert)', () => { const d = Object.assign({}, this.state.done, { [tk.id]: false }), c = clar(x, 'nicht bestätigt'); setL(x, 'offen', '✕ Auditor hat „' + x.mass + '“ nicht bestätigt: Aufgabe im Cockpit wieder offen, Klärungsaufgabe „' + c.title + '“ angelegt.', { done: d, rev: (this.state.rev || 0) + 1 }); }]]; }
+        else if (cd && ls === 'erledigt') { st = '✓ synchron · erledigt und vom Auditor bestätigt'; col = G; }
+        else { st = '⚠ Konflikt: im LPA-Tool erledigt, im Cockpit noch offen'; col = R;
+          acts = [['Im Cockpit als erledigt übernehmen', () => this.lpaLogPush('✓ „' + x.mass + '“ aus dem LPA-Tool als erledigt übernommen. Synchron.', { done: Object.assign({}, this.state.done, { [tk.id]: true }) })],
+            ['Klärungsaufgabe anlegen', () => { const c = clar(x, 'im LPA-Tool erledigt, im Cockpit offen'); this.lpaLogPush('⚠ Klärungsaufgabe „' + c.title + '“ für dich angelegt.', { rev: (this.state.rev || 0) + 1 }); }]]; }
+        return { ext: x.ext, title: x.mass, sub: x.audit + ' · Befund: ' + x.befund, meta: (x.who === 'Du' ? 'ich' : x.who) + ' · bis ' + fdd(x.due) + ' · ' + x.proj, st, col, acts: acts.map(([label, go]) => ({ label, go })), hasActs: acts.length > 0, open: () => this.openTask(tk.id, 'admin') }; });
+      const cnt = re => rows.filter(r => re.test(r.st)).length, nW = cnt(/^⏳/), nK = cnt(/^⚠/), nS = cnt(/^✓/), auto = s.lpaAuto !== false;
+      const next = LPA_SEED.find(x => x.later && !LI.some(y => y.ext === x.ext));
+      return { intro: 'Verbindungen zu anderen Systemen. Im Entwurf ist das LPA-Tool simuliert: Maßnahmen aus Layered Process Audits laufen als Aufgaben ein, „erledigt“ wird in beiden Apps abgeglichen und vom Auditor gegenvalidiert. REST-API und MCP-Server sind für das echte Tool geplant.',
+        hasMsg: !!s.igMsg, msg: s.igMsg || '',
+        cards: [['LPA-Tool', 'verbunden (simuliert)', G, 'Layered Process Audits: Befunde und Maßnahmen', 'Webhook + Abgleich alle 15 min · externe ID je Maßnahme'],
+          ['REST-API v1', 'geplant', '#5C5C5C', 'Für andere Systeme, mit Service-Konten und Webhooks (REQ-INT-025)', 'GET/POST /api/v1/tasks · PATCH /api/v1/tasks/{id} · Webhook task.updated'],
+          ['MCP-Server', 'geplant', '#5C5C5C', 'KI-Assistenten arbeiten mit deinen Rechten, alles steht im Verlauf (REQ-INT-024)', 'aufgaben_suchen · aufgabe_anlegen · status_setzen · projektstatus_lesen'],
+          ['Outlook und Teams', 'simuliert', A, 'Termine, Mails und Kanalnachrichten', 'Microsoft Graph über Entra ID']].map(([name, state, col, desc, detail]) => ({ name, state, col, desc, detail })),
+        sync: () => this.lpaSync(false), autoOn: auto ? 'true' : 'false', autoLabel: auto ? '✓ Automatisch: sofort per Webhook und alle 15 min' : 'Automatisch: aus (nur von Hand)', autoBg: auto ? G : t.surface, autoFg: auto ? '#FFFFFF' : t.text, autoToggle: () => this.setState({ lpaAuto: !auto, igMsg: !auto ? 'Automatischer Abgleich an.' : 'Automatischer Abgleich aus. Neue Befunde kommen erst mit „⇄ Jetzt abgleichen“.' }),
+        kpis: [['Übernommen', String(rows.length), t.strong], ['Synchron', String(nS), G], ['Wartet auf Bestätigung', String(nW), A], ['Konflikte', String(nK), nK ? R : t.strong]].map(([l, v, c]) => ({ l, v, c })),
+        rows, noRows: !rows.length, synced: !!s.lpaSynced,
+        simStatus: () => { const x = LI.find(y => LT[y.ext] && TASK[LT[y.ext]] && !this.isDone(TASK[LT[y.ext]]) && lst(y) === 'offen'); if (!x) return this.setState({ igMsg: 'Keine offene, verknüpfte Maßnahme für den Statuswechsel. Erst „⇄ Jetzt abgleichen“.' }); setL(x, 'erledigt', '⚡ LPA-Tool meldet: „' + x.mass + '“ dort als erledigt markiert. Im Cockpit noch offen, also Konflikt.'); },
+        simNew: () => { if (!next) return this.setState({ igMsg: 'Keine weiteren Beispielbefunde.' }); this.setState({ lpaItems: LI.concat([next]) }); if (auto) this.lpaSync(true); else this.lpaLogPush('⚡ Neuer Befund im LPA-Tool: „' + next.befund + '“. Automatik aus, wird mit „⇄ Jetzt abgleichen“ übernommen.'); },
+        rules: ['Jede Maßnahme hat eine externe ID; Titel, Frist und Verantwortliche kommen aus dem LPA-Tool.', 'Erledigt im Cockpit wird gemeldet. Endgültig erledigt ist die Maßnahme erst, wenn der Auditor im LPA-Tool die Wirksamkeit bestätigt.', 'Lehnt der Auditor ab, öffnet sich die Aufgabe wieder und du bekommst eine Klärungsaufgabe.', 'Meldet das LPA-Tool „erledigt“, während die Aufgabe im Cockpit offen ist, entsteht ein Konflikt: übernehmen oder klären.', 'Alles steht im Protokoll und im Verlauf der Aufgabe.'],
+        log: (s.lpaLog || []).map(l => ({ t: l.t, m: l.m })), noLog: !(s.lpaLog || []).length }; })();
     const kiAd = {
       backends: [['Modell auf dem Cockpit-Server (eingebettet)', 'Phi-3.5 mini aus dem Ordner models/ auf dem Server. Läuft im Cockpit-Prozess, ohne Zusatzdienst, ohne API-Schlüssel, ohne Internet. Alle Nutzer teilen sich das Modell, Anfragen laufen nacheinander in einer Warteschlange.', 'aktiv', true],
         ['Ollama', 'Eigener Hintergrunddienst. Auf dem Server nicht vorgesehen.', 'nicht verfügbar', false],
@@ -3904,6 +3948,7 @@ class Component extends DCLogic {
       [/verknüpf|abhängig|blockier|vorgänger/i, 'Verknüpfungen setzt du im Aufgaben-Detail unter „Verknüpfungen“ › „+ Verknüpfen“.', 'Zu einer Aufgabe', { screen: 'projekt', proj: 'sm42', ptab: 'aufgaben', panel: { kind: 'task', id: 't12', from: 'aufgaben' }, pSub: 'details' }],
       [/verlauf|historie|wer hat.*geändert/i, 'Änderungen siehst du im Detail › Reiter „Verlauf“.', 'Zum Verlauf', { screen: 'projekt', proj: 'sm42', ptab: 'aufgaben', panel: { kind: 'task', id: 't1', from: 'aufgaben' }, pSub: 'verlauf' }],
       [/einstellung.*projekt|projekt.*einstell|stufe|modul/i, 'Projekteinstellungen öffnest du im Projekt über das Zahnrad oben rechts: Stammdaten, Stufe und Module, Buckets, Etiketten, Rollen, Automatisierungen, Archivieren.', 'Zu SM42', { screen: 'projekt', proj: 'sm42', ptab: 'uebersicht' }],
+      [/lpa|audit-?tool|schnittstelle|\bapi\b|mcp|integration|webhook/i, 'Schnittstellen findest du unter Verwaltung › „Integrationen“: Maßnahmen aus dem LPA-Tool laufen als Aufgaben ein, „erledigt“ wird in beiden Apps abgeglichen und vom Auditor bestätigt. REST-API und MCP-Server sind geplant.', 'Zu den Integrationen', { screen: 'admin', adview: 'integ', adMsg: '' }],
       [/import|excel|csv|übernehm.*liste/i, 'Aufgabenlisten aus Excel übernimmst du unter Projekte › „⇪ Import aus Excel“: Zellen kopieren und einfügen oder CSV wählen, Spalten prüfen, übernehmen.', 'Zum Import', { screen: 'import' }],
       [/aufgabe.*(anleg|erstell)|to-?do anleg|neue aufgabe/i, 'Aufgaben legst du mit „+ Neu“ oben an, direkt in Board, Liste, Kalender oder Personen mit „+ Aufgabe“, oder hier im Chat mit „To-do: …“.', 'Zu Meine Aufgaben', { screen: 'arbeit', arbTab: 'aufgaben' }],
       [/team.*(geben|vergeben|zuweisen)|an ein team/i, 'An ein Team gibst du eine Aufgabe über „+ Neu“ › „Wer erledigt es?“ › „Ein Team“.', 'Neu öffnen', { panel: { kind: 'new', id: 'new', from: s.screen } }]];
@@ -4440,7 +4485,7 @@ class Component extends DCLogic {
       mv, fo, dash, paletteItems, mo, dashHasMsg: !!s.dashMsg, dashMsg: s.dashMsg,
       openMobil: () => this.setState({ screen: 'mobil', panel: null, moScreen: 'list', moMsg: '' }),
       focusRows, themeBars, prioSug, applySug, aThemes, aFocusHint,
-      adViews, ad, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
+      adViews, ad, ig, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
       adHasMsg: !!s.adMsg, adMsg: s.adMsg, adRing: s.screen === 'admin' || s.screen === 'profil' ? accent : '#FFFFFF', wKiOpen: !!s.wKi, wKiOpenA: s.wKi ? 'true' : 'false', wKiBtn: s.wKi ? '🧠 KI-Vorschläge ausblenden' : '🧠 KI-Vorschläge zum Pflegen', wKiToggle: () => this.setState({ wKi: !s.wKi }),
       wSideOpen: !!s.wSide, wSideOpenA: s.wSide ? 'true' : 'false', wSideBtn: s.wSide ? 'Häufige Themen und Lessons Learned ausblenden' : 'Häufige Themen und Lessons Learned', wSideToggle: () => this.setState({ wSide: !s.wSide }),
       navShow: (h => ({ projekte: !h.projekte, teams: !h.teams, wissen: !h.wissen, berichte: !h.berichte, eingang: !h.eingang }))(s.navHide || {}), navCls: s.navOpen ? 'open' : '', navOpen: !!s.navOpen, navOpenA: s.navOpen ? 'true' : 'false',

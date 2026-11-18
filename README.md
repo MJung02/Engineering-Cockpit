@@ -29,6 +29,11 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 - **Word-Berichte** (Export › „📝 Word-Bericht …“): Statusbericht, Abnahmeprotokoll, Abschlussbericht und Besprechungsprotokoll als .docx (A4, mit Tabellen und Seitenzahl).
   - **Eigene Vorlage:** Firmen-Briefkopf als .docx hochladen. Platzhalter wie {{Projekt}}, {{Ergebnis}} oder {{OffenePunkte}} werden ausgefüllt, auch in Kopf- und Fußzeile. Steht {{Inhalt}} allein in einer Zeile, setzt das Cockpit dort den ganzen Bericht ein. Je Berichtsart gibt es eine Mustervorlage mit allen Platzhaltern.
   - Direkt aus dem Projekt: „📝 Als Word“ im Statusbericht, „📝 Abnahmeprotokoll (.docx)“ nach der Abnahme, „📝 Als Word (.docx)“ beim Abschlussbericht. In Besprechungen: „📝 Als Word (.docx)“ neben „Protokoll an Teilnehmer senden“.
+- **Integrationen** (Verwaltung › „Integrationen“): Simulation der LPA-Anbindung als Vorgeschmack auf REQ-INT-026 bis -029.
+  - „⇄ Jetzt abgleichen“ übernimmt die offenen Maßnahmen aus dem LPA-Tool als Aufgaben, mit externer ID, Befund und Frist. Sie erscheinen in Meine Arbeit, im Team und im Projekt. Bereits erledigte werden nicht übernommen, doppelt wird nichts angelegt.
+  - **Gegenvalidierung:** Erledigt im Cockpit wird gemeldet und wartet auf die Bestätigung durch den Auditor. Lehnt er ab, ist die Aufgabe wieder offen und es entsteht eine Klärungsaufgabe.
+  - **Konflikte:** Meldet das LPA-Tool „erledigt“, die Aufgabe ist im Cockpit aber offen: übernehmen oder Klärungsaufgabe. Neue Befunde kommen per Webhook automatisch.
+  - Sync-Monitor mit Kennzahlen (übernommen, synchron, wartet, Konflikte) und Protokoll. Karten für REST-API v1 und MCP-Server (geplant).
 - **Plan gegen Ist mit Prognose** (Statusbericht, Kurzfassung unter Finanzen): Geplant bis heute, Erreicht und Kosten verbraucht als Balken. Dazu Termintreue und Kostentreue (Earned Value), Prognose für Ende und Gesamtkosten im aktuellen Tempo und eine Kurve geplant / heute / Prognose. „So rechnet das Cockpit“ erklärt die Rechnung. Auch als Platzhalter {{PlanIst}} für PowerPoint und Word.
 
 ## Neu nach der sechsten Testrunde (17.11.2026)

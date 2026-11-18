@@ -1124,6 +1124,32 @@ input,textarea,select{font-size:16px!important}
             </sc-if>
 
             <!-- KI-Modell -->
+            <!-- Integrationen -->
+            <sc-if value="{{ad.integ}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0">
+                <div style="font-size: 13px; color: {{t.muted}}">{{ig.intro}}</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px">
+                  <sc-for list="{{ig.cards}}" as="igc" hint-placeholder-count="4"><div style="padding: 12px 14px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; border-top: 4px solid {{igc.col}}; display: flex; flex-direction: column; gap: 4px; min-width: 0"><div style="display: flex; align-items: center; gap: 6px"><b style="flex: 1">{{igc.name}}</b><span style="padding: 2px 8px; border-radius: 999px; background: {{igc.col}}; color: #FFFFFF; font-size: 11px; font-weight: 700; white-space: nowrap">{{igc.state}}</span></div><div style="font-size: 12px; color: {{t.muted}}">{{igc.desc}}</div><div style="font-size: 11px; font-family: ui-monospace, Menlo, monospace; color: {{t.text}}; word-break: break-word">{{igc.detail}}</div></div></sc-for>
+                </div>
+                <section aria-label="LPA-Tool Sync-Monitor" style="padding: 16px 18px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-sizing: border-box">
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 16px; flex: 1 1 200px">LPA-Tool · Sync-Monitor</h2><button onClick="{{ig.autoToggle}}" aria-pressed="{{ig.autoOn}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{ig.autoBg}}; color: {{ig.autoFg}}; font-size: 12px; font-weight: 600; cursor: pointer">{{ig.autoLabel}}</button><button onClick="{{ig.sync}}" style="height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: {{accent}}; color: #FFFFFF; font-weight: 700; cursor: pointer">⇄ Jetzt abgleichen</button></div>
+                  <sc-if value="{{ig.hasMsg}}" hint-placeholder-val="{{false}}"><div role="status" style="padding: 8px 12px; border-radius: 8px; background: {{t.soft}}; border: 1px solid {{accent}}; font-size: 13px; font-weight: 600">{{ig.msg}}</div></sc-if>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px"><sc-for list="{{ig.kpis}}" as="igk" hint-placeholder-count="4"><div style="padding: 8px 10px; border-radius: 8px; border: 1px solid {{t.border}}; border-left: 5px solid {{igk.c}}"><div style="font-size: 12px; color: {{t.muted}}; font-weight: 600">{{igk.l}}</div><b style="font-size: 18px">{{igk.v}}</b></div></sc-for></div>
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 8px; border: 1px dashed {{t.strong}}"><span style="font-size: 12px; color: {{t.muted}}; font-weight: 600">Im LPA-Tool simulieren:</span><button onClick="{{ig.simNew}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 13px; font-weight: 600; cursor: pointer">⚡ Neuer Befund</button><button onClick="{{ig.simStatus}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 13px; font-weight: 600; cursor: pointer">⚡ Statuswechsel auf „erledigt“</button></div>
+                  <sc-for list="{{ig.rows}}" as="igr" hint-placeholder-count="3"><div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; border: 1px solid {{t.border}}; border-left: 5px solid {{igr.col}}; min-width: 0">
+                    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px"><button onClick="{{igr.open}}" style="border: 0; background: transparent; padding: 0; color: {{t.text}}; font: inherit; font-weight: 700; cursor: pointer; text-align: left">{{igr.title}}</button><span style="font-size: 11px; font-family: ui-monospace, Menlo, monospace; color: {{t.muted}}">{{igr.ext}}</span><span style="font-size: 12px; color: {{t.muted}}">{{igr.meta}}</span></div>
+                    <div style="font-size: 12px; color: {{t.muted}}">{{igr.sub}}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: {{igr.col}}">{{igr.st}}</div>
+                    <sc-if value="{{igr.hasActs}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{igr.acts}}" as="iga" hint-placeholder-count="2"><button onClick="{{iga.go}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid {{t.strong}}; background: {{t.surface}}; color: {{t.text}}; font-size: 13px; font-weight: 600; cursor: pointer">{{iga.label}}</button></sc-for></div></sc-if>
+                  </div></sc-for>
+                  <sc-if value="{{ig.noRows}}" hint-placeholder-val="{{true}}"><div style="font-size: 13px; color: {{t.muted}}">Noch nichts übernommen. „⇄ Jetzt abgleichen“ holt die offenen Maßnahmen aus dem LPA-Tool; sie erscheinen dann auch in Meine Arbeit, im Team und im Projekt.</div></sc-if>
+                  <details style="font-size: 13px"><summary style="cursor: pointer; font-weight: 600">Regeln für den Abgleich</summary><ul style="margin: 6px 0 0; padding-left: 20px; color: {{t.muted}}"><sc-for list="{{ig.rules}}" as="igu" hint-placeholder-count="3"><li>{{igu}}</li></sc-for></ul></details>
+                  <b style="font-size: 14px">Protokoll</b>
+                  <sc-for list="{{ig.log}}" as="igl" hint-placeholder-count="2"><div style="display: flex; gap: 8px; font-size: 13px"><span style="font-family: ui-monospace, Menlo, monospace; color: {{t.muted}}; white-space: nowrap">{{igl.t}}</span><span>{{igl.m}}</span></div></sc-for>
+                  <sc-if value="{{ig.noLog}}" hint-placeholder-val="{{true}}"><div style="font-size: 13px; color: {{t.muted}}">Noch kein Abgleich.</div></sc-if>
+                </section>
+              </div>
+            </sc-if>
             <sc-if value="{{ad.ki}}" hint-placeholder-val="{{false}}">
               <section style="padding: 18px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 12px">
                 <div><h2 style="margin: 0 0 4px; font-size: 16px">KI-Modell</h2><div style="font-size: 13px; color: {{t.muted}}">Das Cockpit nutzt ein Sprachmodell, das auf dem Cockpit-Server im Firmennetz läuft, ohne Cloud-Dienst. Keine Projektdaten verlassen das Firmennetz.</div></div>
@@ -6366,8 +6392,8 @@ input,textarea,select{font-size:16px!important}
   </main>
 </div>
 </template>
-<script src="dc-runtime.js?v=18.11.2026_0815"></script>
-<script src="app.js?v=18.11.2026_0815"></script>
+<script src="dc-runtime.js?v=18.11.2026_0823"></script>
+<script src="app.js?v=18.11.2026_0823"></script>
 <script>
 (function () {
   var props = {"accent": "#0F6CBD", "dark": false, "density": "normal"};
