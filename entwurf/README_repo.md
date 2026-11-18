@@ -18,8 +18,18 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 
 Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
 
+## Zukunft (nach der Testphase)
+
+- **Echtes Tool:** FastAPI und React mit Datenbank, Anmeldung über Entra ID, Rechten und Speichern.
+- **Schnittstellen:** dokumentierte REST-API v1 und ein **MCP-Server**, damit KI-Assistenten und andere Systeme mit den Rechten des Nutzers lesen und schreiben können.
+- **LPA-Tool:** Maßnahmen aus Layered Process Audits laufen automatisch als Aufgaben ins Cockpit. Statuswechsel und „erledigt“ werden in beiden Apps synchron gehalten und gegenvalidiert; bei Widerspruch gibt es einen Konflikt mit Klärungsaufgabe. Details in `docs/ANFORDERUNGEN.md`, REQ-INT-024 bis -029.
+
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
+- **Abhängigkeiten als Standard:** Nachfolger hängen automatisch an ihrem Vorgänger (gleiche Ebene, in zeitlicher Reihenfolge). Lösen mit ✕ im Detail unter „Abhängigkeiten“. Ein Nachfolger lässt sich nicht vor das Ende seines Vorgängers schieben. Die Pfeile laufen senkrecht auf den Nachfolger, in Blau, auf dem kritischen Pfad in Rot.
+- **Rückfrage vor dem Löschen:** Bei Spalten, Projekten, Papierkorb, Risiken, Etiketten, Rollen, Mitgliedern, Kontakten, Abwesenheiten, Ansichten und Vorlagen fragt ein Pop-up „Wirklich löschen?“.
+- **Teams-Dashboard anpassbar:** „⚙ Dashboard anpassen“ blendet Tagesplanung, Kapazität, Team-Eingang, Qualifikationsmatrix und Zertifikate ein und aus. Bereiche lassen sich ziehen, auf halbe oder ganze Breite stellen und mit ✕ ausblenden.
+- **Hinweise aus früheren Projekten** in der Projektübersicht als kompakte Zeile, aufklappbar mit „Anzeigen ▾“.
 - **Abhängigkeiten als Pfeile im Gantt** (wie bei monday.com): Vom Ende des Vorgängers zum Anfang des Nachfolgers, auf dem kritischen Pfad rot. Verlängert sich ein Vorgänger über den Puffer hinaus, rücken die Nachfolger nach. Jede Terminänderung steht im Verlauf.
 - **„Mehr ▾“ in der Reiterleiste:** Zeiten, Kapazität, Statusbericht, Offene Punkte, Change Requests, Abschluss und Verlauf stehen im Menü „Mehr“. Der gewählte Reiter bleibt sichtbar. Auf dem Handy bleiben alle in der Wischleiste.
 - **Was hat sich seit letzter Woche geändert?** Steht im Statusbericht und als Folie in der Präsentation, automatisch aus dem Verlauf: verschobene Termine, neue Risiken, Erledigtes, Entscheidungen. Platzhalter {{Aenderungen}}.

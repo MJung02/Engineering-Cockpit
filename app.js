@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 17.11.2026 15:46 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 07:52 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -654,11 +654,11 @@ class Component extends DCLogic {
   }
   drawDeps() { try { const deps = this.depsOf(); document.querySelectorAll('[data-gantt]').forEach(c => { const old = c.querySelector(':scope > svg.ec-deps'); if (old) old.remove(); const cr = c.getBoundingClientRect(); if (!cr.width) return;
       const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('class', 'ec-deps'); svg.setAttribute('width', c.scrollWidth); svg.setAttribute('height', c.scrollHeight); svg.setAttribute('aria-hidden', 'true'); svg.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:2';
-      svg.innerHTML = '<defs><marker id="ecArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#605E5C"/></marker><marker id="ecArrR" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#C50F1F"/></marker></defs>'; let n = 0;
+      svg.innerHTML = '<defs><marker id="ecArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0F6CBD"/></marker><marker id="ecArrR" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#C50F1F"/></marker></defs>'; let n = 0;
       Object.keys(deps).forEach(sid => (deps[sid] || []).forEach(pid => { const a = c.querySelector('[data-nid="' + pid + '"]'), b = c.querySelector('[data-nid="' + sid + '"]'); if (!a || !b || !a.offsetParent || !b.offsetParent) return;
         const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(), x1 = ra.right - cr.left, y1 = ra.top + ra.height / 2 - cr.top, x2 = rb.left - cr.left - 2, y2 = rb.top + rb.height / 2 - cr.top, crit = /197, 15, 31/.test(a.style.boxShadow || '') && /197, 15, 31/.test(b.style.boxShadow || '');
-        const d = x2 - x1 >= 16 ? 'M' + x1 + ',' + y1 + ' H' + (x1 + 8) + ' V' + y2 + ' H' + x2 : 'M' + x1 + ',' + y1 + ' H' + (x1 + 8) + ' V' + (y1 + (y2 - y1) / 2) + ' H' + (x2 - 8) + ' V' + y2 + ' H' + x2;
-        const pth = document.createElementNS(ns, 'path'); pth.setAttribute('d', d); pth.setAttribute('fill', 'none'); pth.setAttribute('stroke', crit ? '#C50F1F' : '#605E5C'); pth.setAttribute('stroke-width', crit ? '2' : '1.5'); pth.setAttribute('marker-end', crit ? 'url(#ecArrR)' : 'url(#ecArr)'); svg.appendChild(pth); n++; }));
+        const tp = rb.top - cr.top, bt = rb.bottom - cr.top, xa = Math.max(x1 + 8, rb.left - cr.left + 8), ye = y2 >= y1 ? tp - 1 : bt + 1, d = 'M' + x1 + ',' + y1 + ' H' + xa + ' V' + ye;
+        const pth = document.createElementNS(ns, 'path'); pth.setAttribute('d', d); pth.setAttribute('fill', 'none'); pth.setAttribute('stroke', crit ? '#C50F1F' : '#0F6CBD'); pth.setAttribute('stroke-width', crit ? '2' : '1.5'); pth.setAttribute('marker-end', crit ? 'url(#ecArrR)' : 'url(#ecArr)'); svg.appendChild(pth); n++; }));
       if (n) c.appendChild(svg); }); } catch (e) { /* Zeichnen optional */ } }
   tabSplit(list) { const MORE = ['zeiten', 'kapazitaet', 'status', 'opl', 'aenderungen', 'abschluss', 'verlauf', 'anf'], s = this.state, main = list.filter(x => !MORE.includes(x.k) || x.sel === 'true'), more = list.filter(x => MORE.includes(x.k) && x.sel !== 'true');
     return { main, more: more.map(x => Object.assign({}, x, { go: e => { this.setState({ tabMore: false }); x.go(e); } })), hasMore: more.length > 0, moreDisp: s.tabMore ? 'flex' : 'none', moreToggle: () => this.setState({ tabMore: !s.tabMore }), moreLabel: 'Mehr (' + more.length + ') ' + (s.tabMore ? '▴' : '▾') }; }
@@ -699,7 +699,11 @@ class Component extends DCLogic {
     sl = K.S(); K.head(sl, 'Ressourcenkonflikte im Bereich (KW 47–52)'); if (cf.rows.length) sl.addTable(K.TB(cf.rows.slice(0, 10).map(r => [r.name, r.kw, { text: r.load, options: { bold: true, color: String(r.col).replace('#', '') } }, r.parts.map(x => x.label).join(' · ')]), ['Person', 'Woche', 'Auslastung', 'Zusammensetzung']), K.tOpt({ colW: [2.4, 2.2, 1.4, 6.3], fontSize: 11 })); else K.bul(sl, ['Keine Konflikte in den nächsten 6 Wochen.'], { x: 0.5, y: 1.3, w: 12, h: 1 });
     sl = K.S(); K.head(sl, 'Entscheidungsbedarf für den Lenkungskreis'); K.bul(sl, [].concat(...L.map(d => String(d.entsch || '').split('\n').map(x => x.replace(/^[•\-]\s*/, '')).filter(x => x && x !== 'keiner').map(x => d.name + ': ' + x))).slice(0, 12), { x: 0.5, y: 1.2, w: 12.3, h: 5.5, fontSize: 15 });
     const out = await K.p.write({ outputType: 'blob' }); this.dlBlob(out, 'Lenkungskreis_Bereich_Technik_2026-11-13.pptx'); return L.length + 4; }
-  depsOf() { return this.state.deps || DEP_SEED; }
+  depsOf() { if (!this._depDef) this._depDef = {}; const D0 = this._depDef;
+    Object.keys(PTREE_OF).forEach(pk => { if (D0[pk]) return; const d = {}; const link = list => { const L = (list || []).slice().sort((a, b) => (a.start < b.start ? -1 : 1)); L.forEach((n, i) => { const pr = L.slice(0, i).filter(x => this.depNeed(x) <= n.start).sort((a, b) => (a.end < b.end ? 1 : -1))[0]; if (pr) d[n.id] = [pr.id]; link(n.children); }); }; link(PTREE_OF[pk]); D0[pk] = d; });
+    const all = Object.assign({}, DEP_SEED); Object.keys(D0).forEach(pk => Object.assign(all, D0[pk])); return Object.assign(all, this.state.deps || {}); }
+  autoDep(id) { const n = NODE[id]; if (!n) return ''; const sib = PARENT[id] ? (NODE[PARENT[id]].children || []) : (PTREE_OF[this.projPk(id)] || []), pr = sib.filter(x => x.id !== id && this.depNeed(x) <= n.start).sort((a, b) => (a.end < b.end ? 1 : -1))[0];
+    if (!pr) return ''; this.setState({ deps: Object.assign({}, this.depsOf(), { [id]: [pr.id] }) }); return ' Beginnt nach „' + pr.name + '“ (Abhängigkeit automatisch gesetzt, im Detail mit ✕ lösbar).'; }
   projNodes(id) { let r = id; while (PARENT[r]) r = PARENT[r]; const pk = Object.keys(PTREE_OF).find(k => (PTREE_OF[k] || []).some(x => x.id === r)); const out = []; const w = l => (l || []).forEach(x => { out.push(x); w(x.children); }); w(PTREE_OF[pk]); return out; }
   depNeed(p) { return p.type === 'gate' ? p.end : this.isoAdd(p.end, 1); }
   dependsOn(a, b, deps, seen) { seen = seen || {}; if (seen[a]) return false; seen[a] = true; return (deps[a] || []).some(x => x === b || this.dependsOn(x, b, deps, seen)); }
@@ -715,8 +719,8 @@ class Component extends DCLogic {
     while (st.length) { const n = st.pop(); if (crit.has(n.id)) continue; crit.add(n.id); (deps[n.id] || []).forEach(pid => { const p = NODE[pid]; if (p && ids.has(pid) && this.depNeed(p) >= n.start) st.push(p); }); }
     return crit; }
   depLabel(n, deps) { const pr = ((deps || this.depsOf())[n.id] || []).filter(id => NODE[id]).map(id => NODE[id].name); return { hasDep: pr.length > 0, depTxt: pr.length ? 'nach ' + pr.join(', ') : '' }; }
-  nodeBounds(id) { const n = NODE[id], p = NODE[PARENT[id]], k = (n && n.children) || [];
-    return { lo: p ? p.start : null, hi: p ? p.end : null, pn: p ? p.name : '', cs: k.length ? k.reduce((a, c) => (c.start < a ? c.start : a), '9999') : null, ce: k.length ? k.reduce((a, c) => (c.end > a ? c.end : a), '0000') : null }; }
+  nodeBounds(id) { const n = NODE[id], p = NODE[PARENT[id]], k = (n && n.children) || [], prs = (this.depsOf()[id] || []).filter(x => NODE[x]), nd = prs.map(x => [this.depNeed(NODE[x]), NODE[x].name]).sort((a, b) => (a[0] < b[0] ? 1 : -1))[0] || [null, ''];
+    return { need: nd[0], needN: nd[1], lo: p ? p.start : null, hi: p ? p.end : null, pn: p ? p.name : '', cs: k.length ? k.reduce((a, c) => (c.start < a ? c.start : a), '9999') : null, ce: k.length ? k.reduce((a, c) => (c.end > a ? c.end : a), '0000') : null }; }
   dayDiff(a, b) { return Math.round((D(a) - D(b)) / 86400000); }
   isoAdd(iso, d) { const x = D(iso); x.setDate(x.getDate() + d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
   moveNodeBy(m, d) { m.start = this.isoAdd(m.start, d); m.end = this.isoAdd(m.end, d); if (VNODE[m.id]) { VNODE[m.id].start = m.start; VNODE[m.id].end = m.end; } (m.children || []).forEach(c => this.moveNodeBy(c, d)); }
@@ -731,9 +735,10 @@ class Component extends DCLogic {
       if (B.lo && add(n.start, d) < B.lo) { d = this.dayDiff(B.lo, n.start); note = lim('beginnt am ' + fmt(D(B.lo))); }
       if (B.hi && add(n.end, d) > B.hi) { d = this.dayDiff(B.hi, n.end); note = lim('endet am ' + fmt(D(B.hi))); }
       if (B.lo && add(n.start, d) < B.lo) d = this.dayDiff(B.lo, n.start);
+      if (B.need && add(n.start, d) < B.need) { d = this.dayDiff(B.need, n.start); note = ' Früher geht nicht: „' + n.name + '“ beginnt nach „' + B.needN + '“ (Abhängigkeit, im Detail mit ✕ lösbar).'; }
       if (d) this.moveNodeBy(n, d);
     } else if (mode === 'end') { let ne = add(n.end, d); if (ne < n.start) ne = n.start; if (B.hi && ne > B.hi) { ne = B.hi; note = lim('endet am ' + fmt(D(B.hi))); } if (B.ce && ne < B.ce) { ne = B.ce; note = ' Kürzer geht nicht: Darin liegt etwas bis ' + fmt(D(B.ce)) + '.'; } d = this.dayDiff(ne, n.end); n.end = ne; if (VNODE[id]) VNODE[id].end = n.end; }
-    else { let ns = add(n.start, d); if (ns > n.end) ns = n.end; if (B.lo && ns < B.lo) { ns = B.lo; note = lim('beginnt am ' + fmt(D(B.lo))); } if (B.cs && ns > B.cs) { ns = B.cs; note = ' Kürzer geht nicht: Darin beginnt etwas am ' + fmt(D(B.cs)) + '.'; } d = this.dayDiff(ns, n.start); n.start = ns; if (VNODE[id]) VNODE[id].start = n.start; }
+    else { let ns = add(n.start, d); if (ns > n.end) ns = n.end; if (B.lo && ns < B.lo) { ns = B.lo; note = lim('beginnt am ' + fmt(D(B.lo))); } if (B.need && ns < B.need) { ns = B.need; note = ' Früher geht nicht: beginnt nach „' + B.needN + '“ (Abhängigkeit, im Detail mit ✕ lösbar).'; } if (B.cs && ns > B.cs) { ns = B.cs; note = ' Kürzer geht nicht: Darin beginnt etwas am ' + fmt(D(B.cs)) + '.'; } d = this.dayDiff(ns, n.start); n.start = ns; if (VNODE[id]) VNODE[id].start = n.start; }
     if (!d) { const m0 = '„' + n.name + '“ bleibt, wo es ist.' + note; return this.setState({ mvMsg: m0, pnMsg: m0 }); }
     this.logH('n:' + id, n.type === 'gate' ? 'Termin' : (mode === 'start' ? 'Start' : 'Ende'), fmt(D(mode === 'start' ? o0[0] : o0[1])), fmt(D(mode === 'start' ? n.start : n.end)));
     days = d;
@@ -753,6 +758,7 @@ class Component extends DCLogic {
     const n = NODE[id]; if (!n || !/^\d{4}-\d\d-\d\d$/.test(iso || '')) return; const B = this.nodeBounds(id); let note = '', v = iso;
     if (B.lo && v < B.lo) { v = B.lo; note = ' Das Datum lag vor „' + B.pn + '“, darum ' + fmt(D(v)) + '.'; }
     if (B.hi && v > B.hi) { v = B.hi; note = ' Das Datum lag nach „' + B.pn + '“, darum ' + fmt(D(v)) + '.'; }
+    if (B.need && v < B.need && (n.type === 'gate' || which === 'start')) { v = B.need; note = ' Früher geht nicht: „' + n.name + '“ beginnt nach „' + B.needN + '“ (Abhängigkeit, im Detail mit ✕ lösbar).'; }
     if (n.type === 'gate') { n.start = v; n.end = v; }
     else if (which === 'start') { if (B.cs && v > B.cs) { v = B.cs; note = ' Später geht nicht: Darin beginnt etwas am ' + fmt(D(B.cs)) + '.'; } n.start = v; if (n.end < v) n.end = v; }
     else { if (B.ce && v < B.ce) { v = B.ce; note = ' Früher geht nicht: Darin endet etwas am ' + fmt(D(B.ce)) + '.'; } n.end = v; if (n.start > v) n.start = v; }
@@ -1032,7 +1038,7 @@ class Component extends DCLogic {
       onTake: (w, rec, taken) => { if (taken) return; const id = 'llk' + (s.rev || 0) + '_' + TASKS.length, x = { id, title: rec.length > 90 ? w.title : rec, proj: name, due: this.isoAdd('2026-11-13', 14), bucket: 'Backlog', prio: 'Mittel', owner: 'Du', mine: true, ms: null, desc: 'Aus Lessons Learned „' + w.title + '“ (' + w.origin + '): ' + rec, est: 2, co: [] }; TASKS.push(x); TASK[id] = x;
         save({ rev: (this.state.rev || 0) + 1, llTaken: Object.assign({}, this.state.llTaken, { [pk]: Object.assign({}, llTk, { [w.id]: id }) }) }, 'Aufgabe „' + x.title + '“ angelegt, fällig ' + fd(x.due) + '.', ['Lesson Learned „' + w.title + '“', 'übernommen', '', 'Aufgabe']); },
       onDis: w => this.setState({ llDis: Object.assign({}, this.state.llDis, { [pk]: Object.assign({}, llDis, { [w.id]: true }) }), mxMsg: 'Hinweis ausgeblendet. Er erscheint in diesem Projekt nicht mehr.' }) }),
-      { sub: 'passend zu den nächsten 60 Tagen: ' + (soonN.slice(0, 3).map(n => n.name).join(', ') || name), moreGo: () => this.setState({ llAll: true }), hasDis: Object.keys(llDis).length > 0, disLabel: Object.keys(llDis).length + ' ausgeblendet · wieder zeigen', disReset: () => this.setState({ llDis: Object.assign({}, this.state.llDis, { [pk]: {} }) }) });
+      { collapsible: true, showItems: !!s.llOpenP, toggle: () => this.setState({ llOpenP: !s.llOpenP }), toggleLabel: s.llOpenP ? 'Ausblenden ▴' : 'Anzeigen ▾', sub: (s.llOpenP ? 'passend zu den nächsten 60 Tagen: ' : 'Hinweise passend zu ') + (soonN.slice(0, 3).map(n => n.name).join(', ') || name), moreGo: () => this.setState({ llAll: true }), hasDis: Object.keys(llDis).length > 0, disLabel: Object.keys(llDis).length + ' ausgeblendet · wieder zeigen', disReset: () => this.setState({ llDis: Object.assign({}, this.state.llDis, { [pk]: {} }) }) });
     const dDE = iso => (iso ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' + iso.slice(0, 4) : ''), fileN = k => (PCODE[name] || name).replace(/[^\wäöüÄÖÜß-]+/g, '_') + '_' + k + '_2026-11-13.csv';
     const depsX = this.depsOf(), lvl = n => { let d = 0, p = PARENT[n.id]; while (p) { d++; p = PARENT[p]; } return d; };
     const exp = { open: !!s.expOpen, openA: s.expOpen ? 'true' : 'false', toggle: () => this.setState({ expOpen: !s.expOpen }),
@@ -1089,13 +1095,13 @@ class Component extends DCLogic {
     return { is, exp, ppt, llh, close, opl, risk, zeit, res, conf, cr, status, audit, fin, team, resOn: !!(on && on('res')), msg: s.mxMsg || '', hasMsg: !!s.mxMsg }; }
   labelsOf(pk) { const del = ((this.state.lblDel || {})[pk]) || {}; return LABELS.concat(((this.state.lblX || {})[pk]) || []).filter(l => !del[l[0]]); }
   layOf(key, def) { const L = (this.state.lay || {})[key] || {}; const order = (L.order || []).filter(k => def.includes(k)).concat(def.filter(k => !(L.order || []).includes(k))); return { order, hide: L.hide || {} }; }
-  layUI(key, def, names, fixed, t, accent) { const L = this.layOf(key, def), set = patch => this.setState({ lay: Object.assign({}, this.state.lay, { [key]: Object.assign({}, L, patch) }) });
+  layUI(key, def, names, fixed, t, accent, wDef) { const L = this.layOf(key, def), set = patch => this.setState({ lay: Object.assign({}, this.state.lay, { [key]: Object.assign({}, L, patch) }) });
     const out = { open: this.state.layOpen === key, toggle: () => this.setState({ layOpen: this.state.layOpen === key ? null : key }) };
     out.items = L.order.map((k, i) => { const on = !L.hide[k]; return { label: names[k], pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, mark: fixed.includes(k) ? '' : (on ? '✓ ' : '+ '),
       go: () => (fixed.includes(k) ? null : set({ hide: Object.assign({}, L.hide, { [k]: on }) })), up: () => { if (!i) return; const o = L.order.slice(); [o[i - 1], o[i]] = [o[i], o[i - 1]]; set({ order: o }); }, down: () => { if (i === L.order.length - 1) return; const o = L.order.slice(); [o[i + 1], o[i]] = [o[i], o[i + 1]]; set({ order: o }); } }; });
-    const W = (((this.state.lay || {})[key] || {}).w) || {}, dk = k => 'lay|' + key + '|' + k;
+    const W = Object.assign({}, wDef || {}, (((this.state.lay || {})[key] || {}).w) || {}), dk = k => 'lay|' + key + '|' + k;
     def.forEach(k => { const half = W[k] === 'half', hot = this.state.dragOver === dk(k);
-      out[k] = { show: !L.hide[k] || fixed.includes(k), order: String(L.order.indexOf(k) + 1), col: half ? 'span 1' : '1 / -1', ol: hot ? '2px dashed ' + accent : 'none', canHide: !fixed.includes(k),
+      out[k] = { show: !L.hide[k] || fixed.includes(k), order: String(L.order.indexOf(k) + 1), col: half ? 'span 1' : '1 / -1', flex: half ? '1 1 340px' : '1 1 100%', ol: hot ? '2px dashed ' + accent : 'none', canHide: !fixed.includes(k),
         wLabel: half ? '▭ ganze Breite' : '◧ halbe Breite', wide: () => set({ w: Object.assign({}, W, { [k]: half ? 'full' : 'half' }) }), hide: () => set({ hide: Object.assign({}, L.hide, { [k]: true }) }),
         drag: this.dragStart(dk(k)), dragEnd: this.dragEnd(), over: this.dragOver(dk(k)),
         drop: this.dropOn(dk(k), id => { const p = String(id).split('|'); if (p[0] !== 'lay' || p[1] !== key || p[2] === k) return; const o = L.order.filter(x => x !== p[2]); o.splice(o.indexOf(k), 0, p[2]); set({ order: o }); }) }; });
@@ -1314,6 +1320,7 @@ class Component extends DCLogic {
   decide(id, text) { const result = Object.assign({}, this.state.result); result[id] = text; this.setState({ result }); }
 
   renderVals() {
+    if (typeof document !== 'undefined' && !this._cfmHook) { this._cfmHook = true; document.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('[data-confirm]') : null; if (!b || window.__ecAutoConfirm) return; if (b.__ecOk) { b.__ecOk = false; return; } e.preventDefault(); e.stopPropagation(); this._cfmBtn = b; this.setState({ cfm: b.getAttribute('data-confirm') }); }, true); }
     if (typeof window !== 'undefined') { clearTimeout(this._ddT); this._ddT = setTimeout(() => this.drawDeps(), 60); if (!this._ddR) { this._ddR = true; window.addEventListener('resize', () => this.drawDeps()); } }
     if (typeof window !== 'undefined' && !window.__ecNodes) window.__ecNodes = { NODE, PARENT };
     if (!this._tabHook && typeof document !== 'undefined') { this._tabHook = true; document.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('[role=tab]') : null; if (b) setTimeout(() => { try { const L = b.closest('[role=tablist]'); if (L && L.scrollWidth > L.clientWidth) L.scrollTo({ left: b.offsetLeft - (L.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' }); } catch (x) { /* alt */ } }, 30); }, true); }
@@ -2260,7 +2267,7 @@ class Component extends DCLogic {
           if (n.type === 'phase') n.children = [];
           if (par) par.children = (par.children || []).concat([n]); else PTREE_OF[pk].push(n);
           NODE[id] = n; PARENT[id] = par ? par.id : null;
-          const fitMsg = par ? this.fitInto(n, par) : '';
+          const fitMsg = (par ? this.fitInto(n, par) : '') + this.autoDep(id);
           const pv = { sm42: 'sm42p', rl2: 'rl2p', pd: 'pdp', ih: 'ihp' }[pk];
           return this.setState({ rev: (s.rev || 0) + 1, screen: 'projekt', proj: pk, ptab: 'planung', mview: Object.assign({}, s.mview, { [pv]: nKind === 'phase' ? 'gantt' : 'ms' }),
             panel: { kind: 'node', id, from: 'planung' }, nt: Object.assign({}, nts, { title: '' }),
@@ -3389,7 +3396,7 @@ class Component extends DCLogic {
       ll: (() => { const TPx = ALLTPL[nw.tpl] || {}, ctx = (nw.name || '') + ' ' + (TPx.name || '') + ' ' + (TPx.desc || '') + ' ' + (TPx.model || '') + ' ' + (TPx.phases || []).map(p0 => p0[0] + ' ' + (p0[3] || '')).join(' ') + ' ' + (TPx.tasks || []).join(' '), tk = {}; (nw.llTake || []).forEach(id => { tk[id] = true; });
         return Object.assign(this.llUI(ctx, null, { dis: nw.llDis || {}, taken: tk, all: !!nw.llAll, takeLbl: '+ Beim Anlegen als Aufgabe', takenLbl: '✓ wird als Aufgabe angelegt',
           onTake: (w, rec, taken) => setNw({ llTake: taken ? (nw.llTake || []).filter(x => x !== w.id) : (nw.llTake || []).concat([w.id]) }), onDis: w => setNw({ llDis: Object.assign({}, nw.llDis, { [w.id]: true }) }) }),
-          { sub: (nw.llTake || []).length ? (nw.llTake || []).length + ' werden als Aufgabe angelegt' : 'passend zu Name, Vorlage und Phasen', moreGo: () => setNw({ llAll: true }), hasDis: false, disLabel: '', disReset: () => {} }); })(),
+          { collapsible: false, showItems: true, toggle: () => {}, toggleLabel: '', sub: (nw.llTake || []).length ? (nw.llTake || []).length + ' werden als Aufgabe angelegt' : 'passend zu Name, Vorlage und Phasen', moreGo: () => setNw({ llAll: true }), hasDis: false, disLabel: '', disReset: () => {} }); })(),
       stOpen: nw.stOpen === true, stToggle: () => setNw({ stOpen: nw.stOpen !== true }), stBtn: nw.stOpen === true ? '▴ Hilfe zur Vorgehensmodell-Findung ausblenden' : '🧭 Hilfe bei der Wahl des Vorgehensmodells (Stacey-Matrix)',
       stGrid: staceyW.map(c => { const sel = (nw.sx || 0) === c.x && (nw.sy || 0) === c.y, corner = (c.x === 0 && c.y === 0) || (c.x === 4 && c.y === 4) || (c.x === 2 && c.y === 2) || (c.x === 3 && c.y === 0); return { bg: c.bg, ring: sel ? accent : 'transparent', sel: sel ? 'true' : 'false', mark: sel ? '●' : (corner ? c.zone : ''), aria: 'Anforderungen ' + (c.y + 1) + ' von 5 unklar, Technik ' + (c.x + 1) + ' von 5 neu, ' + c.zone, pick: () => setNw({ sx: c.x, sy: c.y }) }; }),
       stY: ['klar', 'eher klar', 'teils offen', 'unklar', 'völlig offen'].map((l, i) => ({ label: l, pressed: (nw.sy || 0) === i ? 'true' : 'false', ring: (nw.sy || 0) === i ? accent : t.border, bg: (nw.sy || 0) === i ? t.soft : t.surface, go: () => setNw({ sy: i }) })),
@@ -3549,8 +3556,8 @@ class Component extends DCLogic {
             : { id, name: nm2, type: 'gate', start: d2, end: d2, owner: 'Du', tasks: [], msPoint: k === 'ms', kindLabel: k === 'ms' ? 'Meilenstein' : 'Quality Gate', checks: k === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
           const phs = (u.tree || []).filter(q => q.type === 'phase'), selP = s.upPar || '', par = k === 'phase' || selP === '__top' ? null : (selP ? phs.find(q => q.id === selP) : phs.find(q => d2 >= q.start && d2 <= q.end)) || null;
           const ext = par ? this.fitInto(n, par) : '';
-          if (par) par.children = (par.children || []).concat([n]); else u.tree.push(n); NODE[id] = n; PARENT[id] = par ? par.id : null; u.tree.sort((x, y) => (x.start < y.start ? -1 : 1));
-          this.setState({ rev: (s.rev || 0) + 1, upMsN: '', upMsE: null, upPar: '', pnMsg: n.kindLabel + ' „' + nm2 + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (k === 'phase' || k === 'msr' ? fmt(D(n.start)) + ' – ' + fmt(D(n.end)) : (k === 'gate' ? 'fällig am ' : '') + fmt(D(n.end))) + '.' + ext + ' Klick auf die Zeile öffnet das Detail.' }); },
+          if (par) par.children = (par.children || []).concat([n]); else u.tree.push(n); NODE[id] = n; PARENT[id] = par ? par.id : null; u.tree.sort((x, y) => (x.start < y.start ? -1 : 1)); const depT = this.autoDep(id);
+          this.setState({ rev: (s.rev || 0) + 1, upMsN: '', upMsE: null, upPar: '', pnMsg: n.kindLabel + ' „' + nm2 + '“ angelegt' + (par ? ' in „' + par.name + '“' : '') + ', ' + (k === 'phase' || k === 'msr' ? fmt(D(n.start)) + ' – ' + fmt(D(n.end)) : (k === 'gate' ? 'fällig am ' : '') + fmt(D(n.end))) + '.' + ext + depT + ' Klick auf die Zeile öffnet das Detail.' }); },
         gates: [].map(n => { const r = gres[n.id], isG = n.type === 'gate', late = !r && n.end < '2026-11-13'; const ST = { bestanden: ['Bestanden', GREEN], auflage: ['Mit Auflage', '#C19C00'], nicht: ['Nicht bestanden', RED] };
           const setR = v => () => { if (v === 'auflage') this.quickTask({ title: 'Auflage aus ' + n.name + ' erfüllen', proj: u.name, due: addDays(n.end, 14) }); this.setState({ upGate: Object.assign({}, this.state.upGate, { [n.id]: v }), pnMsg: n.name + ': ' + ST[v][0] + '.' + (v === 'auflage' ? ' Die Auflage steht als Aufgabe im Backlog, fällig in 14 Tagen.' : (v === 'nicht' ? ' Die Phase bleibt offen, bis das Gate erneut bewertet ist.' : '')) }); };
           return { icon: isG ? '◈' : '◆', name: n.name, sub: fmt(D(n.end)) + (isG && n.checks ? ' · Checkliste: ' + n.checks.join(', ') : ''), status: r ? ST[r][0] : (late ? 'überfällig' : 'geplant'), stBg: r ? ST[r][1] : (late ? RED : t.strong), canDecide: isG && !r, pass: setR('bestanden'), cond: setR('auflage'), fail: setR('nicht') }; }),
@@ -4212,7 +4219,7 @@ class Component extends DCLogic {
               const c = { id, name, type: rng ? 'ms' : 'gate', start: rng ? nkS : nkE, end: nkE, owner: nkW, tasks: [], done: false, kindLabel: kl, msPoint: nk === 'ms', checks: nk === 'gate' ? ['Checkliste vollständig', 'Dokumente freigegeben', 'Offene Punkte bewertet'] : [] };
               if (rng) c.children = [];
               n.children = (n.children || []).concat([c]); NODE[id] = c; PARENT[id] = n.id;
-              const fitM = this.fitInto(c, n);
+              const fitM = this.fitInto(c, n) + this.autoDep(id);
               this.setState({ rev: (s.rev || 0) + 1, nkName: '', akMsg: kl + ' „' + name + '“ unter „' + n.name + '“ angelegt, ' + (rng ? fmt(D(c.start)) + ' bis ' + fmt(D(c.end)) : 'Termin ' + fmt(D(c.end))) + '. Steht sofort im Gantt' + (nkW !== 'Du' ? ', ' + nkW + ' ist benachrichtigt' : '') + '.' + fitM }); } }; })(),
         ntAdd: ntAddF, ntHasLoose: loose.length > 0, ntLoose: loose.map(x => ({ label: x.title, title: x.title + ' · fällig ' + fmt(D(x.due)) + ' · ' + this.ownerOf(x), go: () => linkTask(x.id, '„' + x.title + '“ gehört jetzt zu „' + n.name + '“.') })),
         kids, hasKids: kids.length > 0, shiftBtns: [['◀ 1 Woche früher', 'move', -7], ['1 Woche später ▶', 'move', 7]].concat(n.type !== 'gate' ? [['Start +1 Woche (kürzer)', 'start', 7], ['Ende −1 Woche (kürzer)', 'end', -7], ['Ende +1 Woche (länger)', 'end', 7]] : []).map(([label, md, d]) => ({ label, go: () => this.shiftNode(n.id, md, d) })), tasks: tks, hasTasks: tks.length > 0, canJump: !inPlanung, jump: () => this.jumpTo(n.id)
@@ -4329,6 +4336,8 @@ class Component extends DCLogic {
       nt, reqMe, reqMeCount: REQ_ME.length, sent, hasSent: s.sent.length > 0, reqLoad,
       openNew: () => { const inP = s.screen === 'projekt' && PNAME_OF[s.proj], inU = s.screen === 'pn' && (s.uprojs || []).find(u => u.key === s.upSel); this.setState({ panel: { kind: 'new', id: 'new', from: s.screen }, nt: Object.assign({}, s.nt, { who: 'ich', title: '', parent: null, owner: 'Du', ctx: inP ? s.proj : null, proj: inP ? PNAME_OF[s.proj] : (inU ? inU.name : 'Ohne Projekt'), kind: 'aufgabe', co: [], due: '2026-11-20' }) }); },
       rBoard: () => { this.setState({ rMsg: 'Lenkungskreis-Deck wird erzeugt …' }); this.pptBoard(t, accent).then(n0 => this.setState({ rMsg: 'Lenkungskreis-Deck mit ' + n0 + ' Folien heruntergeladen: Portfolio, eine Folie je Projekt, Ressourcenkonflikte, Entscheidungsbedarf.' })).catch(e => this.setState({ rMsg: 'Fehler: ' + (e && e.message ? e.message : e) })); },
+      tdl: this.layUI('teamsdash', ['plan', 'kap', 'eingang', 'quali', 'zert'], { plan: 'Tagesplanung', kap: 'Kapazität 6 Wochen', eingang: 'Team-Eingang', quali: 'Qualifikationsmatrix', zert: 'Zertifikate' }, [], t, accent, { kap: 'half', eingang: 'half', quali: 'half', zert: 'half' }),
+      cfmOn: !!s.cfm, cfmText: s.cfm || '', cfmOk: () => { const b = this._cfmBtn; this._cfmBtn = null; this.setState({ cfm: null }); if (b && b.isConnected) { b.__ecOk = true; b.click(); } }, cfmNo: () => { this._cfmBtn = null; this.setState({ cfm: null }); },
       rViews, rv1, rConf, rKpis, rHasMsg: !!s.rMsg, rMsg: s.rMsg, rFilterOn: s.rFilter !== 'alle', rFilterLabel: RF[s.rFilter] || '',
       rClearFilter: () => this.setState({ rFilter: 'alle' }), portRows, portEmpty: portRows.length === 0, portAll,
       rMonths, rToday: rp('2026-11-13'), roadRows, capRows, reportRows, rAutoBtn, rAutoPressed: s.rAuto ? 'true' : 'false',
