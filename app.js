@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:35 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:42 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -400,6 +400,14 @@ const AD_GROUPS = [
 // ── Themen ──
 const THEMES = [['qual', 'Qualität', '#0F6CBD'], ['umwelt', 'Umwelt', '#33691E'], ['audit', 'Audit und Normen', '#5C5C5C'], ['kosten', 'Kosteneinsparung', '#B4009E'], ['prod', 'Steigerung Produktivität', '#0E7A6E'], ['ress', 'Einsparung von Ressourcen', '#6B4E16'], ['entl', 'Entlastung Betriebspersonal', '#A33F06'], ['arb', 'Arbeitsbedingungen und Sicherheit', '#5B2D90']];
 const TH = {}; THEMES.forEach(([k, n, c]) => { TH[k] = { name: n, color: c }; });
+const PBRIEF = {
+  sm42: { auf: 'Sondermaschine zum automatischen Verschrauben von Gehäusedeckeln (M8, 12 Nm) für das Werk Süd konstruieren, bauen, programmieren und beim Kunden in Betrieb nehmen.', ziel: 'FAT am 26.01.2027 bestanden: Taktzeit höchstens 12 s, Drehmoment 12 Nm ± 3 %, Verfügbarkeit mindestens 95 % im 8-h-Probelauf; Budget 480.000 €.', nutzen: 'Ersetzt zwei manuelle Schraubplätze: rund 1,5 Stellen je Schicht entlastet, jedes Drehmoment dokumentiert (Rückverfolgbarkeit), weniger Reklamationen.' },
+  rl2: { auf: 'Linie 2 auf neue Sicherheitssteuerung und HMI umrüsten (Retrofit), ohne die Produktion länger als zwei Wochenenden zu stoppen.', ziel: 'Release 1 (HMI, Safety) bis Ende Januar 2027 in Betrieb, Stillstand höchstens 2 Wochenenden, Budget 180.000 €.', nutzen: 'Ersatzteilrisiko der alten Steuerung beseitigt, Rüstzeiten −15 %, Störungen im Klartext für die Bediener.' },
+  pd: { auf: 'Prüfstand für Drehmomentsensoren nach V-Modell entwickeln: Mechanik, Messkette, Software und Prüfprotokoll.', ziel: 'Abnahme beim Kunden bis 31.03.2027, Messgenauigkeit ±0,5 %, 72-h-Dauerlauf ohne Ausfall.', nutzen: 'Sensorprüfung im Haus statt extern: Prüfkosten −40 %, Ergebnis in einem Tag statt zwei Wochen, auditfähige Dokumentation.' },
+  ih: { auf: 'Wartung, Störungsbehebung und wiederkehrende Prüfungen in Halle 2 planen und abarbeiten (laufend).', ziel: 'Störungen binnen 24 h behoben, alle Prüffristen (UVV, DGUV V3) eingehalten.', nutzen: 'Weniger ungeplante Stillstände, sichere Arbeitsplätze, Entlastung der Schichtführer.' },
+  mes: { auf: 'Halle 1 an das MES anbinden: Maschinendaten, Aufträge und Rückmeldungen automatisch übertragen.', ziel: 'Alle 12 Anlagen melden ab 30.06.2027 automatisch, Papier-Laufkarten entfallen.', nutzen: 'Kennzahlen (OEE) in Echtzeit, weniger Erfassungsaufwand, schnellere Reaktion auf Störungen.' },
+  ets: { auf: 'Ersatzteillager digitalisieren: Bestand, Lagerplätze und Bestellvorschläge im System.', ziel: 'Bestand vollständig im System, Inventur in einem Tag, keine Fehlteile bei A-Teilen.', nutzen: 'Kapitalbindung −20 %, kürzere Suchzeiten, Ersatzteile bei Störungen sofort auffindbar.' },
+  tl3: { auf: 'Kamerabasierte Teileerkennung an Linie 3 einführen.', ziel: 'Fehlererkennung mindestens 99,5 %, Pseudo-Ausschuss unter 0,3 %.', nutzen: 'Weniger Reklamationen, Entlastung der Sichtprüfung.' } };
 const PTHEME = { sm42: ['prod', 'qual'], rl2: ['prod', 'kosten'], pd: ['qual', 'audit'], ih: ['entl', 'arb'], mes: ['kosten', 'prod'], ets: ['ress', 'kosten'], tl3: ['qual', 'entl'] };
 const FOCUS_W = [0, 1, 2, 3];
 const FOCUS_L = ['Kein', 'Niedrig', 'Mittel', 'Hoch'];
@@ -748,6 +756,8 @@ class Component extends DCLogic {
     Object.keys(PTREE_OF).forEach(pk => walk(PTREE_OF[pk], ''));
     TASKS.forEach(x => { if (x.ms && M[x.ms] && !M['t:' + x.id]) { cnt[x.ms] = (cnt[x.ms] || 0) + 1; M['t:' + x.id] = (/^QG/.test(M[x.ms]) ? 'TG' : 'T') + M[x.ms].replace(/^[A-Z]+/, '') + '.' + cnt[x.ms]; } });
     return M; }
+  briefOf(pk) { const U = (this.state.uprojs || []).find(u => u.key === pk); return Object.assign({}, PBRIEF[pk] || {}, (U && U.brief) || {}, ((this.state.briefBy || {})[pk]) || {}); }
+  themesOf(pk) { const ov = (this.state.pthemeOv || {})[pk]; if (ov) return ov; if (PTHEME[pk]) return PTHEME[pk]; const U = (this.state.uprojs || []).find(u => u.key === pk); return (U && U.themes) || []; }
   codeOf(id) { return (this._pc || (this._pc = this.planCodes()))[id] || ''; }
   depLabel(n, deps) { const pr = ((deps || this.depsOf())[n.id] || []).filter(id => NODE[id]).map(id => (this.codeOf(id) ? this.codeOf(id) + ' ' : '') + NODE[id].name); return { code: this.codeOf(n.id), hasDep: pr.length > 0, depTxt: pr.length ? 'nach ' + pr.join(', ') : '' }; }
   nodeBounds(id) { const n = NODE[id], p = NODE[PARENT[id]], k = (n && n.children) || [], prs = (this.depsOf()[id] || []).filter(x => NODE[x]), nd = prs.map(x => [this.depNeed(NODE[x]), NODE[x].name]).sort((a, b) => (a[0] < b[0] ? 1 : -1))[0] || [null, ''];
@@ -2212,7 +2222,7 @@ class Component extends DCLogic {
       + (nextMs[0] ? 'Als Nächstes steht „' + nextMs[0].name + '“ am ' + nextMs[0].date + ' an. ' : '') + finSum.label.replace(/^[!✓] /, '') + '.' + (log[0] ? ' Zuletzt: ' + log[0].text : '');
     const ovx = { edit: !!s.ovEdit, editLabel: s.ovEdit ? 'Fertig' : 'Übersicht anpassen', toggle: () => this.setState({ ovEdit: !s.ovEdit }), palette: ovPal, noPalette: ovPal.length === 0,
       reset: () => { const o = Object.assign({}, s.ovBy); delete o[OVK]; this.setState({ ovBy: o }); },
-      mine: myHere, noMine: myHere.length === 0, themes: (PTHEME[OVK] || []).map(k => { const th = THEMES.find(z => z[0] === k); return { label: th ? th[1] : k, color: th ? th[2] : t.strong }; }), logTop: log.slice(0, 4),
+      mine: myHere, noMine: myHere.length === 0, themes: (this.themesOf(OVK) || []).map(k => { const th = THEMES.find(z => z[0] === k); return { label: th ? th[1] : k, color: th ? th[2] : t.strong }; }), logTop: log.slice(0, 4),
       kiDone: !!s.kiSum[OVK], kiNot: !s.kiSum[OVK], kiText, kiRun: () => this.setState({ kiSum: Object.assign({}, s.kiSum, { [OVK]: true }) }), goFin: () => this.setState({ ptab: 'finanzen' }) };
     const hMax = OVK !== 'sm42' ? PFIN[OVK].hmax : 320;
     const hours = (OVK !== 'sm42' ? PFIN[OVK].hours : [['Du', 260, 50], ['T. Brandt', 230, 30], ['S. Keller', 110, 30], ['L. Wagner', 170, 20]]).map(([name, ok, pre]) => ({ name, ok: pct(ok / hMax * 100), pre: pct(pre / hMax * 100), total: (ok + pre) + ' h' }));
@@ -2325,7 +2335,7 @@ class Component extends DCLogic {
         clickable: !!PROJ_OPEN[x.key], static: !PROJ_OPEN[x.key], open: () => PROJ_OPEN[x.key] && this.openProject(x.key),
         amps: amp.map((a, k) => ({ mark: AMP[a][0], bg: AMP[a][1], bd: AMP[a][2], fg: AMP[a][3], title: AMPN[k] + ': ' + AMPT[a], long: AMPN[k] + ': ' + AMPT[a], val: a })),
         progress: progOf[x.key], budget: x.budget[0] + ' / ' + x.budget[1] + ' T€', budgetSub: overB ? 'überschritten um ' + Math.round((x.budget[0] / x.budget[1] - 1) * 100) + ' %' : Math.round(x.budget[0] / x.budget[1] * 100) + ' % verbraucht', budgetColor: overB ? RED : t.text,
-        next: x.next, res, gap: g, themes: (PTHEME[x.key] || []).map((k, j) => ({ label: TH[k].name, color: TH[k].color, fw: j === 0 ? 700 : 500 })),
+        next: x.next, res, gap: g, ziel: this.briefOf(x.key).ziel || '', hasZiel: !!this.briefOf(x.key).ziel, themes: (this.themesOf(x.key) || []).map((k, j) => ({ label: TH[k].name, color: TH[k].color, fw: j === 0 ? 700 : 500 })),
         resText: g ? 'Es fehlen ' + gapTeams[x.key].join(' und ') + ' pro Woche.' : 'Bedarf ist eingeplant.',
         stand: x.stand, schritte: x.schritte, bedarf: x.bedarf, hasNeed: !!x.bedarf,
         up: move(-1), down: move(1), upOp: i === 0 ? '0.35' : '1', downOp: i === ordered.length - 1 ? '0.35' : '1',
@@ -2564,6 +2574,18 @@ class Component extends DCLogic {
     };
 
     // Verwaltung
+    const BK = s.screen === 'pn' ? s.upSel : (['sm42', 'rl2', 'pd', 'ih'].includes(s.proj) ? s.proj : 'sm42'), bPl = PL_OF[BK] || 'Du', bCan = bPl === 'Du', B0 = this.briefOf(BK), bEd = s.briefEdit === BK, BF = s.briefF || {}, bTh = this.themesOf(BK), bSel = BF.th || bTh;
+    const brief = { edit: bEd, view: !bEd, canEdit: bCan && !bEd, cant: !bCan, canTxt: 'Ändern kann die Projektleitung (' + bPl + ').', hasMsg: !!s.briefMsg && !bEd, msg: s.briefMsg || '',
+      rows: [['auf', 'Auftrag', 'Was ist zu tun?'], ['ziel', 'Ziel', 'Woran messen wir den Erfolg?'], ['nutzen', 'Nutzen', 'Warum, für wen, was bringt es?']].map(([k, l, q]) => ({ label: l, q, text: B0[k] || '', has: !!B0[k], none: !B0[k], val: BF[k] !== undefined ? BF[k] : (B0[k] || ''), set: e => this.setState({ briefF: Object.assign({}, this.state.briefF, { [k]: e && e.target ? e.target.value : '' }) }) })),
+      themes: bTh.filter(k => TH[k]).map((k, j) => ({ label: TH[k].name, color: TH[k].color, main: j === 0 ? '★ ' : '' })), noThemes: !bTh.length,
+      thChips: THEMES.map(([k, name]) => { const idx = bSel.indexOf(k), on = idx >= 0; return { label: (on ? (idx === 0 ? '★ ' : '✓ ') : '') + name, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go: () => this.setState({ briefF: Object.assign({}, this.state.briefF, { th: on ? bSel.filter(x => x !== k) : bSel.concat([k]) }) }) }; }),
+      hasSel2: bSel.length > 1, mainChips: bSel.filter(k => TH[k]).map((k, j) => ({ label: (j === 0 ? '★ ' : '') + TH[k].name, pressed: j === 0 ? 'true' : 'false', ring: j === 0 ? accent : t.border, bg: j === 0 ? t.soft : t.surface, go: () => this.setState({ briefF: Object.assign({}, this.state.briefF, { th: [k].concat(bSel.filter(x => x !== k)) }) }) })),
+      editGo: () => this.setState({ briefEdit: BK, briefF: {}, briefMsg: '' }), cancel: () => this.setState({ briefEdit: null, briefF: {} }),
+      save: () => { const F2 = this.state.briefF || {}, nb = {}; ['auf', 'ziel', 'nutzen'].forEach(k => { nb[k] = String(F2[k] !== undefined ? F2[k] : (B0[k] || '')).trim(); }); const th = F2.th || bTh;
+        if (!th.length) return this.setState({ briefF: Object.assign({}, F2, { err: 1 }) });
+        const nm2 = l => l.filter(k => TH[k]).map(k => TH[k].name).join(', ') || '–'; if (nm2(th) !== nm2(bTh)) this.logH('p:' + BK, 'Themen', nm2(bTh), nm2(th)); ['auf', 'ziel', 'nutzen'].forEach(k => { if ((nb[k] || '') !== (B0[k] || '')) this.logH('p:' + BK, ({ auf: 'Auftrag', ziel: 'Ziel', nutzen: 'Nutzen' })[k], B0[k] || '–', nb[k] || '–'); });
+        this.setState({ briefBy: Object.assign({}, this.state.briefBy, { [BK]: nb }), pthemeOv: Object.assign({}, this.state.pthemeOv, { [BK]: th }), briefEdit: null, briefF: {}, briefMsg: 'Steckbrief gespeichert. Portfolio und Priorisierung rechnen ab jetzt mit ' + (th.length === 1 ? 'dem Thema' : 'den Themen') + ' ' + nm2(th) + ' (Hauptthema ' + TH[th[0]].name + ').' }); },
+      thErr: !!BF.err && !bSel.length };
     const FBK = [['fehler', '🐞 Fehler'], ['verb', '💡 Verbesserung'], ['frage', '❓ Frage'], ['lob', '👍 Gefällt mir']], fbF = s.fbF || {}, fbKind = fbF.k || 'fehler', setFb = k => e => this.setState({ fbF: Object.assign({}, this.state.fbF, { [k]: e && e.target ? e.target.value : '' }) });
     const SCN = { start: 'Start', arbeit: 'Meine Arbeit', projekte: 'Projekte', projekt: 'Projekt', teams: 'Teams', eingang: 'Posteingang', berichte: 'Berichte', wissen: 'Wissen', admin: 'Verwaltung', profil: 'Profil', pnew: 'Neues Projekt', pn: 'Projekt', kickoff: 'Kickoff', import: 'Import', antrag: 'Projektantrag', mobil: 'Mobil' };
     const fbW = typeof window !== 'undefined' ? window.innerWidth : 0, fbUA = typeof navigator !== 'undefined' ? navigator.userAgent : '', fbBr = /Edg\//.test(fbUA) ? 'Edge' : (/Firefox\//.test(fbUA) ? 'Firefox' : (/Chrome\//.test(fbUA) ? 'Chrome' : (/Safari\//.test(fbUA) ? 'Safari' : 'Browser')));
@@ -2712,7 +2734,7 @@ class Component extends DCLogic {
         go: () => { const f = Object.assign({}, s.focus); f[k] = i; this.setState({ focus: f }); } })) }));
     const thHours = {}; let thTotal = 0;
     ordered.forEach(x => {
-      const h = Object.values(x.demand).reduce((a, b) => a + b, 0), th = PTHEME[x.key] || [];
+      const h = Object.values(x.demand).reduce((a, b) => a + b, 0), th = this.themesOf(x.key) || [];
       th.forEach((k, j) => { const part = th.length === 1 ? h : (j === 0 ? h * 2 / 3 : h / 3 / (th.length - 1)); thHours[k] = (thHours[k] || 0) + part; });
       thTotal += h;
     });
@@ -2721,11 +2743,11 @@ class Component extends DCLogic {
       const ist = thTotal ? (thHours[k] || 0) / thTotal * 100 : 0, soll = fW(k) / wSum * 100, diff = ist - soll;
       return { name, color, ist: pct(ist), soll: pct(soll), label: 'ist ' + Math.round(ist) + ' % · soll ' + Math.round(soll) + ' %', textColor: Math.abs(diff) >= 8 ? (diff > 0 ? '#A33F06' : RED) : t.text };
     });
-    const scoreOf = key => (PTHEME[key] || []).reduce((a, k, j) => a + fW(k) * (j === 0 ? 1 : 0.5), 0);
+    const scoreOf = key => (this.themesOf(key) || []).reduce((a, k, j) => a + fW(k) * (j === 0 ? 1 : 0.5), 0);
     const sugOrder = s.porder.slice().sort((a, b) => scoreOf(b) - scoreOf(a) || s.porder.indexOf(a) - s.porder.indexOf(b));
     const prioSug = sugOrder.map((k, i) => { const x = PORTK[k], d = s.porder.indexOf(k) - i;
       return { rank: i + 1, code: x.code, name: x.name, color: x.color, score: scoreOf(k).toLocaleString('de-DE') + ' Pkt.',
-        themes: (PTHEME[k] || []).map((tk, j) => ({ label: TH[tk].name, color: TH[tk].color, fw: j === 0 ? 700 : 500 })),
+        themes: (this.themesOf(k) || []).map((tk, j) => ({ label: TH[tk].name, color: TH[tk].color, fw: j === 0 ? 700 : 500 })),
         move: d > 0 ? '↑ ' + d + ' Platz' + (d > 1 ? 'e' : '') : (d < 0 ? '↓ ' + (-d) + ' Platz' + (d < -1 ? 'e' : '') : 'bleibt'), moveColor: d > 0 ? GREEN : (d < 0 ? '#A33F06' : t.muted) }; });
     const applySug = () => this.setState({ porder: sugOrder, rMsg: 'Prioritätsvorschlag übernommen. Betroffene Projektleitungen werden informiert, die Begründung „Fokus Themen“ steht in der Historie.' });
     const aThemes = THEMES.map(([k, name]) => { const idx = s.aThemeSel.indexOf(k), on = idx >= 0;
@@ -2774,8 +2796,8 @@ class Component extends DCLogic {
     const nm = n => (n === 'Du' ? 'Du' : n);
     const mvRow = x => {
       const ts = this.taskStatus(x), dn = ts === 'erledigt', b = this.bucketOf(x), inF = b === 'Fokus', o = ownerOf(x);
-      const c2 = mvProj ? (x.ms ? NODE[x.ms].name : noMs) : x.proj;
-      return { title: x.title, col2: c2, col2Color: mvProj ? (x.ms ? stc(this.nodeStatus(NODE[x.ms])) : t.strong) : (PROJCOL[x.proj] || t.strong),
+      const c2 = mvProj ? (x.ms ? ((this.codeOf(x.ms) ? this.codeOf(x.ms) + ' ' : '') + NODE[x.ms].name) : noMs) : x.proj, xc = this.codeOf('t:' + x.id);
+      return { title: x.title, code: xc, hasCode: !!xc, col2: c2, col2Color: mvProj ? (x.ms ? stc(this.nodeStatus(NODE[x.ms])) : t.strong) : (PROJCOL[x.proj] || t.strong),
         owner: nm(o), ini: ini(o), av: AV[o] || accent,
         open: () => this.openTask(x.id, mvFrom), toggle: () => this.toggleDone(x.id), checkLabel: (dn ? 'Wieder öffnen: ' : 'Erledigt: ') + x.title,
         checkColor: dn ? GREEN : t.strong, checkFill: dn ? GREEN : 'none', checkMark: dn ? '#FFFFFF' : 'none', strike: dn ? 'line-through' : 'none',
@@ -4617,7 +4639,7 @@ class Component extends DCLogic {
       mv, fo, dash, paletteItems, mo, dashHasMsg: !!s.dashMsg, dashMsg: s.dashMsg,
       openMobil: () => this.setState({ screen: 'mobil', panel: null, moScreen: 'list', moMsg: '' }),
       focusRows, themeBars, prioSug, applySug, aThemes, aFocusHint,
-      adViews, ad, ig, fb, wn, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
+      adViews, ad, ig, fb, wn, brief, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
       adHasMsg: !!s.adMsg, adMsg: s.adMsg, adRing: s.screen === 'admin' || s.screen === 'profil' ? accent : '#FFFFFF', wKiOpen: !!s.wKi, wKiOpenA: s.wKi ? 'true' : 'false', wKiBtn: s.wKi ? '🧠 KI-Vorschläge ausblenden' : '🧠 KI-Vorschläge zum Pflegen', wKiToggle: () => this.setState({ wKi: !s.wKi }),
       wSideOpen: !!s.wSide, wSideOpenA: s.wSide ? 'true' : 'false', wSideBtn: s.wSide ? 'Häufige Themen und Lessons Learned ausblenden' : 'Häufige Themen und Lessons Learned', wSideToggle: () => this.setState({ wSide: !s.wSide }),
       navShow: (h => ({ projekte: !h.projekte, teams: !h.teams, wissen: !h.wissen, berichte: !h.berichte, eingang: !h.eingang }))(s.navHide || {}), navCls: s.navOpen ? 'open' : '', navOpen: !!s.navOpen, navOpenA: s.navOpen ? 'true' : 'false',
