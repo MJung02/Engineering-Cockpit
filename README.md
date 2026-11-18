@@ -24,6 +24,13 @@ Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet
 - **Schnittstellen:** dokumentierte REST-API v1 und ein **MCP-Server**, damit KI-Assistenten und andere Systeme mit den Rechten des Nutzers lesen und schreiben können.
 - **LPA-Tool:** Maßnahmen aus Layered Process Audits laufen automatisch als Aufgaben ins Cockpit. Statuswechsel und „erledigt“ werden in beiden Apps synchron gehalten und gegenvalidiert; bei Widerspruch gibt es einen Konflikt mit Klärungsaufgabe. Details in `docs/ANFORDERUNGEN.md`, REQ-INT-024 bis -029.
 
+## Neu nach der siebten Testrunde (18.11.2026)
+
+- **Word-Berichte** (Export › „📝 Word-Bericht …“): Statusbericht, Abnahmeprotokoll, Abschlussbericht und Besprechungsprotokoll als .docx (A4, mit Tabellen und Seitenzahl).
+  - **Eigene Vorlage:** Firmen-Briefkopf als .docx hochladen. Platzhalter wie {{Projekt}}, {{Ergebnis}} oder {{OffenePunkte}} werden ausgefüllt, auch in Kopf- und Fußzeile. Steht {{Inhalt}} allein in einer Zeile, setzt das Cockpit dort den ganzen Bericht ein. Je Berichtsart gibt es eine Mustervorlage mit allen Platzhaltern.
+  - Direkt aus dem Projekt: „📝 Als Word“ im Statusbericht, „📝 Abnahmeprotokoll (.docx)“ nach der Abnahme, „📝 Als Word (.docx)“ beim Abschlussbericht. In Besprechungen: „📝 Als Word (.docx)“ neben „Protokoll an Teilnehmer senden“.
+- **Plan gegen Ist mit Prognose** (Statusbericht, Kurzfassung unter Finanzen): Geplant bis heute, Erreicht und Kosten verbraucht als Balken. Dazu Termintreue und Kostentreue (Earned Value), Prognose für Ende und Gesamtkosten im aktuellen Tempo und eine Kurve geplant / heute / Prognose. „So rechnet das Cockpit“ erklärt die Rechnung. Auch als Platzhalter {{PlanIst}} für PowerPoint und Word.
+
 ## Neu nach der sechsten Testrunde (17.11.2026)
 
 - **Abhängigkeiten als Standard:** Nachfolger hängen automatisch an ihrem Vorgänger (gleiche Ebene, in zeitlicher Reihenfolge). Lösen mit ✕ im Detail unter „Abhängigkeiten“. Ein Nachfolger lässt sich nicht vor das Ende seines Vorgängers schieben. Die Pfeile laufen senkrecht auf den Nachfolger, in Blau, auf dem kritischen Pfad in Rot.
