@@ -2240,7 +2240,7 @@ input,textarea,select{font-size:16px!important}
                             </button>
                           </sc-if>
                           <sc-if value="{{row.noKids}}" hint-placeholder-val="{{false}}"><span style="width: 32px"></span></sc-if>
-                          <button onClick="{{row.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{row.fw}}">{{row.name}}<sc-if value="{{row.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{row.depTxt}}</span></sc-if></button>
+                          <button onClick="{{row.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{row.fw}}"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{row.code}}</span>{{row.name}}<sc-if value="{{row.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{row.depTxt}}</span></sc-if></button>
                           <sc-if value="{{row.hasHint}}" hint-placeholder-val="{{false}}">
                             <span title="Überfällige Unterelemente" style="margin-right: 8px; padding: 1px 7px; border-radius: 999px; background: #C50F1F; color: #FFFFFF; font-size: 11px; font-weight: 700; white-space: nowrap">! {{row.hint}}</span>
                           </sc-if>
@@ -5214,7 +5214,7 @@ input,textarea,select{font-size:16px!important}
                             </button>
                           </sc-if>
                           <sc-if value="{{pgr.noKids}}" hint-placeholder-val="{{false}}"><span style="width: 32px"></span></sc-if>
-                          <button onClick="{{pgr.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{pgr.fw}}">{{pgr.name}}<sc-if value="{{pgr.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{pgr.depTxt}}</span></sc-if></button><sc-if value="{{pgr.isPhase}}" hint-placeholder-val="{{false}}"><button onClick="{{pgr.addIn}}" aria-label="{{pgr.addInLabel}}" title="{{pgr.addInLabel}}" style="width: 26px; height: 26px; margin-right: 4px; padding: 0; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{accentText}}; font-weight: 700; cursor: pointer">+</button></sc-if>
+                          <button onClick="{{pgr.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{pgr.fw}}"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{pgr.code}}</span>{{pgr.name}}<sc-if value="{{pgr.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{pgr.depTxt}}</span></sc-if></button><sc-if value="{{pgr.isPhase}}" hint-placeholder-val="{{false}}"><button onClick="{{pgr.addIn}}" aria-label="{{pgr.addInLabel}}" title="{{pgr.addInLabel}}" style="width: 26px; height: 26px; margin-right: 4px; padding: 0; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{accentText}}; font-weight: 700; cursor: pointer">+</button></sc-if>
                           <sc-if value="{{pgr.hasHint}}" hint-placeholder-val="{{false}}">
                             <span title="Überfällige Unterelemente" style="margin-right: 8px; padding: 1px 7px; border-radius: 999px; background: #C50F1F; color: #FFFFFF; font-size: 11px; font-weight: 700; white-space: nowrap">! {{pgr.hint}}</span>
                           </sc-if>
@@ -5806,7 +5806,7 @@ input,textarea,select{font-size:16px!important}
             </button>
           </div>
           <div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: {{t.muted}}"><span>{{p.kindLabel}}</span><sc-if value="{{p.hasKid}}" hint-placeholder-val="{{false}}"><span style="padding: 1px 8px; border-radius: 6px; background: {{t.surface2}}; color: {{t.text}}; font-family: Consolas, monospace">{{p.kid}}</span><button onClick="{{p.copyLink}}" title="Direkten Link kopieren" style="height: 24px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: {{accentText}}; font-size: 12px; font-weight: 600; cursor: pointer">🔗 Link kopieren</button></sc-if></div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: {{t.muted}}"><span>{{p.kindLabel}}</span><sc-if value="{{p.hasCode}}" hint-placeholder-val="{{false}}"><span title="Gliederungsnummer im Projektplan" style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{p.code}}</span></sc-if><sc-if value="{{p.hasKid}}" hint-placeholder-val="{{false}}"><span style="padding: 1px 8px; border-radius: 6px; background: {{t.surface2}}; color: {{t.text}}; font-family: Consolas, monospace">{{p.kid}}</span><button onClick="{{p.copyLink}}" title="Direkten Link kopieren" style="height: 24px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: {{accentText}}; font-size: 12px; font-weight: 600; cursor: pointer">🔗 Link kopieren</button></sc-if></div>
             <sc-if value="{{p.titleStatic}}" hint-placeholder-val="{{true}}"><h2 style="margin: 2px 0 10px; font-size: 20px">{{p.title}}</h2></sc-if>
             <sc-if value="{{p.titleEdit}}" hint-placeholder-val="{{false}}"><div style="display: flex; align-items: center; gap: 10px; margin: 4px 0 10px"><sc-if value="{{p.hasDoneBtn}}" hint-placeholder-val="{{true}}"><button onClick="{{p.toggleDone}}" role="checkbox" aria-checked="{{p.doneA}}" aria-label="{{p.doneLabel}}" title="{{p.doneLabel}}" style="width: 28px; height: 28px; flex-shrink: 0; padding: 0; border-radius: 50%; border: 2px solid {{p.doneRing}}; background: {{p.doneFill}}; color: #FFFFFF; font-size: 15px; cursor: pointer">{{p.doneMark}}</button></sc-if><input type="text" aria-label="Titel" value="{{p.title}}" onInput="{{p.setTitle}}" style="flex: 1; min-width: 0; height: 40px; padding: 0 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: {{t.text}}; font: inherit; font-size: 20px; font-weight: 700; text-decoration: {{p.doneStrike}}"></div></sc-if>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
@@ -6100,7 +6100,7 @@ input,textarea,select{font-size:16px!important}
                 <sc-for list="{{p.kids}}" as="kd" hint-placeholder-count="3">
                   <button onClick="{{kd.open}}" style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-bottom: 1px solid {{t.border}}; background: transparent; color: {{t.text}}; cursor: pointer; text-align: left">
                     <span style="width: 10px; height: 10px; transform: rotate(45deg); background: {{kd.chip.bg}}; border: 1px solid {{kd.chip.bd}}; flex-shrink: 0"></span>
-                    <span style="flex: 1; font-weight: 600">{{kd.icon}} {{kd.name}}</span>
+                    <span style="flex: 1; font-weight: 600">{{kd.icon}} <span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{kd.code}}</span>{{kd.name}}</span>
                     <span style="font-size: 12px; color: {{t.muted}}">{{kd.date}}</span>
                   </button>
                 </sc-for>
@@ -6119,7 +6119,7 @@ input,textarea,select{font-size:16px!important}
                 <sc-if value="{{p.noTasks}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; color: {{t.muted}}; padding: 4px 0 8px">Noch keine Aufgaben an diesem {{p.kindLabel}}.</div></sc-if>
                 <sc-for list="{{p.tasks}}" as="tk" hint-placeholder-count="2">
                   <button onClick="{{tk.open}}" style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-bottom: 1px solid {{t.border}}; background: transparent; color: {{t.text}}; cursor: pointer; text-align: left">
-                    <span style="flex: 1; font-weight: 600; text-decoration: {{tk.strike}}">{{tk.title}}</span>
+                    <span style="flex: 1; font-weight: 600; text-decoration: {{tk.strike}}"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{tk.code}}</span>{{tk.title}}</span>
                     <span style="padding: 2px 8px; border-radius: 999px; background: {{tk.chip.bg}}; color: {{tk.chip.fg}}; border: 1px solid {{tk.chip.bd}}; font-size: 11px; font-weight: 600">{{tk.dueLabel}}</span>
                   </button>
                 </sc-for>
@@ -6169,11 +6169,12 @@ input,textarea,select{font-size:16px!important}
             <div>
               <h3 style="margin: 0 0 6px; font-size: 14px">{{p.kidsTitle}}</h3>
               <sc-for list="{{p.kids}}" as="kd" hint-placeholder-count="3">
-                <div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px; border-bottom: 1px solid {{t.border}}">
+                <button onClick="{{kd.open}}" title="Öffnen" style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-bottom: 1px solid {{t.border}}; background: transparent; color: {{t.text}}; cursor: pointer; text-align: left; font: inherit">
                   <span style="width: 10px; height: 10px; transform: rotate(45deg); background: {{kd.chip.bg}}; border: 1px solid {{kd.chip.bd}}; flex-shrink: 0"></span>
-                  <span style="flex: 1; font-weight: 600">{{kd.name}}</span>
+                  <span style="flex: 1; font-weight: 600"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{kd.code}}</span>{{kd.name}}</span>
                   <span style="font-size: 12px; color: {{t.muted}}">{{kd.date}}</span>
-                </div>
+                  <span aria-hidden="true" style="color: {{t.muted}}">›</span>
+                </button>
               </sc-for>
             </div>
             <button onClick="{{p.openPair}}" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 12px; border-radius: 10px; border: 1px solid {{accent}}; background: {{t.soft}}; color: {{t.text}}; cursor: pointer; text-align: left">
@@ -6459,8 +6460,8 @@ input,textarea,select{font-size:16px!important}
   </main>
 </div>
 </template>
-<script src="dc-runtime.js?v=18.11.2026_0923"></script>
-<script src="app.js?v=18.11.2026_0923"></script>
+<script src="dc-runtime.js?v=18.11.2026_0935"></script>
+<script src="app.js?v=18.11.2026_0935"></script>
 <script>
 (function () {
   var props = {"accent": "#0F6CBD", "dark": false, "density": "normal"};

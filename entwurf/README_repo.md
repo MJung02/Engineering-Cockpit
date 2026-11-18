@@ -26,6 +26,9 @@ Auffälligkeiten bitte direkt im Entwurf melden: **„💬 Feedback geben“** (
 
 ## Neu nach der siebten Testrunde (18.11.2026)
 
+- **Gliederungsnummern im Plan:** P1 = Phase 1, M1.2 = Meilenstein 2 in Phase 1, QG2.1 = erstes Quality Gate in Phase 2, T2.2.1 = Aufgabe 1 an M2.2 (an Gates: TG…). Untermeilensteine und Unterphasen hängen eine Stufe an (M2.1.1, P1.1). Zu sehen im Gantt, im Detail, in den Abhängigkeiten („nach QG1.1 Gate G1“) und an jeder Aufgabe. Die Nummern ergeben sich aus der Reihenfolge im Plan.
+- **V-Modell:** Arbeitspakete und Testfälle einer V-Ebene sind im Detail anklickbar und öffnen die Aufgabe.
+- **Aufgabendetail:** Projekt, Bucket, Priorität und „Fällig am“ wurden bei langen Aufgaben zusammengedrückt und waren nicht zu sehen. Behoben.
 - **Termine verschieben, mit System:**
   - **Zwei Daten je Projektaufgabe:** *Fällig* ist die Zusage im Projekt, *Geplant am* ist dein Arbeitstag. Den Arbeitstag änderst du immer frei, ohne Freigabe.
   - **Eigene To-dos** (ohne Projekt, Team): Fälligkeit frei verschiebbar.

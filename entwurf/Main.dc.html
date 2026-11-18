@@ -2238,7 +2238,7 @@ input,textarea,select{font-size:16px!important}
                             </button>
                           </sc-if>
                           <sc-if value="{{row.noKids}}" hint-placeholder-val="{{false}}"><span style="width: 32px"></span></sc-if>
-                          <button onClick="{{row.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{row.fw}}">{{row.name}}<sc-if value="{{row.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{row.depTxt}}</span></sc-if></button>
+                          <button onClick="{{row.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{row.fw}}"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{row.code}}</span>{{row.name}}<sc-if value="{{row.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{row.depTxt}}</span></sc-if></button>
                           <sc-if value="{{row.hasHint}}" hint-placeholder-val="{{false}}">
                             <span title="Überfällige Unterelemente" style="margin-right: 8px; padding: 1px 7px; border-radius: 999px; background: #C50F1F; color: #FFFFFF; font-size: 11px; font-weight: 700; white-space: nowrap">! {{row.hint}}</span>
                           </sc-if>
@@ -5212,7 +5212,7 @@ input,textarea,select{font-size:16px!important}
                             </button>
                           </sc-if>
                           <sc-if value="{{pgr.noKids}}" hint-placeholder-val="{{false}}"><span style="width: 32px"></span></sc-if>
-                          <button onClick="{{pgr.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{pgr.fw}}">{{pgr.name}}<sc-if value="{{pgr.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{pgr.depTxt}}</span></sc-if></button><sc-if value="{{pgr.isPhase}}" hint-placeholder-val="{{false}}"><button onClick="{{pgr.addIn}}" aria-label="{{pgr.addInLabel}}" title="{{pgr.addInLabel}}" style="width: 26px; height: 26px; margin-right: 4px; padding: 0; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{accentText}}; font-weight: 700; cursor: pointer">+</button></sc-if>
+                          <button onClick="{{pgr.open}}" style="flex: 1; min-width: 0; border: 0; background: transparent; color: {{t.text}}; text-align: left; padding: 8px 4px; cursor: pointer; font-weight: {{pgr.fw}}"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{pgr.code}}</span>{{pgr.name}}<sc-if value="{{pgr.hasDep}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 11px; font-weight: 500; color: {{t.muted}}">↳ {{pgr.depTxt}}</span></sc-if></button><sc-if value="{{pgr.isPhase}}" hint-placeholder-val="{{false}}"><button onClick="{{pgr.addIn}}" aria-label="{{pgr.addInLabel}}" title="{{pgr.addInLabel}}" style="width: 26px; height: 26px; margin-right: 4px; padding: 0; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{accentText}}; font-weight: 700; cursor: pointer">+</button></sc-if>
                           <sc-if value="{{pgr.hasHint}}" hint-placeholder-val="{{false}}">
                             <span title="Überfällige Unterelemente" style="margin-right: 8px; padding: 1px 7px; border-radius: 999px; background: #C50F1F; color: #FFFFFF; font-size: 11px; font-weight: 700; white-space: nowrap">! {{pgr.hint}}</span>
                           </sc-if>
@@ -5804,7 +5804,7 @@ input,textarea,select{font-size:16px!important}
             </button>
           </div>
           <div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: {{t.muted}}"><span>{{p.kindLabel}}</span><sc-if value="{{p.hasKid}}" hint-placeholder-val="{{false}}"><span style="padding: 1px 8px; border-radius: 6px; background: {{t.surface2}}; color: {{t.text}}; font-family: Consolas, monospace">{{p.kid}}</span><button onClick="{{p.copyLink}}" title="Direkten Link kopieren" style="height: 24px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: {{accentText}}; font-size: 12px; font-weight: 600; cursor: pointer">🔗 Link kopieren</button></sc-if></div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: {{t.muted}}"><span>{{p.kindLabel}}</span><sc-if value="{{p.hasCode}}" hint-placeholder-val="{{false}}"><span title="Gliederungsnummer im Projektplan" style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{p.code}}</span></sc-if><sc-if value="{{p.hasKid}}" hint-placeholder-val="{{false}}"><span style="padding: 1px 8px; border-radius: 6px; background: {{t.surface2}}; color: {{t.text}}; font-family: Consolas, monospace">{{p.kid}}</span><button onClick="{{p.copyLink}}" title="Direkten Link kopieren" style="height: 24px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: {{accentText}}; font-size: 12px; font-weight: 600; cursor: pointer">🔗 Link kopieren</button></sc-if></div>
             <sc-if value="{{p.titleStatic}}" hint-placeholder-val="{{true}}"><h2 style="margin: 2px 0 10px; font-size: 20px">{{p.title}}</h2></sc-if>
             <sc-if value="{{p.titleEdit}}" hint-placeholder-val="{{false}}"><div style="display: flex; align-items: center; gap: 10px; margin: 4px 0 10px"><sc-if value="{{p.hasDoneBtn}}" hint-placeholder-val="{{true}}"><button onClick="{{p.toggleDone}}" role="checkbox" aria-checked="{{p.doneA}}" aria-label="{{p.doneLabel}}" title="{{p.doneLabel}}" style="width: 28px; height: 28px; flex-shrink: 0; padding: 0; border-radius: 50%; border: 2px solid {{p.doneRing}}; background: {{p.doneFill}}; color: #FFFFFF; font-size: 15px; cursor: pointer">{{p.doneMark}}</button></sc-if><input type="text" aria-label="Titel" value="{{p.title}}" onInput="{{p.setTitle}}" style="flex: 1; min-width: 0; height: 40px; padding: 0 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: {{t.text}}; font: inherit; font-size: 20px; font-weight: 700; text-decoration: {{p.doneStrike}}"></div></sc-if>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
@@ -6098,7 +6098,7 @@ input,textarea,select{font-size:16px!important}
                 <sc-for list="{{p.kids}}" as="kd" hint-placeholder-count="3">
                   <button onClick="{{kd.open}}" style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-bottom: 1px solid {{t.border}}; background: transparent; color: {{t.text}}; cursor: pointer; text-align: left">
                     <span style="width: 10px; height: 10px; transform: rotate(45deg); background: {{kd.chip.bg}}; border: 1px solid {{kd.chip.bd}}; flex-shrink: 0"></span>
-                    <span style="flex: 1; font-weight: 600">{{kd.icon}} {{kd.name}}</span>
+                    <span style="flex: 1; font-weight: 600">{{kd.icon}} <span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{kd.code}}</span>{{kd.name}}</span>
                     <span style="font-size: 12px; color: {{t.muted}}">{{kd.date}}</span>
                   </button>
                 </sc-for>
@@ -6117,7 +6117,7 @@ input,textarea,select{font-size:16px!important}
                 <sc-if value="{{p.noTasks}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; color: {{t.muted}}; padding: 4px 0 8px">Noch keine Aufgaben an diesem {{p.kindLabel}}.</div></sc-if>
                 <sc-for list="{{p.tasks}}" as="tk" hint-placeholder-count="2">
                   <button onClick="{{tk.open}}" style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-bottom: 1px solid {{t.border}}; background: transparent; color: {{t.text}}; cursor: pointer; text-align: left">
-                    <span style="flex: 1; font-weight: 600; text-decoration: {{tk.strike}}">{{tk.title}}</span>
+                    <span style="flex: 1; font-weight: 600; text-decoration: {{tk.strike}}"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{tk.code}}</span>{{tk.title}}</span>
                     <span style="padding: 2px 8px; border-radius: 999px; background: {{tk.chip.bg}}; color: {{tk.chip.fg}}; border: 1px solid {{tk.chip.bd}}; font-size: 11px; font-weight: 600">{{tk.dueLabel}}</span>
                   </button>
                 </sc-for>
@@ -6167,11 +6167,12 @@ input,textarea,select{font-size:16px!important}
             <div>
               <h3 style="margin: 0 0 6px; font-size: 14px">{{p.kidsTitle}}</h3>
               <sc-for list="{{p.kids}}" as="kd" hint-placeholder-count="3">
-                <div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px; border-bottom: 1px solid {{t.border}}">
+                <button onClick="{{kd.open}}" title="Öffnen" style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-bottom: 1px solid {{t.border}}; background: transparent; color: {{t.text}}; cursor: pointer; text-align: left; font: inherit">
                   <span style="width: 10px; height: 10px; transform: rotate(45deg); background: {{kd.chip.bg}}; border: 1px solid {{kd.chip.bd}}; flex-shrink: 0"></span>
-                  <span style="flex: 1; font-weight: 600">{{kd.name}}</span>
+                  <span style="flex: 1; font-weight: 600"><span style="display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; background: {{t.surface2}}; border: 1px solid {{t.border}}; font: 600 11px ui-monospace, Menlo, monospace; color: {{t.muted}}; vertical-align: 1px; white-space: nowrap">{{kd.code}}</span>{{kd.name}}</span>
                   <span style="font-size: 12px; color: {{t.muted}}">{{kd.date}}</span>
-                </div>
+                  <span aria-hidden="true" style="color: {{t.muted}}">›</span>
+                </button>
               </sc-for>
             </div>
             <button onClick="{{p.openPair}}" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 12px; border-radius: 10px; border: 1px solid {{accent}}; background: {{t.soft}}; color: {{t.text}}; cursor: pointer; text-align: left">
@@ -7199,7 +7200,14 @@ class Component extends DCLogic {
     const crit = new Set(); if (!inDep.size) return crit; const cand = nodes.filter(n => inDep.has(n.id)), end = cand.reduce((a, n) => (n.end > a ? n.end : a), '0000'), st = cand.filter(n => n.end === end);
     while (st.length) { const n = st.pop(); if (crit.has(n.id)) continue; crit.add(n.id); (deps[n.id] || []).forEach(pid => { const p = NODE[pid]; if (p && ids.has(pid) && this.depNeed(p) >= n.start) st.push(p); }); }
     return crit; }
-  depLabel(n, deps) { const pr = ((deps || this.depsOf())[n.id] || []).filter(id => NODE[id]).map(id => NODE[id].name); return { hasDep: pr.length > 0, depTxt: pr.length ? 'nach ' + pr.join(', ') : '' }; }
+  planCodes() { const M = {}, cnt = {}, kindOf = n => (n.type === 'phase' ? 'P' : (n.type === 'gate' && !n.msPoint ? 'QG' : 'M'));
+    const walk = (list, path) => { const c = { P: 0, M: 0, QG: 0 }; (list || []).forEach(n => { const k = kindOf(n); c[k]++; const p = (path ? path + '.' : '') + c[k]; M[n.id] = k + p; cnt[n.id] = 0; walk(n.children, p);
+      (n.tasks || []).forEach(tid => { if (!M['t:' + tid]) M['t:' + tid] = (k === 'QG' ? 'TG' : 'T') + p + '.' + (++cnt[n.id]); }); }); };
+    Object.keys(PTREE_OF).forEach(pk => walk(PTREE_OF[pk], ''));
+    TASKS.forEach(x => { if (x.ms && M[x.ms] && !M['t:' + x.id]) { cnt[x.ms] = (cnt[x.ms] || 0) + 1; M['t:' + x.id] = (/^QG/.test(M[x.ms]) ? 'TG' : 'T') + M[x.ms].replace(/^[A-Z]+/, '') + '.' + cnt[x.ms]; } });
+    return M; }
+  codeOf(id) { return (this._pc || (this._pc = this.planCodes()))[id] || ''; }
+  depLabel(n, deps) { const pr = ((deps || this.depsOf())[n.id] || []).filter(id => NODE[id]).map(id => (this.codeOf(id) ? this.codeOf(id) + ' ' : '') + NODE[id].name); return { code: this.codeOf(n.id), hasDep: pr.length > 0, depTxt: pr.length ? 'nach ' + pr.join(', ') : '' }; }
   nodeBounds(id) { const n = NODE[id], p = NODE[PARENT[id]], k = (n && n.children) || [], prs = (this.depsOf()[id] || []).filter(x => NODE[x]), nd = prs.map(x => [this.depNeed(NODE[x]), NODE[x].name]).sort((a, b) => (a[0] < b[0] ? 1 : -1))[0] || [null, ''];
     return { need: nd[0], needN: nd[1], lo: p ? p.start : null, hi: p ? p.end : null, pn: p ? p.name : '', cs: k.length ? k.reduce((a, c) => (c.start < a ? c.start : a), '9999') : null, ce: k.length ? k.reduce((a, c) => (c.end > a ? c.end : a), '0000') : null }; }
   dayDiff(a, b) { return Math.round((D(a) - D(b)) / 86400000); }
@@ -7963,6 +7971,7 @@ class Component extends DCLogic {
   decide(id, text) { const result = Object.assign({}, this.state.result); result[id] = text; this.setState({ result }); }
 
   renderVals() {
+    this._pc = this.planCodes();
     if (typeof document !== 'undefined' && !this._cfmHook) { this._cfmHook = true; document.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('[data-confirm]') : null; if (!b || window.__ecAutoConfirm) return; if (b.__ecOk) { b.__ecOk = false; return; } e.preventDefault(); e.stopPropagation(); this._cfmBtn = b; this.setState({ cfm: b.getAttribute('data-confirm') }); }, true); }
     if (typeof window !== 'undefined') { clearTimeout(this._ddT); this._ddT = setTimeout(() => this.drawDeps(), 60); if (!this._ddR) { this._ddR = true; window.addEventListener('resize', () => this.drawDeps()); } }
     if (typeof window !== 'undefined' && !window.__ecNodes) window.__ecNodes = { NODE, PARENT };
@@ -10930,8 +10939,8 @@ class Component extends DCLogic {
         } })) : noCmp,
         gateNote: 'Bestanden: Gate grün. Mit Auflage: bestanden, die Auflage wird eine Aufgabe mit Termin. Nicht bestanden: Gate bleibt offen, das Team sieht die Begründung.',
         gateReset: () => { const o = Object.assign({}, s.gateRes); delete o[n.id]; n.done = false; this.setState({ gateRes: o, rev: (s.rev || 0) + 1 }); } });
-      const kids = (n.children || []).map(k => ({ icon: k.msPoint ? '◆' : (k.type === 'gate' ? '◈' : '▭'), name: k.name, date: fmt(D(k.end)), chip: this.chip(this.nodeStatus(k), t, accent), open: () => this.openNode(k.id, pan.from) }));
-      const tks = (n.tasks || []).map(id => { const x = TASK[id], ts = this.taskStatus(x); return { title: x.title, chip: this.chip(ts, t, accent), dueLabel: this.dueLabel(x), strike: ts === 'erledigt' ? 'line-through' : 'none', open: () => this.openTask(id, pan.from) }; });
+      const kids = (n.children || []).map(k => ({ icon: k.msPoint ? '◆' : (k.type === 'gate' ? '◈' : '▭'), code: this.codeOf(k.id), name: k.name, date: fmt(D(k.end)), chip: this.chip(this.nodeStatus(k), t, accent), open: () => this.openNode(k.id, pan.from) }));
+      const tks = (n.tasks || []).map(id => { const x = TASK[id], ts = this.taskStatus(x); return { title: x.title, code: this.codeOf('t:' + id), chip: this.chip(ts, t, accent), dueLabel: this.dueLabel(x), strike: ts === 'erledigt' ? 'line-through' : 'none', open: () => this.openTask(id, pan.from) }; });
       const items = (n.children || []).map(k => this.nodeStatus(k) === 'erledigt').concat((n.tasks || []).map(id => this.isDone(TASK[id])));
       const nPk = this.pkOfNode(n.id), nProj = this.pnm(nPk), nMem = uniqA(['Du'].concat((PMEMBERS[nPk] || []).map(m => m[0]).filter(m => m !== 'Kunde'))), ntW = nMem.includes(s.ntWho) ? s.ntWho : (nMem.includes(n.owner) ? n.owner : 'Du');
       const loose = TASKS.filter(x => x.proj === nProj && !x.ms && !x.story && !x.kb && !this.isDone(x) && !(n.tasks || []).includes(x.id)).slice(0, 6);
@@ -10990,7 +10999,7 @@ class Component extends DCLogic {
         crumbs: [{ label: 'Prüfstand Drehmoment', open: () => this.openProject('pd') }], owner: v.owner,
         progress: Math.round(done / v.kids.length * 100) + ' % (' + done + ' von ' + v.kids.length + ')',
         kidsTitle: v.side === 'R' ? 'Testfälle' : 'Untermeilensteine und Arbeitspakete',
-        kids: v.kids.map(([name, date, ok]) => ({ name, date: fmt(D(date)), chip: this.chip(ok ? 'erledigt' : (D(date) < TODAY ? 'ueberfaellig' : 'plan'), t, accent) })),
+        kids: v.kids.map(([name, date, ok], i) => { const tid = v.id + 'k' + i, tx = TASK[tid]; return { name, code: this.codeOf('t:' + tid), date: fmt(D(tx ? tx.due : date)), chip: this.chip(tx ? this.taskStatus(tx) : (ok ? 'erledigt' : (D(date) < TODAY ? 'ueberfaellig' : 'plan')), t, accent), open: () => (tx ? this.openTask(tid, 'vmodel') : null) }; }),
         pairLabel: v.side === 'R' ? 'Verifiziert die Ebene' : (v.side === 'B' ? 'Wird geprüft durch' : 'Wird verifiziert durch'),
         pairName: pr.name, coverage: 'Abdeckung ' + (v.side === 'R' ? v.cov : pr.cov) + ' %',
         openPair: () => this.setState({ panel: { kind: 'vnode', id: pr.id, from: 'vmodel' } })
@@ -11019,6 +11028,7 @@ class Component extends DCLogic {
     } else if (pan && pan.kind === 'settings') {
       p = Object.assign(p, { isSettings: true, kindLabel: 'Projekteinstellungen', title: set.title, crumbs: [{ label: PJS.name, open: () => (SKU ? this.setState({ panel: null }) : this.openProject(SK)) }] });
     }
+    { const pc0 = !pan ? '' : (pan.kind === 'task' ? this.codeOf('t:' + pan.id) : ((pan.kind === 'node' || pan.kind === 'vnode') ? this.codeOf(pan.id) : '')); p.code = pc0; p.hasCode = !!pc0; }
 
     return {
       t, accent, accentText, rowH, tr, nav, is, other: { title: o[0], text: o[1] },
