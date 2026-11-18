@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:42 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:50 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -2203,11 +2203,11 @@ class Component extends DCLogic {
     const budget = B.map(([label, v, color]) => ({ label, color, w: pct(v / fMax * 100), value: v.toLocaleString('de-DE') + ' €' }));
     const finSum = overF ? { label: '! Prognose ' + Math.round((FB[3][1] / FB[0][1] - 1) * 100) + ' % über Budget', bg: RED } : { label: '✓ Prognose im Budget', bg: GREEN };
     // Projektübersicht: Kacheln je Projekt und Person
-    const OV_ALL = ['ms', 'next', 'overdue', 'team', 'mine', 'budget', 'log', 'themen', 'ki'];
-    const OV_T = { ms: 'Meilensteine nach Termin', next: 'Nächste Meilensteine', overdue: 'Überfällig im Projekt', team: 'Team und Projektanteile', mine: 'Meine Aufgaben hier', budget: 'Budget', log: 'Letzte Aktivität', themen: 'Themen', ki: 'KI-Zusammenfassung' };
-    const ovS = Object.assign({ order: OV_ALL, hidden: { mine: true, budget: true, log: true, themen: true, ki: true }, size: {} }, s.ovBy[OVK] || {});
+    const OV_ALL = ['brief', 'ms', 'next', 'overdue', 'team', 'mine', 'budget', 'log', 'themen', 'ki'];
+    const OV_T = { brief: 'Projektsteckbrief', ms: 'Meilensteine nach Termin', next: 'Nächste Meilensteine', overdue: 'Überfällig im Projekt', team: 'Team und Projektanteile', mine: 'Meine Aufgaben hier', budget: 'Budget', log: 'Letzte Aktivität', themen: 'Themen', ki: 'KI-Zusammenfassung' };
+    const ovS = Object.assign({ order: OV_ALL, hidden: { mine: true, budget: true, log: true, themen: true, ki: true }, size: { brief: 2 } }, s.ovBy[OVK] || {});
     const OSZ = [['1 1 300px', 'schmal'], ['2 1 460px', 'mittel'], ['1 1 100%', 'ganze Breite']];
-    const setOv = patch => { const cur = Object.assign({ order: OV_ALL, hidden: { mine: true, budget: true, log: true, themen: true, ki: true }, size: {} }, (this.state.ovBy || {})[OVK] || {}); const p2 = typeof patch === 'function' ? patch(cur) : patch; this.setState({ ovBy: Object.assign({}, this.state.ovBy, { [OVK]: Object.assign({}, cur, p2) }) }); };
+    const setOv = patch => { const cur = Object.assign({ order: OV_ALL, hidden: { mine: true, budget: true, log: true, themen: true, ki: true }, size: { brief: 2 } }, (this.state.ovBy || {})[OVK] || {}); const p2 = typeof patch === 'function' ? patch(cur) : patch; this.setState({ ovBy: Object.assign({}, this.state.ovBy, { [OVK]: Object.assign({}, cur, p2) }) }); };
     const ovw = {};
     OV_ALL.forEach(k => { const sz = ovS.size[k] !== undefined ? ovS.size[k] : 0, hot = s.dragOver === 'ov|' + k;
       ovw[k] = { order: ovS.order.indexOf(k), disp: ovS.hidden[k] ? 'none' : 'block', flex: OSZ[sz][0], sizeLabel: OSZ[sz][1], border: hot ? '3px solid ' + accent : '1px solid ' + t.border, draggable: 'true',
