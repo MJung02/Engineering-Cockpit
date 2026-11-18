@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 10:39 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 13:17 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -1565,6 +1565,7 @@ class Component extends DCLogic {
     });
     const is = { start: s.screen === 'start', arbeit: s.screen === 'arbeit', projekte: s.screen === 'projekte', projekt: s.screen === 'projekt', teams: s.screen === 'teams', eingang: s.screen === 'eingang', berichte: s.screen === 'berichte', wissen: s.screen === 'wissen', antrag: s.screen === 'antrag', admin: s.screen === 'admin', mobil: s.screen === 'mobil', profil: s.screen === 'profil', pnew: s.screen === 'pnew', pn: s.screen === 'pn', kickoff: s.screen === 'kickoff', import: s.screen === 'import' };
     is.other = !Object.values(is).some(Boolean);
+    if (s.erst && s.erst.stage === 'app') { Object.keys(is).forEach(k => { is[k] = false; }); }
     const OTHER = {
       wissen: ['Wissen', 'Technik-Gedächtnis, Lessons Learned und Stakeholder an einer Stelle. Folgt im nächsten Entwurf.'],
       berichte: ['Berichte', 'Portfolio, Dashboards und Statusberichte. Folgt im nächsten Entwurf.']
@@ -2589,6 +2590,49 @@ class Component extends DCLogic {
         const nm2 = l => l.filter(k => TH[k]).map(k => TH[k].name).join(', ') || '–'; if (nm2(th) !== nm2(bTh)) this.logH('p:' + BK, 'Themen', nm2(bTh), nm2(th)); ['auf', 'ziel', 'nutzen'].forEach(k => { if ((nb[k] || '') !== (B0[k] || '')) this.logH('p:' + BK, ({ auf: 'Auftrag', ziel: 'Ziel', nutzen: 'Nutzen' })[k], B0[k] || '–', nb[k] || '–'); });
         this.setState({ briefBy: Object.assign({}, this.state.briefBy, { [BK]: nb }), pthemeOv: Object.assign({}, this.state.pthemeOv, { [BK]: th }), briefEdit: null, briefF: {}, briefMsg: 'Steckbrief gespeichert. Portfolio und Priorisierung rechnen ab jetzt mit ' + (th.length === 1 ? 'dem Thema' : 'den Themen') + ' ' + nm2(th) + ' (Hauptthema ' + TH[th[0]].name + ').' }); },
       thErr: !!BF.err && !bSel.length };
+    const ER = s.erst || null, erApp = !!ER && ER.stage === 'app', erLogin = !!ER && ER.stage === 'login', erF = s.erF || {}, erT = ER ? ER.tasks || [] : [], erP = ER ? ER.projects || [] : [], erTi = ER ? ER.tiles || [] : [], erFirma = !!ER && ER.type === 'firma';
+    const erSet = patch => this.setState({ erst: Object.assign({}, this.state.erst, patch) }), erIn = k => e => this.setState({ erF: Object.assign({}, this.state.erF, { [k]: e && e.target ? e.target.value : '' }) });
+    const erD = iso => (iso ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' : ''), erToday = '2026-11-13', erIn7 = this.isoAdd(erToday, 7), erPn = id => ((erP.find(p0 => p0.id === id) || {}).name || '');
+    const erEnter = (via, type, name, email, company) => this.setState({ erst: Object.assign({}, this.state.erst, { stage: 'app', via, type, name, email, company: company || '' }), erVia: null, erF: {}, screen: 'start', panel: null, navOpen: false, erMsg: '' });
+    const erChip = (on, label, go) => ({ label, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go });
+    const erRow = x => ({ title: x.title, due: x.due ? erD(x.due) : 'ohne Termin', dueC: !x.done && x.due && x.due < erToday ? '#C50F1F' : t.muted, proj: x.proj ? erPn(x.proj) : '', hasProj: !!x.proj, done: x.done ? 'true' : 'false', mark: x.done ? '✓' : '', fill: x.done ? '#107C10' : 'transparent', ring: x.done ? '#107C10' : t.strong, strike: x.done ? 'line-through' : 'none',
+      toggle: () => erSet({ tasks: erT.map(y => (y.id === x.id ? Object.assign({}, y, { done: !y.done }) : y)) }), del: () => erSet({ tasks: erT.filter(y => y.id !== x.id) }) });
+    const erSteps = [['task', 'Lege deine erste Aufgabe an', 'Unter „Meine Aufgaben“ einen Titel eintippen, optional Termin und Projekt, dann „Hinzufügen“.', erT.length > 0, 'arbeit'],
+      ['done', 'Hake eine Aufgabe ab', 'Auf den Kreis vor der Aufgabe klicken. Erledigtes bleibt sichtbar, bis du es löschst.', erT.some(x => x.done), 'arbeit'],
+      ['proj', erFirma ? 'Beantrage dein erstes Projekt' : 'Lege dein erstes Projekt an', erFirma ? 'In der Firma prüft die Freigabe nach dem Organigramm (deine Führungskraft). Hier ist die Freigabe simuliert.' : 'Ohne Firma gibt es keine Freigabe: dein Projekt ist sofort aktiv.', erP.length > 0, 'projekte'],
+      ['zu', 'Ordne eine Aufgabe einem Projekt zu', 'Im Projekt auf „+ Aufgabe“ oder beim Anlegen unter „Meine Aufgaben“ das Projekt wählen.', erT.some(x => x.proj), 'projekte'],
+      ['start', 'Richte deine Startseite ein', 'Auf „Start“ auswählen, was du sehen willst. Du kannst es jederzeit ändern.', erTi.length > 0, 'start']];
+    const erCur = erSteps.findIndex(x => !x[3]), erAll = erCur < 0, erStep = erAll ? null : erSteps[erCur], erTut = erApp && !ER.tutOff, erHl = k => (erTut && erStep && erStep[0] === k ? '3px solid ' + accent : 'none');
+    const ER_TILES = [['heute', 'Heute fällig'], ['ueber', 'Überfällig'], ['woche', 'Nächste 7 Tage'], ['proj', 'Meine Projekte'], ['notiz', 'Notiz']];
+    const erOpen = erT.filter(x => !x.done);
+    const er = { login: erLogin, app: erApp, firma: erFirma, privat: erApp && !erFirma, name: ER ? ER.name || '' : '', who: ER ? (ER.name || '') + (ER.email ? ' · ' + ER.email : '') : '', viaTxt: ER ? ({ mail: 'E-Mail und Passwort', apple: 'Apple', google: 'Google', facebook: 'Facebook', sso: 'Firmen-SSO (' + (ER.company || '') + ')' })[ER.via] || '' : '',
+      startDemo: () => this.setState({ erst: { stage: 'login', tasks: [], projects: [], tiles: [], note: '' }, erVia: null, erF: {}, panel: null, wnOpen: false, fbOpen: false, navOpen: false }),
+      exit: () => this.setState({ erst: null, erVia: null, erF: {}, screen: 'start', panel: null }),
+      via: s.erVia || '', isMail: s.erVia === 'mail', isSso: s.erVia === 'sso', isChoose: !s.erVia, back: () => this.setState({ erVia: null, erMsg: '' }), hasMsg: !!s.erMsg, msg: s.erMsg || '',
+      pickMail: () => this.setState({ erVia: 'mail', erMsg: '' }), pickSso: () => this.setState({ erVia: 'sso', erMsg: '' }), pickApple: () => erEnter('apple', 'privat', 'Alex Beispiel', 'alex.beispiel@icloud.com'), pickGoogle: () => erEnter('google', 'privat', 'Alex Beispiel', 'alex.beispiel@gmail.com'), pickFacebook: () => erEnter('facebook', 'privat', 'Alex Beispiel', 'alex.beispiel@facebook.com'),
+      pick: v => () => (['apple', 'google', 'facebook'].includes(v) ? erEnter(v, 'privat', 'Alex Beispiel', 'alex.beispiel@' + (v === 'apple' ? 'icloud.com' : v === 'google' ? 'gmail.com' : 'facebook.com')) : this.setState({ erVia: v, erMsg: '' })),
+      fName: erF.n || '', setName: erIn('n'), fMail: erF.m || '', setMail: erIn('m'), fPw: erF.pw || '', setPw: erIn('pw'), fSso: erF.sso || '', setSso: erIn('sso'),
+      mailGo: () => { const n = (erF.n || '').trim(), m = (erF.m || '').trim(), pw = erF.pw || ''; if (!n || !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(m)) return this.setState({ erMsg: 'Bitte Name und eine gültige E-Mail-Adresse eingeben.' }); if (pw.length < 8) return this.setState({ erMsg: 'Das Passwort braucht mindestens 8 Zeichen.' }); erEnter('mail', 'privat', n, m); },
+      ssoGo: () => { const m = (erF.sso || '').trim(), mm = /^([^@\s]+)@([^@\s]+\.[a-z]{2,})$/i.exec(m); if (!mm) return this.setState({ erMsg: 'Bitte deine Firmen-E-Mail eingeben, z. B. vorname.nachname@firma.de.' }); const dom = mm[2].split('.')[0], comp = dom.charAt(0).toUpperCase() + dom.slice(1).replace(/-/g, ' '), nm0 = mm[1].split(/[._-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); erEnter('sso', 'firma', nm0, m, comp); },
+      company: ER ? ER.company || '' : '',
+      tasks: erT.map(erRow), noTasks: !erT.length, tTitle: erF.t || '', setTTitle: erIn('t'), tDue: erF.d || '', setTDue: erIn('d'), hlTask: erHl('task'), hlDone: erHl('done'),
+      tProjOpts: [erChip(!erF.p, 'ohne Projekt', () => this.setState({ erF: Object.assign({}, this.state.erF, { p: '' }) }))].concat(erP.filter(p0 => p0.st === 'aktiv').map(p0 => erChip(erF.p === p0.id, p0.name, () => this.setState({ erF: Object.assign({}, this.state.erF, { p: p0.id }) })))), hasProjOpts: erP.some(p0 => p0.st === 'aktiv'),
+      tAdd: () => { const tt = (this.state.erF || {}).t || ''; if (!tt.trim()) return this.setState({ erMsg: 'Wie heißt die Aufgabe?' }); const F0 = this.state.erF || {}; erSet({ tasks: erT.concat([{ id: 'e' + Date.now() + erT.length, title: tt.trim(), due: F0.d || '', proj: F0.p || '', done: false }]) }); this.setState({ erF: Object.assign({}, F0, { t: '', d: '' }), erMsg: '' }); },
+      pName: erF.pn || '', setPName: erIn('pn'), pZiel: erF.pz || '', setPZiel: erIn('pz'), hlProj: erHl('proj'), hlZu: erHl('zu'), pBtn: erFirma ? 'Projekt beantragen' : 'Projekt anlegen',
+      pHint: erFirma ? 'Über ' + (ER ? ER.company : 'deine Firma') + ' angemeldet: Neue Projekte gehen zur Freigabe an deine Führungskraft laut Organigramm.' : 'Du nutzt das Cockpit ohne Firma: Projekte sind sofort aktiv, es gibt keinen Freigabeprozess.',
+      pAdd: () => { const F0 = this.state.erF || {}, nm1 = (F0.pn || '').trim(); if (!nm1) return this.setState({ erMsg: 'Wie heißt das Projekt?' }); const id = 'ep' + Date.now() + erP.length; erSet({ projects: erP.concat([{ id, name: nm1, ziel: (F0.pz || '').trim(), st: erFirma ? 'beantragt' : 'aktiv' }]) }); this.setState({ erF: Object.assign({}, F0, { pn: '', pz: '' }), erOpenP: id, erMsg: erFirma ? 'Projekt „' + nm1 + '“ beantragt. Deine Führungskraft bekommt die Freigabe in ihren Posteingang.' : 'Projekt „' + nm1 + '“ angelegt und aktiv.' }); },
+      projects: erP.map(p0 => { const pt = erT.filter(x => x.proj === p0.id), open = s.erOpenP === p0.id, k = 'pt' + p0.id;
+        return { name: p0.name, ziel: p0.ziel, hasZiel: !!p0.ziel, st: p0.st === 'aktiv' ? 'aktiv' : 'beantragt · wartet auf Freigabe', stC: p0.st === 'aktiv' ? '#107C10' : '#B07B00', isReq: p0.st !== 'aktiv', isAkt: p0.st === 'aktiv', cnt: pt.filter(x => !x.done).length + ' offen · ' + pt.filter(x => x.done).length + ' erledigt', open, openA: open ? 'true' : 'false', toggle: () => this.setState({ erOpenP: open ? null : p0.id }),
+          approve: () => { erSet({ projects: erP.map(y => (y.id === p0.id ? Object.assign({}, y, { st: 'aktiv' }) : y)) }); this.setState({ erMsg: 'Freigegeben (simuliert): „' + p0.name + '“ ist aktiv.' }); },
+          del: () => erSet({ projects: erP.filter(y => y.id !== p0.id), tasks: erT.map(x => (x.proj === p0.id ? Object.assign({}, x, { proj: '' }) : x)) }),
+          tasks: pt.map(erRow), noTasks: !pt.length, val: erF[k] || '', set: erIn(k), add: () => { const v = ((this.state.erF || {})[k] || '').trim(); if (!v) return; erSet({ tasks: erT.concat([{ id: 'e' + Date.now() + erT.length, title: v, due: '', proj: p0.id, done: false }]) }); this.setState({ erF: Object.assign({}, this.state.erF, { [k]: '' }) }); } }; }), noProjects: !erP.length,
+      hlStart: erHl('start'), tiles: ER_TILES.map(([k, l]) => erChip(erTi.includes(k), (erTi.includes(k) ? '✓ ' : '+ ') + l, () => erSet({ tiles: erTi.includes(k) ? erTi.filter(x => x !== k) : erTi.concat([k]) }))), noTiles: !erTi.length, tileEdit: !!s.erTileEdit || !erTi.length, tileEditToggle: () => this.setState({ erTileEdit: !s.erTileEdit }), tileEditLabel: s.erTileEdit ? 'Fertig' : '⚙ Startseite einrichten',
+      tHeute: erTi.includes('heute'), heute: erOpen.filter(x => x.due === erToday).map(erRow), tUeber: erTi.includes('ueber'), ueber: erOpen.filter(x => x.due && x.due < erToday).map(erRow), tWoche: erTi.includes('woche'), woche: erOpen.filter(x => x.due > erToday && x.due <= erIn7).map(erRow), tProj: erTi.includes('proj'), tNotiz: erTi.includes('notiz'),
+      projTile: erP.map(p0 => ({ name: p0.name, st: p0.st === 'aktiv' ? erT.filter(x => x.proj === p0.id && !x.done).length + ' offen' : 'wartet auf Freigabe' })), note: ER ? ER.note || '' : '', setNote: e => erSet({ note: e && e.target ? e.target.value : '' }),
+      notApp: !erApp, tut: erTut, tutN: erAll ? '' : 'Schritt ' + (erCur + 1) + ' von ' + erSteps.length, tutTitle: erAll ? '🎉 Geschafft!' : erStep[1], tutText: erAll ? 'Du kennst jetzt die Grundlagen. Teams, Berichte und Wissen kommen dazu, sobald du einem Team oder einer Firma beitrittst, zum Beispiel über einen Einladungslink.' : erStep[2],
+      tutBar: erSteps.map((x, i) => ({ c: x[3] ? '#107C10' : (i === erCur ? accent : t.border) })), tutGo: () => { if (erStep) this.setState({ screen: erStep[4], panel: null, navOpen: false, erTileEdit: erStep[0] === 'start' ? true : this.state.erTileEdit }); }, tutCanGo: !erAll, tutAll: erAll,
+      tutOff: () => erSet({ tutOff: true }), tutOn: () => erSet({ tutOff: false }), tutHidden: erApp && !!ER.tutOff };
+    const isF = { start: erApp && s.screen === 'start', arbeit: erApp && s.screen === 'arbeit', projekte: erApp && s.screen === 'projekte' };
     const FBK = [['fehler', '🐞 Fehler'], ['verb', '💡 Verbesserung'], ['frage', '❓ Frage'], ['lob', '👍 Gefällt mir']], fbF = s.fbF || {}, fbKind = fbF.k || 'fehler', setFb = k => e => this.setState({ fbF: Object.assign({}, this.state.fbF, { [k]: e && e.target ? e.target.value : '' }) });
     const SCN = { start: 'Start', arbeit: 'Meine Arbeit', projekte: 'Projekte', projekt: 'Projekt', teams: 'Teams', eingang: 'Posteingang', berichte: 'Berichte', wissen: 'Wissen', admin: 'Verwaltung', profil: 'Profil', pnew: 'Neues Projekt', pn: 'Projekt', kickoff: 'Kickoff', import: 'Import', antrag: 'Projektantrag', mobil: 'Mobil' };
     const fbW = typeof window !== 'undefined' ? window.innerWidth : 0, fbUA = typeof navigator !== 'undefined' ? navigator.userAgent : '', fbBr = /Edg\//.test(fbUA) ? 'Edge' : (/Firefox\//.test(fbUA) ? 'Firefox' : (/Chrome\//.test(fbUA) ? 'Chrome' : (/Safari\//.test(fbUA) ? 'Safari' : 'Browser')));
@@ -2609,6 +2653,7 @@ class Component extends DCLogic {
     const WN = [['18.11.', 'Integrationen: LPA-Tool', 'Maßnahmen aus dem LPA-Tool laufen als Aufgaben ein. „Erledigt“ bestätigt der Auditor, Konflikte werden sichtbar.', () => this.setState({ screen: 'admin', adview: 'integ', wnOpen: false, panel: null })],
       ['18.11.', 'Word-Berichte', 'Status, Abnahme, Abschluss und Besprechung als .docx, auch aus deiner Word-Vorlage mit Platzhaltern.', goP('status', { wordOpen: true })],
       ['18.11.', 'Plan gegen Ist mit Prognose', 'Geplant, erreicht und Kosten im Vergleich, mit Prognose für Ende und Gesamtkosten.', goP('status')],
+      ['18.11.', 'Erster Start als neuer Nutzer', 'Anmelden mit E-Mail, Apple, Google, Facebook oder Firmen-SSO, leere App mit Start, Aufgaben und Projekten, interaktives Tutorial.', () => this.setState({ erst: { stage: 'login', tasks: [], projects: [], tiles: [], note: '' }, erVia: null, erF: {}, panel: null, wnOpen: false })],
       ['18.11.', 'Feedback direkt aus dem Entwurf', '„💬 Feedback geben“ links unten oder auf der Startseite. Ort und Gerät schreibt das Cockpit selbst dazu.', null],
       ['17.11.', 'Abhängigkeiten im Gantt', 'Nachfolger hängen automatisch am Vorgänger, Pfeile zeigen den Ablauf, der kritische Pfad ist rot.', goP('planung', { mview: Object.assign({}, s.mview, { sm42p: 'gantt' }) })],
       ['17.11.', 'PowerPoint aus Projektdaten', 'Foliensatz aus Status, Plan, Aufgaben, Team, Kosten und Risiken, auch im Design deiner Vorlage.', goP('uebersicht', { pptOpen: true })],
@@ -3461,7 +3506,7 @@ class Component extends DCLogic {
     const nf = s.ntfF || 'alle', NTFF = [['alle', 'Alle'], ['mention', '@ Erwähnungen'], ['freigabe', 'Freigaben'], ['frist', 'Fristen']];
     const ntfUnread = NTF.filter(x => !ntRead[x[0]]).length;
     const ntfItems = NTF.filter(x => nf === 'alle' || x[1] === nf);
-    const ntf = { open: !!s.ntfOpen, openA: s.ntfOpen ? 'true' : 'false', toggle: () => this.setState({ ntfOpen: !s.ntfOpen }), has: ntfUnread > 0, count: String(ntfUnread), btnBg: s.ntfOpen ? t.soft : t.surface,
+    const ntf = { open: !!s.ntfOpen, openA: s.ntfOpen ? 'true' : 'false', toggle: () => this.setState({ ntfOpen: !s.ntfOpen }), has: !s.erst && ntfUnread > 0, count: s.erst ? '0' : String(ntfUnread), btnBg: s.ntfOpen ? t.soft : t.surface,
       allRead: () => { const r = {}; NTF.forEach(x => { r[x[0]] = true; }); this.setState({ ntfRead: r }); }, settings: () => this.setState({ screen: 'profil', panel: null, ntfOpen: false }),
       filters: NTFF.map(([k, l]) => ({ label: l, pressed: nf === k ? 'true' : 'false', ring: nf === k ? accent : t.border, bg: nf === k ? t.soft : t.surface, go: () => this.setState({ ntfF: k }) })),
       items: ntfItems.map(([id, kind, icon, text, sub, time, go]) => ({ icon, text, sub, time, unread: !ntRead[id], fw: ntRead[id] ? '400' : '700', bg: ntRead[id] ? 'transparent' : t.soft,
@@ -4602,7 +4647,7 @@ class Component extends DCLogic {
       langs: LANGS.map(([k, label, title]) => ({ label, title, pressed: s.lang === k ? 'true' : 'false', bg: s.lang === k ? t.surface : 'transparent', fg: s.lang === k ? t.text : t.muted, go: () => this.setState({ lang: k }) })),
       langBtn, langDe: s.lang === 'de' ? 'true' : 'false', langEn: s.lang === 'en' ? 'true' : 'false',
       setDe: () => this.setState({ lang: 'de' }), setEn: () => this.setState({ lang: 'en' }),
-      hasOverdue: overdueCount > 0, overdueCount, hasUnread: unreadCount > 0, unreadCount,
+      hasOverdue: !s.erst && overdueCount > 0, overdueCount, hasUnread: !s.erst && unreadCount > 0, unreadCount,
       counters, groups, filterHint,
       ibl: Object.assign(ibl, { kiCount: String(DRAFTS.length) }), dashX, dashLayouts, dashReset, editDash: s.editDash, toggleEdit: () => this.setState({ editDash: !s.editDash }), editBtn, wBorder, palette, focus, inboxPreview, inTab, inTabs, inOpenCls: s.inOpen ? 'open' : '', inClose: () => this.setState({ inOpen: false }), myLoad, loadLine, week,
       inboxFilters, inboxList, ib, gateChecks, timesheet, criteria,
@@ -4642,10 +4687,10 @@ class Component extends DCLogic {
       mv, fo, dash, paletteItems, mo, dashHasMsg: !!s.dashMsg, dashMsg: s.dashMsg,
       openMobil: () => this.setState({ screen: 'mobil', panel: null, moScreen: 'list', moMsg: '' }),
       focusRows, themeBars, prioSug, applySug, aThemes, aFocusHint,
-      adViews, ad, ig, fb, wn, brief, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
+      adViews, ad, ig, fb, wn, brief, er, isF, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
       adHasMsg: !!s.adMsg, adMsg: s.adMsg, adRing: s.screen === 'admin' || s.screen === 'profil' ? accent : '#FFFFFF', wKiOpen: !!s.wKi, wKiOpenA: s.wKi ? 'true' : 'false', wKiBtn: s.wKi ? '🧠 KI-Vorschläge ausblenden' : '🧠 KI-Vorschläge zum Pflegen', wKiToggle: () => this.setState({ wKi: !s.wKi }),
       wSideOpen: !!s.wSide, wSideOpenA: s.wSide ? 'true' : 'false', wSideBtn: s.wSide ? 'Häufige Themen und Lessons Learned ausblenden' : 'Häufige Themen und Lessons Learned', wSideToggle: () => this.setState({ wSide: !s.wSide }),
-      navShow: (h => ({ projekte: !h.projekte, teams: !h.teams, wissen: !h.wissen, berichte: !h.berichte, eingang: !h.eingang }))(s.navHide || {}), navCls: s.navOpen ? 'open' : '', navOpen: !!s.navOpen, navOpenA: s.navOpen ? 'true' : 'false',
+      navShow: s.erst ? { projekte: true, teams: false, wissen: false, berichte: false, eingang: false } : (h => ({ projekte: !h.projekte, teams: !h.teams, wissen: !h.wissen, berichte: !h.berichte, eingang: !h.eingang }))(s.navHide || {}), navCls: s.navOpen ? 'open' : '', navOpen: !!s.navOpen, navOpenA: s.navOpen ? 'true' : 'false',
       burger: () => this.setState({ navOpen: !s.navOpen }), navClose: () => this.setState({ navOpen: false }), navCfg: () => this.setState({ screen: 'profil', navOpen: false, panel: null, profMsg: 'Unter „Darstellung und Sprache“ legst du fest, welche Bereiche im Menü und welche Reiter in Meine Arbeit erscheinen.' }),
       openProfil: () => this.setState({ screen: 'profil', panel: null, profMsg: '' }), prf,
       openAdmin: () => this.setState({ screen: 'admin', panel: null, adMsg: '' }),
@@ -4654,7 +4699,7 @@ class Component extends DCLogic {
       aHasMsg: !!s.aMsg, aMsg: s.aMsg, aDraft: () => this.setState({ aMsg: 'Entwurf gespeichert. Du findest ihn unter Projekte › Meine Anträge.' }),
       openAntrag: () => this.setState({ screen: 'antrag', aStep: 1, panel: null, aMsg: '' }), goProjekte: () => this.setState({ screen: 'projekte' }),
       nt, reqMe, reqMeCount: REQ_ME.length, sent, hasSent: s.sent.length > 0, reqLoad,
-      openNew: () => { const inP = s.screen === 'projekt' && PNAME_OF[s.proj], inU = s.screen === 'pn' && (s.uprojs || []).find(u => u.key === s.upSel); this.setState({ panel: { kind: 'new', id: 'new', from: s.screen }, nt: Object.assign({}, s.nt, { who: 'ich', title: '', parent: null, owner: 'Du', ctx: inP ? s.proj : null, proj: inP ? PNAME_OF[s.proj] : (inU ? inU.name : 'Ohne Projekt'), kind: 'aufgabe', co: [], due: '2026-11-20' }) }); },
+      openNew: () => { if (s.erst) return this.setState({ screen: 'arbeit', panel: null, navOpen: false }); const inP = s.screen === 'projekt' && PNAME_OF[s.proj], inU = s.screen === 'pn' && (s.uprojs || []).find(u => u.key === s.upSel); this.setState({ panel: { kind: 'new', id: 'new', from: s.screen }, nt: Object.assign({}, s.nt, { who: 'ich', title: '', parent: null, owner: 'Du', ctx: inP ? s.proj : null, proj: inP ? PNAME_OF[s.proj] : (inU ? inU.name : 'Ohne Projekt'), kind: 'aufgabe', co: [], due: '2026-11-20' }) }); },
       rBoard: () => { this.setState({ rMsg: 'Lenkungskreis-Deck wird erzeugt …' }); this.pptBoard(t, accent).then(n0 => this.setState({ rMsg: 'Lenkungskreis-Deck mit ' + n0 + ' Folien heruntergeladen: Portfolio, eine Folie je Projekt, Ressourcenkonflikte, Entscheidungsbedarf.' })).catch(e => this.setState({ rMsg: 'Fehler: ' + (e && e.message ? e.message : e) })); },
       tdl: this.layUI('teamsdash', ['plan', 'kap', 'eingang', 'quali', 'zert'], { plan: 'Tagesplanung', kap: 'Kapazität 6 Wochen', eingang: 'Team-Eingang', quali: 'Qualifikationsmatrix', zert: 'Zertifikate' }, [], t, accent, { kap: 'half', eingang: 'half', quali: 'half', zert: 'half' }),
       cfmOn: !!s.cfm, cfmText: s.cfm || '', cfmOk: () => { const b = this._cfmBtn; this._cfmBtn = null; this.setState({ cfm: null }); if (b && b.isConnected) { b.__ecOk = true; b.click(); } }, cfmNo: () => { this._cfmBtn = null; this.setState({ cfm: null }); },
