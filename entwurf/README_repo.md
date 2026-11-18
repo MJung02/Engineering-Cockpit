@@ -16,7 +16,7 @@ Das ist ein **Entwurf zum Ausprobieren**, noch kein fertiges Tool:
 4. **Posteingang:** Freigaben, Anfragen, Mail-Entwürfe mit KI überarbeiten
 5. **Assistent** (unten rechts oder Strg+Umschalt+M): Aufgaben per Text anlegen, „Wo finde ich …?“
 
-Auffälligkeiten bitte mit kurzer Beschreibung melden: Was gemacht? Was erwartet? Was ist passiert? Am besten mit Bildschirmfoto.
+Auffälligkeiten bitte direkt im Entwurf melden: **„💬 Feedback geben“** (links unten oder auf der Startseite). Drei kurze Fragen (Was gemacht? Was erwartet? Was ist passiert?); Ort, Gerät und Version schreibt das Cockpit selbst dazu. Dann als Mail-Entwurf öffnen oder den Text kopieren, am besten mit Bildschirmfoto. **„✨ Was ist neu?“** zeigt die letzten Neuerungen mit „Ausprobieren →“.
 
 ## Zukunft (nach der Testphase)
 

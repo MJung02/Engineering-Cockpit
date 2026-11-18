@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 08:23 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 08:36 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -2503,6 +2503,37 @@ class Component extends DCLogic {
     };
 
     // Verwaltung
+    const FBK = [['fehler', '🐞 Fehler'], ['verb', '💡 Verbesserung'], ['frage', '❓ Frage'], ['lob', '👍 Gefällt mir']], fbF = s.fbF || {}, fbKind = fbF.k || 'fehler', setFb = k => e => this.setState({ fbF: Object.assign({}, this.state.fbF, { [k]: e && e.target ? e.target.value : '' }) });
+    const SCN = { start: 'Start', arbeit: 'Meine Arbeit', projekte: 'Projekte', projekt: 'Projekt', teams: 'Teams', eingang: 'Posteingang', berichte: 'Berichte', wissen: 'Wissen', admin: 'Verwaltung', profil: 'Profil', pnew: 'Neues Projekt', pn: 'Projekt', kickoff: 'Kickoff', import: 'Import', antrag: 'Projektantrag', mobil: 'Mobil' };
+    const fbW = typeof window !== 'undefined' ? window.innerWidth : 0, fbUA = typeof navigator !== 'undefined' ? navigator.userAgent : '', fbBr = /Edg\//.test(fbUA) ? 'Edge' : (/Firefox\//.test(fbUA) ? 'Firefox' : (/Chrome\//.test(fbUA) ? 'Chrome' : (/Safari\//.test(fbUA) ? 'Safari' : 'Browser')));
+    const fbWhere = [SCN[s.screen] || s.screen, (s.screen === 'projekt' || s.screen === 'pn') && s.proj ? this.pnm(s.proj) : '', s.screen === 'projekt' && s.ptab ? 'Reiter ' + s.ptab : '', s.screen === 'admin' && s.adview ? 'Bereich ' + s.adview : '', s.panel && s.panel.kind ? 'Detail ' + s.panel.kind : ''].filter(Boolean).join(' › ');
+    const fbCtx = 'Ort: ' + fbWhere + ' · Gerät: ' + (fbW < 700 ? 'Handy' : (fbW < 1100 ? 'Tablet' : 'Desktop')) + ', ' + fbW + ' px, ' + fbBr + ' · Version: Entwurf 3.0, Stand 18.11.2026';
+    const fbBody = ['Art: ' + (FBK.find(x => x[0] === fbKind) || FBK[0])[1].replace(/^\S+ /, ''), '', 'Was habe ich gemacht?', fbF.was || '–', '', 'Was habe ich erwartet?', fbF.erw || '–', '', 'Was ist passiert?', fbF.pas || '–', '', fbCtx.split(' · ').join('\n')].join('\n');
+    const fbSubj = 'Feedback Engineering Cockpit: ' + (FBK.find(x => x[0] === fbKind) || FBK[0])[1].replace(/^\S+ /, '') + ' (' + (SCN[s.screen] || s.screen) + ')';
+    const fbOk = () => (fbF.was || '').trim() || (fbF.pas || '').trim() || (fbF.erw || '').trim();
+    const fb = { open: () => this.setState({ fbOpen: true, wnOpen: false, fbMsg: '' }), close: () => this.setState({ fbOpen: false }), isOpen: !!s.fbOpen,
+      kinds: FBK.map(([k, l]) => ({ label: l, pressed: fbKind === k ? 'true' : 'false', ring: fbKind === k ? accent : t.border, bg: fbKind === k ? t.soft : t.surface, go: () => this.setState({ fbF: Object.assign({}, this.state.fbF, { k }) }) })),
+      was: fbF.was || '', erw: fbF.erw || '', pas: fbF.pas || '', setWas: setFb('was'), setErw: setFb('erw'), setPas: setFb('pas'), ctx: fbCtx, body: fbBody, hasMsg: !!s.fbMsg, msg: s.fbMsg || '',
+      mail: () => { if (!fbOk()) return this.setState({ fbMsg: 'Bitte kurz beschreiben, was du gemacht hast oder was passiert ist.' }); const href = 'mailto:?subject=' + encodeURIComponent(fbSubj) + '&body=' + encodeURIComponent(fbBody); if (typeof window !== 'undefined') { window.__ecLastMail = href; if (!window.__ecNoMail) { const a = document.createElement('a'); a.href = href; document.body.appendChild(a); a.click(); a.remove(); } }
+        this.setState({ fbMsg: 'Danke! Dein Mailprogramm öffnet einen Entwurf. Empfänger eintragen (Projektleitung des Entwurfs), Bildschirmfoto einfügen, senden.', fbN: (s.fbN || 0) + 1 }); },
+      copy: () => { if (!fbOk()) return this.setState({ fbMsg: 'Bitte kurz beschreiben, was du gemacht hast oder was passiert ist.' }); let fin = false; const done = ok2 => { if (fin) return; fin = true; this.setState({ fbMsg: ok2 ? 'Danke! Text kopiert. In Teams oder eine Mail einfügen, gern mit Bildschirmfoto.' : 'Kopieren hat der Browser nicht bestätigt. Falls nichts in der Zwischenablage ist: Text unter „Vorschau des Textes“ markieren und kopieren.', fbN: (this.state.fbN || 0) + 1 }); }; setTimeout(() => done(false), 1500);
+        if (typeof window !== 'undefined') window.__ecLastFeedback = fbBody; try { navigator.clipboard.writeText(fbBody).then(() => done(true), () => done(false)); } catch (e) { done(false); } } };
+    const WN_VER = '2026-11-18b', wnSeen = (() => { try { return localStorage.getItem('ecWnSeen') === WN_VER; } catch (e) { return false; } })();
+    const goP = (tab, extra) => () => { this.openProject('sm42'); this.setState(Object.assign({ ptab: tab, upTab: tab, wnOpen: false, panel: null }, extra || {})); };
+    const WN = [['18.11.', 'Integrationen: LPA-Tool', 'Maßnahmen aus dem LPA-Tool laufen als Aufgaben ein. „Erledigt“ bestätigt der Auditor, Konflikte werden sichtbar.', () => this.setState({ screen: 'admin', adview: 'integ', wnOpen: false, panel: null })],
+      ['18.11.', 'Word-Berichte', 'Status, Abnahme, Abschluss und Besprechung als .docx, auch aus deiner Word-Vorlage mit Platzhaltern.', goP('status', { wordOpen: true })],
+      ['18.11.', 'Plan gegen Ist mit Prognose', 'Geplant, erreicht und Kosten im Vergleich, mit Prognose für Ende und Gesamtkosten.', goP('status')],
+      ['18.11.', 'Feedback direkt aus dem Entwurf', '„💬 Feedback geben“ links unten oder auf der Startseite. Ort und Gerät schreibt das Cockpit selbst dazu.', null],
+      ['17.11.', 'Abhängigkeiten im Gantt', 'Nachfolger hängen automatisch am Vorgänger, Pfeile zeigen den Ablauf, der kritische Pfad ist rot.', goP('planung', { mview: Object.assign({}, s.mview, { sm42p: 'gantt' }) })],
+      ['17.11.', 'PowerPoint aus Projektdaten', 'Foliensatz aus Status, Plan, Aufgaben, Team, Kosten und Risiken, auch im Design deiner Vorlage.', goP('uebersicht', { pptOpen: true })],
+      ['17.11.', 'Ressourcenkonflikte und Lenkungskreis-Deck', 'Wer ist über alle Projekte überlastet, mit Vorschlag zum Entlasten.', () => this.setState({ screen: 'berichte', rview: 'konflikte', wnOpen: false, panel: null })],
+      ['17.11.', 'Offene Punkte und Entscheidungslog', 'Klärungen und Zusagen mit Wer und Bis; Beschlüsse aus Besprechungen übernehmen.', goP('opl')],
+      ['17.11.', 'Projektabschluss', 'Abnahme, Restaufgaben, Lessons Learned, Abschlussbericht und Archiv in fünf Schritten.', goP('abschluss')],
+      ['17.11.', 'Teams-Dashboard anpassen', 'Bereiche ein- und ausblenden, verschieben, halbe oder ganze Breite.', () => this.setState({ screen: 'teams', wnOpen: false, panel: null })],
+      ['17.11.', 'Rückfrage vor dem Löschen', 'Spalten, Projekte, Risiken und mehr werden erst nach „Ja, löschen“ entfernt.', null]];
+    const wn = { open: () => this.setState({ wnOpen: true, fbOpen: false }), close: () => this.setState({ wnOpen: false }), isOpen: !!s.wnOpen, date: '18.11.', barTxt: 'Word-Berichte aus deiner Vorlage, Plan gegen Ist mit Prognose, LPA-Tool unter Verwaltung › Integrationen.',
+      bar: !s.wnHide && !wnSeen, hide: () => { try { localStorage.setItem('ecWnSeen', WN_VER); } catch (e) { /* ohne Speicher */ } this.setState({ wnHide: true }); },
+      items: WN.map(([d, title, txt, go]) => ({ d, title, txt, canTry: !!go, go: go || (() => {}) })) };
     const AV_TABS = [['org', 'Organigramm'], ['personen', 'Personen'], ['regeln', 'Freigabewege'], ['gruppen', 'Gruppen und Vertretung'], ['ki', 'KI-Modell'], ['integ', 'Integrationen']];
     const adViews = AV_TABS.map(([k, label]) => ({ label, sel: s.adview === k ? 'true' : 'false', bg: s.adview === k ? t.surface : 'transparent', fg: s.adview === k ? t.text : t.muted, sh: s.adview === k ? '0 1px 3px rgba(0,0,0,0.15)' : 'none', go: () => this.setState({ adview: k, adMsg: '' }) }));
     const ad = { org: s.adview === 'org', personen: s.adview === 'personen', regeln: s.adview === 'regeln', gruppen: s.adview === 'gruppen', ki: s.adview === 'ki', integ: s.adview === 'integ' };
@@ -4485,7 +4516,7 @@ class Component extends DCLogic {
       mv, fo, dash, paletteItems, mo, dashHasMsg: !!s.dashMsg, dashMsg: s.dashMsg,
       openMobil: () => this.setState({ screen: 'mobil', panel: null, moScreen: 'list', moMsg: '' }),
       focusRows, themeBars, prioSug, applySug, aThemes, aFocusHint,
-      adViews, ad, ig, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
+      adViews, ad, ig, fb, wn, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
       adHasMsg: !!s.adMsg, adMsg: s.adMsg, adRing: s.screen === 'admin' || s.screen === 'profil' ? accent : '#FFFFFF', wKiOpen: !!s.wKi, wKiOpenA: s.wKi ? 'true' : 'false', wKiBtn: s.wKi ? '🧠 KI-Vorschläge ausblenden' : '🧠 KI-Vorschläge zum Pflegen', wKiToggle: () => this.setState({ wKi: !s.wKi }),
       wSideOpen: !!s.wSide, wSideOpenA: s.wSide ? 'true' : 'false', wSideBtn: s.wSide ? 'Häufige Themen und Lessons Learned ausblenden' : 'Häufige Themen und Lessons Learned', wSideToggle: () => this.setState({ wSide: !s.wSide }),
       navShow: (h => ({ projekte: !h.projekte, teams: !h.teams, wissen: !h.wissen, berichte: !h.berichte, eingang: !h.eingang }))(s.navHide || {}), navCls: s.navOpen ? 'open' : '', navOpen: !!s.navOpen, navOpenA: s.navOpen ? 'true' : 'false',
