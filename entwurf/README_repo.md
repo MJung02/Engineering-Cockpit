@@ -26,6 +26,8 @@ Auffälligkeiten bitte direkt im Entwurf melden: **„💬 Feedback geben“** (
 
 ## Neu nach der siebten Testrunde (18.11.2026)
 
+- **Beispielplan SM42 neu aufgebaut:** Jede Phase hat Meilensteine (auch parallel) und endet mit einem Quality Gate oder Abschluss-Meilenstein; die nächste Phase hängt an diesem Gate, nicht mehr Phase an Phase. Parallele Meilensteine laufen beide ins Gate. Die Beschaffung ist bewusst vorgezogen und startet vor Gate G2 (nach der Mechanik-Konstruktion). Bei eingeklappten Phasen setzen die Pfeile an der Phasenzeile an.
+- **Handy:** Die Benachrichtigungen (Glocke) gehen über die volle Breite statt links abgeschnitten.
 - **Word-Berichte** (Export › „📝 Word-Bericht …“): Statusbericht, Abnahmeprotokoll, Abschlussbericht und Besprechungsprotokoll als .docx (A4, mit Tabellen und Seitenzahl).
   - **Eigene Vorlage:** Firmen-Briefkopf als .docx hochladen. Platzhalter wie {{Projekt}}, {{Ergebnis}} oder {{OffenePunkte}} werden ausgefüllt, auch in Kopf- und Fußzeile. Steht {{Inhalt}} allein in einer Zeile, setzt das Cockpit dort den ganzen Bericht ein. Je Berichtsart gibt es eine Mustervorlage mit allen Platzhaltern.
   - Direkt aus dem Projekt: „📝 Als Word“ im Statusbericht, „📝 Abnahmeprotokoll (.docx)“ nach der Abnahme, „📝 Als Word (.docx)“ beim Abschlussbericht. In Besprechungen: „📝 Als Word (.docx)“ neben „Protokoll an Teilnehmer senden“.

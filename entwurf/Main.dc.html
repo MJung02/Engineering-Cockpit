@@ -6478,22 +6478,27 @@ const TASK = {}; TASKS.forEach(t => { TASK[t.id] = t; });
 
 const TREE = [
   { id: 'p1', name: 'Konzept', type: 'phase', start: '2026-09-01', end: '2026-09-25', owner: 'Du', children: [
-    { id: 'm11', name: 'Lastenheft abgestimmt', type: 'ms', start: '2026-09-01', end: '2026-09-18', done: true, owner: 'Du' },
+    { id: 'm11', name: 'Lastenheft abgestimmt', type: 'ms', start: '2026-09-01', end: '2026-09-11', done: true, owner: 'Du' },
+    { id: 'm13', name: 'Layout und Taktzeitkonzept', type: 'ms', start: '2026-09-07', end: '2026-09-18', done: true, owner: 'L. Wagner' },
     { id: 'm12', name: 'Gate G1: Konzeptfreigabe', type: 'gate', start: '2026-09-25', end: '2026-09-25', done: true, owner: 'Geschäftsführung' } ] },
   { id: 'p2', name: 'Konstruktion', type: 'phase', start: '2026-09-28', end: '2026-11-10', owner: 'T. Brandt', children: [
     { id: 'm21', name: 'Mechanik 3D-Konstruktion', type: 'ms', start: '2026-09-28', end: '2026-10-23', done: true, owner: 'L. Wagner' },
     { id: 'm22', name: 'Stromlaufplan (EPLAN)', type: 'ms', start: '2026-10-12', end: '2026-11-06', owner: 'T. Brandt', tasks: ['t9', 't1'] },
     { id: 'm23', name: 'Gate G2: Konstruktionsfreigabe', type: 'gate', start: '2026-11-10', end: '2026-11-10', owner: 'Geschäftsführung' } ] },
-  { id: 'p3', name: 'Beschaffung', type: 'phase', start: '2026-10-19', end: '2026-11-27', owner: 'Du', children: [
-    { id: 'm31', name: 'Normteile bestellt', type: 'ms', start: '2026-10-19', end: '2026-10-30', done: true, owner: 'L. Wagner' },
+  { id: 'p5', name: 'SPS-Programmierung', type: 'phase', start: '2026-11-11', end: '2026-12-17', owner: 'Du', children: [
+    { id: 'm51', name: 'SPS-Bausteine Zuführung und Schrauber', type: 'ms', start: '2026-11-11', end: '2026-11-27', owner: 'Du', tasks: ['t3', 't10'] },
+    { id: 'm53', name: 'Test am Simulationsmodell', type: 'ms', start: '2026-11-30', end: '2026-12-17', owner: 'S. Keller' } ] },
+  { id: 'p3', name: 'Beschaffung (vorgezogen, vor Gate G2)', type: 'phase', start: '2026-10-26', end: '2026-11-27', owner: 'Du', children: [
+    { id: 'm31', name: 'Normteile bestellt', type: 'ms', start: '2026-10-26', end: '2026-11-05', done: true, owner: 'L. Wagner' },
     { id: 'm32', name: 'Servoantriebe bestellen', type: 'ms', start: '2026-11-02', end: '2026-11-20', owner: 'Du', tasks: ['t2'] },
-    { id: 'm33', name: 'Wareneingang Schaltschrank', type: 'gate', start: '2026-11-27', end: '2026-11-27', owner: 'L. Wagner' } ] },
-  { id: 'p4', name: 'Montage und Verdrahtung', type: 'phase', start: '2026-11-16', end: '2026-12-18', owner: 'L. Wagner', children: [
-    { id: 'm42', name: 'Mechanische Montage', type: 'ms', start: '2026-11-16', end: '2026-12-04', owner: 'L. Wagner', tasks: ['t12', 't11'] },
-    { id: 'm41', name: 'Schaltschrank verdrahten', type: 'ms', start: '2026-11-30', end: '2026-12-18', owner: 'T. Brandt' } ] },
-  { id: 'p5', name: 'SPS-Programmierung und IBN', type: 'phase', start: '2026-11-09', end: '2027-01-22', owner: 'Du', children: [
-    { id: 'm51', name: 'SPS-Bausteine Zuführung und Schrauber', type: 'ms', start: '2026-11-09', end: '2026-11-27', owner: 'Du', tasks: ['t3', 't10'] },
-    { id: 'm52', name: 'Inbetriebnahme vor Ort', type: 'ms', start: '2027-01-04', end: '2027-01-22', owner: 'S. Keller' } ] },
+    { id: 'm33', name: 'Wareneingang Schaltschrank', type: 'gate', msPoint: true, start: '2026-11-27', end: '2026-11-27', owner: 'L. Wagner' } ] },
+  { id: 'p4', name: 'Montage und Verdrahtung', type: 'phase', start: '2026-11-30', end: '2026-12-18', owner: 'L. Wagner', children: [
+    { id: 'm42', name: 'Mechanische Montage', type: 'ms', start: '2026-11-30', end: '2026-12-11', owner: 'L. Wagner', tasks: ['t12', 't11'] },
+    { id: 'm41', name: 'Schaltschrank verdrahten', type: 'ms', start: '2026-11-30', end: '2026-12-17', owner: 'T. Brandt' },
+    { id: 'm44', name: 'Montage abgeschlossen', type: 'gate', msPoint: true, start: '2026-12-18', end: '2026-12-18', owner: 'L. Wagner' } ] },
+  { id: 'p6', name: 'Inbetriebnahme', type: 'phase', start: '2027-01-04', end: '2027-01-22', owner: 'S. Keller', children: [
+    { id: 'm52', name: 'Inbetriebnahme vor Ort', type: 'ms', start: '2027-01-04', end: '2027-01-20', owner: 'S. Keller' },
+    { id: 'm54', name: 'Probelauf 8 h bestanden', type: 'gate', msPoint: true, start: '2027-01-22', end: '2027-01-22', owner: 'S. Keller' } ] },
   { id: 'g3', name: 'Gate G3: FAT beim Kunden', type: 'gate', start: '2027-01-26', end: '2027-01-26', owner: 'Kunde', tasks: ['t5'] }
 ];
 const NODE = {}, PARENT = {};
@@ -6778,7 +6783,7 @@ const CRX_SEED = { rl2: [{ id: 'CR-01', t: 'Zusätzlicher Lichtvorhang an Statio
 const ABW_SEED = { sm42: [{ n: 'S. Keller', von: '2026-11-23', bis: '2026-11-27', art: 'Urlaub' }, { n: 'T. Brandt', von: '2026-12-02', bis: '2026-12-02', art: 'Schulung' }], rl2: [{ n: 'M. Yilmaz', von: '2026-11-16', bis: '2026-11-18', art: 'Dienstreise' }] };
 const KT_SEED = { sm42: [{ n: 'Fr. Hartmann', f: 'Kunde, Werkleitung', e: 'hoch', c: 'Abnahme und Termine' }, { n: 'Hr. Ott', f: 'Lieferant Servoantriebe', e: 'mittel', c: 'Liefertermine' }, { n: 'Sicherheitsfachkraft', f: 'intern, Arbeitssicherheit', e: 'hoch', c: 'Abnahme Schutztür' }],
   rl2: [{ n: 'Hr. Kurz', f: 'Schichtleitung Linie 2', e: 'hoch', c: 'Stillstandsfenster' }], pd: [{ n: 'Dr. Weiß', f: 'Kunde, Entwicklung', e: 'hoch', c: 'Spezifikation' }] };
-const DEP_SEED = { m23: ['m22'] };
+const DEP_SEED = {};
 const OPL_SEED = { sm42: [{ id: 'OP-01', t: 'Kunde liefert Schraubfall-Spezifikation M8', who: 'Du', due: '2026-11-11', st: 'offen', src: 'Kunden-Call 04.11.' }, { id: 'OP-02', t: 'Klären: Not-Halt-Kreis zweikanalig bis Station 3?', who: 'T. Brandt', due: '2026-11-20', st: 'offen', src: 'Daily 12.11.' }, { id: 'OP-03', t: 'Angebot Schutzzaun zweiter Lieferant', who: 'L. Wagner', due: '2026-11-06', st: 'erledigt', src: 'Daily 03.11.' }] };
 const DEC_SEED = { sm42: [{ id: 'E-01', t: 'Servoantriebe von Bosch Rexroth statt Siemens', why: 'Lieferzeit 6 statt 14 Wochen, Mehrkosten 1.200 € im Budget', by: 'Du, T. Brandt', d: '28.10.', src: 'Konstruktionsreview' }, { id: 'E-02', t: 'Gate G2 erst nach freigegebenem Stromlaufplan', why: 'Vermeidet Nacharbeit im Schaltschrankbau', by: 'Geschäftsführung', d: '04.11.', src: 'Gate-Vorbereitung' }] };
 const KST0 = { sm42: '4711-SM', rl2: '4712-RL', pd: '4713-PD', ih: '4720-IH' }, IA0 = { sm42: 'IA-26-0412', pd: 'IA-26-0388' };
@@ -6881,7 +6886,7 @@ const PTREE_OF = { sm42: TREE, rl2: RL_TREE, pd: PD_TREE, ih: IH_TREE };
 const BL_SEED = (() => { const map = {}; const walk = l => l.forEach(n => { map[n.id] = [n.start, n.end]; if (n.children) walk(n.children); }); walk(TREE);
   if (map.m23) map.m23 = ['2026-11-06', '2026-11-06']; if (map.m32) map.m32 = [map.m32[0], '2026-11-13']; return { sm42: { date: '01.10.2026 (Projektstart)', map } }; })();
 const MTA_REPORTS = ['2026-10-01', '2026-10-15', '2026-10-29'];
-const MTA_HIST = { m22: ['2026-11-06', '2026-10-30', '2026-11-06'], m23: ['2026-11-06', '2026-11-06', '2026-11-10'], m32: ['2026-11-13', '2026-11-13', '2026-11-17'], m51: ['2026-11-27', '2026-11-27', '2026-11-27'], m52: ['2027-01-22', '2027-01-15', '2027-01-22'] };
+const MTA_HIST = { m22: ['2026-11-06', '2026-10-30', '2026-11-06'], m23: ['2026-11-06', '2026-11-06', '2026-11-10'], m32: ['2026-11-13', '2026-11-13', '2026-11-17'], m51: ['2026-11-27', '2026-11-27', '2026-11-27'], m52: ['2027-01-20', '2027-01-15', '2027-01-20'] };
 const MTA_COLORS = ['#0F6CBD', '#C239B3', '#107C10', '#CA5010', '#5C2E91', '#038387', '#A4262C', '#8764B8', '#986F0B', '#4F6BED', '#00B7C3'];
 const SITES = [['NW', 'Nordrhein-Westfalen'], ['HE', 'Hessen'], ['BW', 'Baden-Württemberg'], ['TH', 'Thüringen'], ['SN', 'Sachsen'], ['AT', 'Österreich'], ['CZ', 'Tschechien']];
 const SITE0 = { 'T. Brandt': 'HE', 'L. Wagner': 'BW', 'M. Yilmaz': 'TH', 'J. Novak': 'CZ', 'A. Schulz': 'SN', 'D. Petrov': 'AT' };
@@ -7085,7 +7090,8 @@ class Component extends DCLogic {
   drawDeps() { try { const deps = this.depsOf(); document.querySelectorAll('[data-gantt]').forEach(c => { const old = c.querySelector(':scope > svg.ec-deps'); if (old) old.remove(); const cr = c.getBoundingClientRect(); if (!cr.width) return;
       const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('class', 'ec-deps'); svg.setAttribute('width', c.scrollWidth); svg.setAttribute('height', c.scrollHeight); svg.setAttribute('aria-hidden', 'true'); svg.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:2';
       svg.innerHTML = '<defs><marker id="ecArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0F6CBD"/></marker><marker id="ecArrR" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#C50F1F"/></marker></defs>'; let n = 0;
-      Object.keys(deps).forEach(sid => (deps[sid] || []).forEach(pid => { const a = c.querySelector('[data-nid="' + pid + '"]'), b = c.querySelector('[data-nid="' + sid + '"]'); if (!a || !b || !a.offsetParent || !b.offsetParent) return;
+      const vis = id => { let x = id; while (x) { const el = c.querySelector('[data-nid="' + x + '"]'); if (el && el.offsetParent) return el; x = PARENT[x]; } return null; }, seenP = new Set();
+      Object.keys(deps).forEach(sid => (deps[sid] || []).forEach(pid => { const a = vis(pid), b = c.querySelector('[data-nid="' + sid + '"]'); if (!a || !b || !b.offsetParent || a === b || b.contains(a) || a.contains(b)) return; const key = (a.getAttribute('data-nid') || '') + '>' + sid; if (seenP.has(key)) return; seenP.add(key);
         const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(), x1 = ra.right - cr.left, y1 = ra.top + ra.height / 2 - cr.top, x2 = rb.left - cr.left - 2, y2 = rb.top + rb.height / 2 - cr.top, crit = /197, 15, 31/.test(a.style.boxShadow || '') && /197, 15, 31/.test(b.style.boxShadow || '');
         const tp = rb.top - cr.top, bt = rb.bottom - cr.top, xa = Math.max(x1 + 8, rb.left - cr.left + 8), ye = y2 >= y1 ? tp - 1 : bt + 1, d = 'M' + x1 + ',' + y1 + ' H' + xa + ' V' + ye;
         const pth = document.createElementNS(ns, 'path'); pth.setAttribute('d', d); pth.setAttribute('fill', 'none'); pth.setAttribute('stroke', crit ? '#C50F1F' : '#0F6CBD'); pth.setAttribute('stroke-width', crit ? '2' : '1.5'); pth.setAttribute('marker-end', crit ? 'url(#ecArrR)' : 'url(#ecArr)'); svg.appendChild(pth); n++; }));
@@ -7130,8 +7136,18 @@ class Component extends DCLogic {
     sl = K.S(); K.head(sl, 'Entscheidungsbedarf für den Lenkungskreis'); K.bul(sl, [].concat(...L.map(d => String(d.entsch || '').split('\n').map(x => x.replace(/^[•\-]\s*/, '')).filter(x => x && x !== 'keiner').map(x => d.name + ': ' + x))).slice(0, 12), { x: 0.5, y: 1.2, w: 12.3, h: 5.5, fontSize: 15 });
     const out = await K.p.write({ outputType: 'blob' }); this.dlBlob(out, 'Lenkungskreis_Bereich_Technik_2026-11-13.pptx'); return L.length + 4; }
   depsOf() { if (!this._depDef) this._depDef = {}; const D0 = this._depDef;
-    Object.keys(PTREE_OF).forEach(pk => { if (D0[pk]) return; const d = {}; const link = list => { const L = (list || []).slice().sort((a, b) => (a.start < b.start ? -1 : 1)); L.forEach((n, i) => { const pr = L.slice(0, i).filter(x => this.depNeed(x) <= n.start).sort((a, b) => (a.end < b.end ? 1 : -1))[0]; if (pr) d[n.id] = [pr.id]; link(n.children); }); }; link(PTREE_OF[pk]); D0[pk] = d; });
+    Object.keys(PTREE_OF).forEach(pk => { if (D0[pk]) return; D0[pk] = this.depDefault(PTREE_OF[pk]); });
     const all = Object.assign({}, DEP_SEED); Object.keys(D0).forEach(pk => Object.assign(all, D0[pk])); return Object.assign(all, this.state.deps || {}); }
+  depDefault(tree) { const d = {}, isPt = x => x.type === 'gate', leaves = n => (n.children && n.children.length ? n.children.reduce((a, c) => a.concat(leaves(c)), []) : [n]);
+    const pick = c => c.slice().sort((a, b) => (a.end !== b.end ? (a.end < b.end ? 1 : -1) : (isPt(b) ? 1 : 0) - (isPt(a) ? 1 : 0)))[0];
+    const link = (L0, top) => { const L = (L0 || []).slice().sort((a, b) => (a.start < b.start ? -1 : (a.start > b.start ? 1 : 0))), gates = [];
+      L.forEach((n, i) => { const prev = L.slice(0, i);
+        if (top || n.type === 'phase') { const pr = pick(prev.reduce((a, x) => a.concat(x.type === 'phase' ? leaves(x) : [x]), []).filter(x => this.depNeed(x) <= n.start)); if (pr) d[n.id] = [pr.id]; }
+        else if (isPt(n)) gates.push(n);
+        else { const pr = pick(prev.filter(x => this.depNeed(x) <= n.start)); if (pr) d[n.id] = [pr.id]; }
+        if (n.children) link(n.children, false); });
+      gates.forEach(g => { const succ = new Set(); L.forEach(x => (d[x.id] || []).forEach(p => succ.add(p))); const pr = L.filter(x => x !== g && x.start <= g.start && this.depNeed(x) <= g.end && !succ.has(x.id) && !(d[x.id] || []).includes(g.id)); if (pr.length) d[g.id] = pr.map(x => x.id); }); };
+    link(tree, true); return d; }
   autoDep(id) { const n = NODE[id]; if (!n) return ''; const sib = PARENT[id] ? (NODE[PARENT[id]].children || []) : (PTREE_OF[this.projPk(id)] || []), pr = sib.filter(x => x.id !== id && this.depNeed(x) <= n.start).sort((a, b) => (a.end < b.end ? 1 : -1))[0];
     if (!pr) return ''; this.setState({ deps: Object.assign({}, this.depsOf(), { [id]: [pr.id] }) }); return ' Beginnt nach „' + pr.name + '“ (Abhängigkeit automatisch gesetzt, im Detail mit ✕ lösbar).'; }
   projNodes(id) { let r = id; while (PARENT[r]) r = PARENT[r]; const pk = Object.keys(PTREE_OF).find(k => (PTREE_OF[k] || []).some(x => x.id === r)); const out = []; const w = l => (l || []).forEach(x => { out.push(x); w(x.children); }); w(PTREE_OF[pk]); return out; }
