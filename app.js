@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:17 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 09:23 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
