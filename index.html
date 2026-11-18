@@ -44,6 +44,7 @@ input,textarea,select{font-size:16px!important}
 .ec-week{grid-template-columns:1fr!important;min-width:0!important}.ec-week>div{min-height:0!important}
 .ec-monly{display:inline-flex!important}.ec-hide-m{display:none!important}
 .ec-scroll section{padding-left:12px!important;padding-right:12px!important}
+.ec-ntf{position:fixed!important;top:64px!important;left:8px!important;right:8px!important;width:auto!important;max-height:calc(100vh - 150px)!important;box-sizing:border-box}
 }
 @media (max-width: 999px){.ec-inbody{display:none!important}.ec-inbody.open{display:flex!important;position:fixed;inset:0;z-index:150;overflow-y:auto;border-radius:0!important;margin:0!important}.ec-inbody.open .ec-mclose{display:flex!important}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -139,7 +140,7 @@ input,textarea,select{font-size:16px!important}
           <sc-if value="{{ntf.has}}" hint-placeholder-val="{{true}}"><span style="position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C50F1F; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{ntf.count}}</span></sc-if>
         </button>
         <sc-if value="{{ntf.open}}" hint-placeholder-val="{{false}}">
-          <div role="dialog" aria-label="Benachrichtigungen" style="position: absolute; top: 46px; right: 0; width: min(400px, 92vw); max-height: 72vh; overflow-y: auto; z-index: 60; padding: 10px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; box-shadow: 0 8px 24px rgba(0,0,0,.18)">
+          <div role="dialog" aria-label="Benachrichtigungen" class="ec-ntf" style="position: absolute; top: 46px; right: 0; width: min(400px, 92vw); max-height: 72vh; overflow-y: auto; z-index: 60; padding: 10px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.border}}; box-shadow: 0 8px 24px rgba(0,0,0,.18)">
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px"><b style="flex: 1">Benachrichtigungen</b><button onClick="{{ntf.allRead}}" style="height: 30px; padding: 0 10px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">Alle gelesen</button><button onClick="{{ntf.settings}}" aria-label="Einstellungen für Benachrichtigungen" style="height: 30px; padding: 0 10px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">⚙</button></div>
             <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px"><sc-for list="{{ntf.filters}}" as="nfi" hint-placeholder-count="4"><button onClick="{{nfi.go}}" aria-pressed="{{nfi.pressed}}" style="padding: 4px 9px; border-radius: 999px; border: 2px solid {{nfi.ring}}; background: {{nfi.bg}}; color: {{t.text}}; font-size: 12px; font-weight: 600; cursor: pointer">{{nfi.label}}</button></sc-for></div>
             <sc-for list="{{ntf.items}}" as="nti" hint-placeholder-count="4"><button onClick="{{nti.go}}" style="display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 8px; border: 0; border-radius: 8px; background: {{nti.bg}}; color: {{t.text}}; text-align: left; cursor: pointer; margin-bottom: 2px"><span aria-hidden="true" style="font-size: 16px; width: 22px; text-align: center">{{nti.icon}}</span><span style="flex: 1; min-width: 0"><span style="display: block; font-size: 13px; font-weight: {{nti.fw}}">{{nti.text}}</span><span style="display: block; font-size: 11px; color: {{t.muted}}">{{nti.sub}} · {{nti.time}}</span></span><sc-if value="{{nti.unread}}" hint-placeholder-val="{{true}}"><span aria-label="ungelesen" style="width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: {{accent}}; flex-shrink: 0"></span></sc-if></button></sc-for>
@@ -6423,8 +6424,8 @@ input,textarea,select{font-size:16px!important}
   </main>
 </div>
 </template>
-<script src="dc-runtime.js?v=18.11.2026_0845"></script>
-<script src="app.js?v=18.11.2026_0845"></script>
+<script src="dc-runtime.js?v=18.11.2026_0852"></script>
+<script src="app.js?v=18.11.2026_0852"></script>
 <script>
 (function () {
   var props = {"accent": "#0F6CBD", "dark": false, "density": "normal"};
