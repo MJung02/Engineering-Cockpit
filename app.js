@@ -1,4 +1,4 @@
-/* Engineering Cockpit – Entwurf, Stand 18.11.2026 13:17 */
+/* Engineering Cockpit – Entwurf, Stand 18.11.2026 13:33 */
 window.__dcComponent = (function () {
 
 const DAY = 86400000;
@@ -756,6 +756,31 @@ class Component extends DCLogic {
     Object.keys(PTREE_OF).forEach(pk => walk(PTREE_OF[pk], ''));
     TASKS.forEach(x => { if (x.ms && M[x.ms] && !M['t:' + x.id]) { cnt[x.ms] = (cnt[x.ms] || 0) + 1; M['t:' + x.id] = (/^QG/.test(M[x.ms]) ? 'TG' : 'T') + M[x.ms].replace(/^[A-Z]+/, '') + '.' + cnt[x.ms]; } });
     return M; }
+  erStartPatch(invite) { const s = this.state, keys = ['quick', 'heute', 'ueber', 'woche', 'kal', 'proj', 'ms', 'notiz', 'tipps'], hide = {}; keys.forEach(k => { hide[k] = true; });
+    return { erst: { stage: 'login', tasks: [], projects: [], tiles: [], note: '', baseU: (s.uprojs || []).map(u => u.key), invite: invite || null, pend: {} }, erVia: null, erF: {}, erMsg: '', panel: null, wnOpen: false, fbOpen: false, navOpen: false, invOpen: false, lay: Object.assign({}, s.lay, { erstart: { hide } }), layOpen: null }; }
+  invEncode(o) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; } }
+  invDecode(tok) { try { let b = String(tok).replace(/-/g, '+').replace(/_/g, '/'); while (b.length % 4) b += '='; return JSON.parse(decodeURIComponent(escape(atob(b)))); } catch (e) { return null; } }
+  invBase() { try { return location.origin + location.pathname; } catch (e) { return 'https://mjung02.github.io/Engineering-Cockpit/'; } }
+  invCheck(iv) { if (!iv) return 'Dieser Einladungslink ist ungültig.'; const own = (this.state.invites || []).find(x => x.code === iv.c);
+    if (own && own.st === 'widerrufen') return 'Diese Einladung wurde widerrufen. Bitte frag ' + iv.by + ' nach einem neuen Link.';
+    if (iv.exp && iv.exp < '2026-11-13') return 'Diese Einladung ist am ' + iv.exp.slice(8, 10) + '.' + iv.exp.slice(5, 7) + '. abgelaufen. Bitte frag ' + iv.by + ' nach einem neuen Link.';
+    if (own && own.max && own.uses >= own.max) return 'Diese Einladung wurde schon ' + own.uses + '× genutzt und ist aufgebraucht.'; return ''; }
+  invOpenLink(link) { const m = /#einladung=([A-Za-z0-9_-]+)/.exec(String(link || '')); const iv = m ? this.invDecode(m[1]) : null; this.setState(this.erStartPatch(iv || { bad: true })); }
+  invJoin(iv, email) { const s = this.state, U = s.uprojs || [], dom = (String(email).split('@')[1] || '').toLowerCase();
+    if (iv.d && dom !== String(iv.d).replace(/^@/, '').toLowerCase()) return { err: 'Diese Einladung gilt nur für Adressen @' + String(iv.d).replace(/^@/, '') + '. Bitte mit dieser Adresse anmelden.' };
+    const invs = (s.invites || []).map(x => (x.code === iv.c ? Object.assign({}, x, { uses: (x.uses || 0) + 1, joined: (x.joined || []).concat([email]) }) : x));
+    const out = { invites: invs, msg: '', patch: {} };
+    if (iv.s === 'projekt') { let u = U.find(x => x.key === iv.k);
+      if (u) { PMEMBERS[u.key] = (PMEMBERS[u.key] || []).filter(m => m[0] !== email).concat([[email, iv.r]]); out.msg = 'Du bist dem Projekt „' + u.name + '“ als ' + iv.r + ' beigetreten.'; out.patch = { screen: 'pn', upSel: u.key, upTab: 'uebersicht' }; out.join = { key: u.key }; }
+      else { const key = 'inv' + iv.c, words = iv.n.split(/\s+/), code = (words.length > 1 ? words[0][0] + words[1][0] : iv.n.slice(0, 2)).toUpperCase();
+        u = { key, name: iv.n, code, color: '#0E7A6E', tpl: 'leer', model: 'Geteiltes Projekt', stufe: 1, mods: {}, start: '2026-11-13', members: ['Du'], nodes: [], risks: [], costs: [], budget: 0, reqs: [], archived: false, invited: { by: iv.by, role: iv.r } };
+        PK_OF[iv.n] = key; PMEMBERS[key] = [[iv.by, 'Owner'], ['Du', iv.r]];
+        out.patch = { uprojs: U.concat([u]), screen: 'pn', upSel: key, upTab: 'uebersicht' }; out.join = { key };
+        out.msg = 'Du bist „' + iv.n + '“ als ' + iv.r + ' beigetreten. Im Entwurf ohne Server kommen die Inhalte von ' + iv.by + ' nicht mit; im echten Tool siehst du hier sofort Aufgaben, Plan und Dateien.'; } }
+    else if (iv.s === 'team') { out.msg = 'Du bist dem Team „' + iv.n + '“ als ' + iv.r + ' beigetreten. Teamplanung und Team-Eingang erscheinen, sobald das echte Tool speichert.'; out.join = { team: iv.n }; }
+    else { out.msg = 'Du bist der Firma „' + iv.n + '“ als ' + iv.r + ' beigetreten. Organigramm und Freigabewege gelten ab jetzt.'; out.join = { firma: iv.n }; }
+    if (iv.ap) out.msg += ' Der Beitritt wartet noch auf die Freigabe durch einen Admin (simuliert).';
+    return out; }
   briefOf(pk) { const U = (this.state.uprojs || []).find(u => u.key === pk); return Object.assign({}, PBRIEF[pk] || {}, (U && U.brief) || {}, ((this.state.briefBy || {})[pk]) || {}); }
   themesOf(pk) { const ov = (this.state.pthemeOv || {})[pk]; if (ov) return ov; if (PTHEME[pk]) return PTHEME[pk]; const U = (this.state.uprojs || []).find(u => u.key === pk); return (U && U.themes) || []; }
   codeOf(id) { return (this._pc || (this._pc = this.planCodes()))[id] || ''; }
@@ -1527,6 +1552,7 @@ class Component extends DCLogic {
 
   renderVals() {
     this._pc = this.planCodes();
+    if (!this._invChk && typeof location !== 'undefined') { this._invChk = true; const m = /#einladung=([A-Za-z0-9_-]+)/.exec(location.hash || ''); if (m) { const iv = this.invDecode(m[1]); setTimeout(() => this.setState(this.erStartPatch(iv || { bad: true })), 0); } }
     if (typeof document !== 'undefined' && !this._cfmHook) { this._cfmHook = true; document.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('[data-confirm]') : null; if (!b || window.__ecAutoConfirm) return; if (b.__ecOk) { b.__ecOk = false; return; } e.preventDefault(); e.stopPropagation(); this._cfmBtn = b; this.setState({ cfm: b.getAttribute('data-confirm') }); }, true); }
     if (typeof window !== 'undefined') { clearTimeout(this._ddT); this._ddT = setTimeout(() => this.drawDeps(), 60); if (!this._ddR) { this._ddR = true; window.addEventListener('resize', () => this.drawDeps()); } }
     if (typeof window !== 'undefined' && !window.__ecNodes) window.__ecNodes = { NODE, PARENT };
@@ -1565,7 +1591,7 @@ class Component extends DCLogic {
     });
     const is = { start: s.screen === 'start', arbeit: s.screen === 'arbeit', projekte: s.screen === 'projekte', projekt: s.screen === 'projekt', teams: s.screen === 'teams', eingang: s.screen === 'eingang', berichte: s.screen === 'berichte', wissen: s.screen === 'wissen', antrag: s.screen === 'antrag', admin: s.screen === 'admin', mobil: s.screen === 'mobil', profil: s.screen === 'profil', pnew: s.screen === 'pnew', pn: s.screen === 'pn', kickoff: s.screen === 'kickoff', import: s.screen === 'import' };
     is.other = !Object.values(is).some(Boolean);
-    if (s.erst && s.erst.stage === 'app') { Object.keys(is).forEach(k => { is[k] = false; }); }
+    if (s.erst && s.erst.stage === 'app') { Object.keys(is).forEach(k => { if (k !== 'pnew' && k !== 'pn') is[k] = false; }); }
     const OTHER = {
       wissen: ['Wissen', 'Technik-Gedächtnis, Lessons Learned und Stakeholder an einer Stelle. Folgt im nächsten Entwurf.'],
       berichte: ['Berichte', 'Portfolio, Dashboards und Statusberichte. Folgt im nächsten Entwurf.']
@@ -2593,21 +2619,37 @@ class Component extends DCLogic {
     const ER = s.erst || null, erApp = !!ER && ER.stage === 'app', erLogin = !!ER && ER.stage === 'login', erF = s.erF || {}, erT = ER ? ER.tasks || [] : [], erP = ER ? ER.projects || [] : [], erTi = ER ? ER.tiles || [] : [], erFirma = !!ER && ER.type === 'firma';
     const erSet = patch => this.setState({ erst: Object.assign({}, this.state.erst, patch) }), erIn = k => e => this.setState({ erF: Object.assign({}, this.state.erF, { [k]: e && e.target ? e.target.value : '' }) });
     const erD = iso => (iso ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' : ''), erToday = '2026-11-13', erIn7 = this.isoAdd(erToday, 7), erPn = id => ((erP.find(p0 => p0.id === id) || {}).name || '');
-    const erEnter = (via, type, name, email, company) => this.setState({ erst: Object.assign({}, this.state.erst, { stage: 'app', via, type, name, email, company: company || '' }), erVia: null, erF: {}, screen: 'start', panel: null, navOpen: false, erMsg: '' });
+    const erEnter = (via, type, name, email, company) => { const iv = ER && ER.invite && !ER.invite.bad ? ER.invite : null; let extra = {}, join = null, msg = '';
+      if (iv) { const bad = this.invCheck(iv); if (bad) return this.setState({ erMsg: bad }); const r = this.invJoin(iv, email); if (r.err) return this.setState({ erMsg: r.err }); extra = Object.assign({ invites: r.invites }, r.patch); join = r.join; msg = r.msg; if (join.firma) { type = 'firma'; company = join.firma; } }
+      this.setState(Object.assign({ erst: Object.assign({}, this.state.erst, { stage: 'app', via, type, name, email, company: company || '', joined: join, joinMsg: msg, guest: !!iv && /Gast/.test(iv.r || ''), tutOff: !!iv }), erVia: null, erF: {}, screen: 'start', panel: null, navOpen: false, erMsg: '' }, extra)); };
     const erChip = (on, label, go) => ({ label, pressed: on ? 'true' : 'false', ring: on ? accent : t.border, bg: on ? t.soft : t.surface, go });
     const erRow = x => ({ title: x.title, due: x.due ? erD(x.due) : 'ohne Termin', dueC: !x.done && x.due && x.due < erToday ? '#C50F1F' : t.muted, proj: x.proj ? erPn(x.proj) : '', hasProj: !!x.proj, done: x.done ? 'true' : 'false', mark: x.done ? '✓' : '', fill: x.done ? '#107C10' : 'transparent', ring: x.done ? '#107C10' : t.strong, strike: x.done ? 'line-through' : 'none',
       toggle: () => erSet({ tasks: erT.map(y => (y.id === x.id ? Object.assign({}, y, { done: !y.done }) : y)) }), del: () => erSet({ tasks: erT.filter(y => y.id !== x.id) }) });
     const erSteps = [['task', 'Lege deine erste Aufgabe an', 'Unter „Meine Aufgaben“ einen Titel eintippen, optional Termin und Projekt, dann „Hinzufügen“.', erT.length > 0, 'arbeit'],
       ['done', 'Hake eine Aufgabe ab', 'Auf den Kreis vor der Aufgabe klicken. Erledigtes bleibt sichtbar, bis du es löschst.', erT.some(x => x.done), 'arbeit'],
-      ['proj', erFirma ? 'Beantrage dein erstes Projekt' : 'Lege dein erstes Projekt an', erFirma ? 'In der Firma prüft die Freigabe nach dem Organigramm (deine Führungskraft). Hier ist die Freigabe simuliert.' : 'Ohne Firma gibt es keine Freigabe: dein Projekt ist sofort aktiv.', erP.length > 0, 'projekte'],
-      ['zu', 'Ordne eine Aufgabe einem Projekt zu', 'Im Projekt auf „+ Aufgabe“ oder beim Anlegen unter „Meine Aufgaben“ das Projekt wählen.', erT.some(x => x.proj), 'projekte'],
-      ['start', 'Richte deine Startseite ein', 'Auf „Start“ auswählen, was du sehen willst. Du kannst es jederzeit ändern.', erTi.length > 0, 'start']];
+      ['proj', erFirma ? 'Lege dein erstes Projekt an (mit Freigabe)' : 'Lege dein erstes Projekt an', 'Unter „Projekte“ den Assistenten starten: Vorgehen und Vorlage wählen, Name, Team. ' + (erFirma ? 'Im Firmenkonto geht das Projekt danach zur Freigabe an deine Führungskraft (hier simuliert).' : 'Ohne Firma gibt es keine Freigabe: dein Projekt ist sofort aktiv.'), (s.uprojs || []).some(u => ER && !(ER.baseU || []).includes(u.key)), 'projekte'],
+      ['zu', 'Plane im Projekt die erste Aufgabe', 'Im Projekt unter „Aufgaben“ etwas anlegen oder unter „Meine Aufgaben“ beim Anlegen das Projekt wählen. Vorlagen bringen schon Startaufgaben mit.', ER ? TASKS.some(x => (s.uprojs || []).filter(u => !(ER.baseU || []).includes(u.key)).map(u => u.name).includes(x.proj)) : false, 'pn'],
+      ['start', 'Richte deine Startseite ein', 'Auf „Start“ Bausteine wählen, ziehen und in der Breite anpassen. Du kannst es jederzeit ändern.', ['quick', 'heute', 'ueber', 'woche', 'kal', 'proj', 'ms', 'notiz', 'tipps'].some(k => !(((s.lay || {}).erstart || {}).hide || {})[k]), 'start']];
     const erCur = erSteps.findIndex(x => !x[3]), erAll = erCur < 0, erStep = erAll ? null : erSteps[erCur], erTut = erApp && !ER.tutOff, erHl = k => (erTut && erStep && erStep[0] === k ? '3px solid ' + accent : 'none');
     const ER_TILES = [['heute', 'Heute fällig'], ['ueber', 'Überfällig'], ['woche', 'Nächste 7 Tage'], ['proj', 'Meine Projekte'], ['notiz', 'Notiz']];
+    const erU = ER ? (s.uprojs || []).filter(u => !(ER.baseU || []).includes(u.key)) : [], erUN = erU.map(u => u.name);
+    const erTT = ER ? TASKS.filter(x => erUN.includes(x.proj)) : [], erDoneT = x => this.isDone(x);
+    const erRowT = x => { const dn = erDoneT(x); return { title: x.title, due: x.due ? erD(x.due) : 'ohne Termin', dueC: !dn && x.due && x.due < erToday ? '#C50F1F' : t.muted, proj: x.proj, hasProj: true, done: dn ? 'true' : 'false', mark: dn ? '✓' : '', fill: dn ? '#107C10' : 'transparent', ring: dn ? '#107C10' : t.strong, strike: dn ? 'line-through' : 'none', toggle: () => this.toggleDone(x.id), del: () => this.openTask(x.id, 'arbeit'), canDel: false, canOpen: true }; };
+    const erAllRows = erT.map(x => Object.assign(erRow(x), { canDel: true, canOpen: false })).concat(erTT.map(erRowT));
+    const erOpenAll = erT.filter(x => !x.done).map(x => ({ x, due: x.due, row: Object.assign(erRow(x), { canDel: true }) })).concat(erTT.filter(x => !erDoneT(x)).map(x => ({ x, due: x.due, row: erRowT(x) })));
     const erOpen = erT.filter(x => !x.done);
+    const ERK = ['quick', 'heute', 'ueber', 'woche', 'kal', 'proj', 'ms', 'notiz', 'tipps'], ERN = { quick: 'Schnell starten', heute: 'Heute fällig', ueber: 'Überfällig', woche: 'Nächste 7 Tage', kal: 'Diese Woche', proj: 'Meine Projekte', ms: 'Nächste Termine', notiz: 'Notiz', tipps: 'Erste Schritte' };
+    const erLay = this.layUI('erstart', ERK, ERN, [], t, accent, { quick: 'half', heute: 'half', ueber: 'half', woche: 'half', kal: 'full', proj: 'half', ms: 'half', notiz: 'half', tipps: 'half' });
+    const erShown = ERK.filter(k => erLay[k].show), erUOpen = u => this.setState({ screen: 'pn', upSel: u.key, upTab: 'uebersicht', panel: null });
+    const erWizard = () => this.setState({ screen: 'pnew', panel: null, newP: { tpl: 'leer', name: '', start: '2026-11-23', color: '#0F6CBD', members: ['Du'], stufe: null, mods: {}, err: '' } });
+    const erUnodes = erU.reduce((a, u) => a.concat((u.nodes || []).map(n => ({ n, u }))), []).filter(z => z.n.end >= erToday).sort((a, b) => (a.n.end < b.n.end ? -1 : 1)).slice(0, 6);
+    const erWeek = Array.from({ length: 7 }, (_, i) => { const iso = this.isoAdd(erToday, i), its = erOpenAll.filter(z => z.due === iso); return { day: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][new Date(iso + 'T12:00:00').getDay()] + ' ' + erD(iso), n: its.length ? its.length + (its.length === 1 ? ' Aufgabe' : ' Aufgaben') : '–', titles: its.slice(0, 3).map(z => z.x.title).join(' · '), bg: i === 0 ? t.soft : t.surface2 }; });
     const er = { login: erLogin, app: erApp, firma: erFirma, privat: erApp && !erFirma, name: ER ? ER.name || '' : '', who: ER ? (ER.name || '') + (ER.email ? ' · ' + ER.email : '') : '', viaTxt: ER ? ({ mail: 'E-Mail und Passwort', apple: 'Apple', google: 'Google', facebook: 'Facebook', sso: 'Firmen-SSO (' + (ER.company || '') + ')' })[ER.via] || '' : '',
-      startDemo: () => this.setState({ erst: { stage: 'login', tasks: [], projects: [], tiles: [], note: '' }, erVia: null, erF: {}, panel: null, wnOpen: false, fbOpen: false, navOpen: false }),
-      exit: () => this.setState({ erst: null, erVia: null, erF: {}, screen: 'start', panel: null }),
+      startDemo: () => this.setState(this.erStartPatch(null)),
+      exit: () => { const base = (ER && ER.baseU) || [], keep = (this.state.uprojs || []).filter(u => base.includes(u.key)), gone = (this.state.uprojs || []).filter(u => !base.includes(u.key)).map(u => u.name);
+        for (let i = TASKS.length - 1; i >= 0; i--) if (gone.includes(TASKS[i].proj)) { delete TASK[TASKS[i].id]; TASKS.splice(i, 1); }
+        try { if (location.hash) history.replaceState(null, '', location.href.split('#')[0]); } catch (e) { /* ohne Verlauf */ }
+        this.setState({ erst: null, erVia: null, erF: {}, screen: 'start', panel: null, uprojs: keep, invOpen: false, rev: (this.state.rev || 0) + 1 }); },
       via: s.erVia || '', isMail: s.erVia === 'mail', isSso: s.erVia === 'sso', isChoose: !s.erVia, back: () => this.setState({ erVia: null, erMsg: '' }), hasMsg: !!s.erMsg, msg: s.erMsg || '',
       pickMail: () => this.setState({ erVia: 'mail', erMsg: '' }), pickSso: () => this.setState({ erVia: 'sso', erMsg: '' }), pickApple: () => erEnter('apple', 'privat', 'Alex Beispiel', 'alex.beispiel@icloud.com'), pickGoogle: () => erEnter('google', 'privat', 'Alex Beispiel', 'alex.beispiel@gmail.com'), pickFacebook: () => erEnter('facebook', 'privat', 'Alex Beispiel', 'alex.beispiel@facebook.com'),
       pick: v => () => (['apple', 'google', 'facebook'].includes(v) ? erEnter(v, 'privat', 'Alex Beispiel', 'alex.beispiel@' + (v === 'apple' ? 'icloud.com' : v === 'google' ? 'gmail.com' : 'facebook.com')) : this.setState({ erVia: v, erMsg: '' })),
@@ -2615,9 +2657,13 @@ class Component extends DCLogic {
       mailGo: () => { const n = (erF.n || '').trim(), m = (erF.m || '').trim(), pw = erF.pw || ''; if (!n || !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(m)) return this.setState({ erMsg: 'Bitte Name und eine gültige E-Mail-Adresse eingeben.' }); if (pw.length < 8) return this.setState({ erMsg: 'Das Passwort braucht mindestens 8 Zeichen.' }); erEnter('mail', 'privat', n, m); },
       ssoGo: () => { const m = (erF.sso || '').trim(), mm = /^([^@\s]+)@([^@\s]+\.[a-z]{2,})$/i.exec(m); if (!mm) return this.setState({ erMsg: 'Bitte deine Firmen-E-Mail eingeben, z. B. vorname.nachname@firma.de.' }); const dom = mm[2].split('.')[0], comp = dom.charAt(0).toUpperCase() + dom.slice(1).replace(/-/g, ' '), nm0 = mm[1].split(/[._-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); erEnter('sso', 'firma', nm0, m, comp); },
       company: ER ? ER.company || '' : '',
-      tasks: erT.map(erRow), noTasks: !erT.length, tTitle: erF.t || '', setTTitle: erIn('t'), tDue: erF.d || '', setTDue: erIn('d'), hlTask: erHl('task'), hlDone: erHl('done'),
-      tProjOpts: [erChip(!erF.p, 'ohne Projekt', () => this.setState({ erF: Object.assign({}, this.state.erF, { p: '' }) }))].concat(erP.filter(p0 => p0.st === 'aktiv').map(p0 => erChip(erF.p === p0.id, p0.name, () => this.setState({ erF: Object.assign({}, this.state.erF, { p: p0.id }) })))), hasProjOpts: erP.some(p0 => p0.st === 'aktiv'),
-      tAdd: () => { const tt = (this.state.erF || {}).t || ''; if (!tt.trim()) return this.setState({ erMsg: 'Wie heißt die Aufgabe?' }); const F0 = this.state.erF || {}; erSet({ tasks: erT.concat([{ id: 'e' + Date.now() + erT.length, title: tt.trim(), due: F0.d || '', proj: F0.p || '', done: false }]) }); this.setState({ erF: Object.assign({}, F0, { t: '', d: '' }), erMsg: '' }); },
+      tasks: erT.map(erRow), noTasks: !erT.length && !erTT.length, tTitle: erF.t || '', setTTitle: erIn('t'), tDue: erF.d || '', setTDue: erIn('d'), hlTask: erHl('task'), hlDone: erHl('done'),
+      tProjOpts: [erChip(!erF.p, 'ohne Projekt', () => this.setState({ erF: Object.assign({}, this.state.erF, { p: '' }) }))].concat(erU.map(u => erChip(erF.p === u.key, u.name, () => this.setState({ erF: Object.assign({}, this.state.erF, { p: u.key }) })))), hasProjOpts: erU.length > 0,
+      tAdd: () => { const F0 = this.state.erF || {}, tt = (F0.t || '').trim(); if (!tt) return this.setState({ erMsg: 'Wie heißt die Aufgabe?' }); const u = erU.find(x => x.key === F0.p);
+        if (u) { const id = 'ef' + Date.now() + TASKS.length, x = { id, title: tt, proj: u.name, due: F0.d || this.isoAdd(erToday, 7), bucket: 'Backlog', prio: 'Mittel', owner: 'Du', mine: true, ms: null, desc: '', est: 1, co: [] }; TASKS.push(x); TASK[id] = x; this.setState({ rev: (this.state.rev || 0) + 1 }); }
+        else erSet({ tasks: erT.concat([{ id: 'e' + Date.now() + erT.length, title: tt, due: F0.d || '', proj: '', done: false }]) });
+        this.setState({ erF: Object.assign({}, F0, { t: '', d: '' }), erMsg: '' }); },
+      allTasks: erAllRows, noAll: !erAllRows.length,
       pName: erF.pn || '', setPName: erIn('pn'), pZiel: erF.pz || '', setPZiel: erIn('pz'), hlProj: erHl('proj'), hlZu: erHl('zu'), pBtn: erFirma ? 'Projekt beantragen' : 'Projekt anlegen',
       pHint: erFirma ? 'Über ' + (ER ? ER.company : 'deine Firma') + ' angemeldet: Neue Projekte gehen zur Freigabe an deine Führungskraft laut Organigramm.' : 'Du nutzt das Cockpit ohne Firma: Projekte sind sofort aktiv, es gibt keinen Freigabeprozess.',
       pAdd: () => { const F0 = this.state.erF || {}, nm1 = (F0.pn || '').trim(); if (!nm1) return this.setState({ erMsg: 'Wie heißt das Projekt?' }); const id = 'ep' + Date.now() + erP.length; erSet({ projects: erP.concat([{ id, name: nm1, ziel: (F0.pz || '').trim(), st: erFirma ? 'beantragt' : 'aktiv' }]) }); this.setState({ erF: Object.assign({}, F0, { pn: '', pz: '' }), erOpenP: id, erMsg: erFirma ? 'Projekt „' + nm1 + '“ beantragt. Deine Führungskraft bekommt die Freigabe in ihren Posteingang.' : 'Projekt „' + nm1 + '“ angelegt und aktiv.' }); },
@@ -2629,9 +2675,45 @@ class Component extends DCLogic {
       hlStart: erHl('start'), tiles: ER_TILES.map(([k, l]) => erChip(erTi.includes(k), (erTi.includes(k) ? '✓ ' : '+ ') + l, () => erSet({ tiles: erTi.includes(k) ? erTi.filter(x => x !== k) : erTi.concat([k]) }))), noTiles: !erTi.length, tileEdit: !!s.erTileEdit || !erTi.length, tileEditToggle: () => this.setState({ erTileEdit: !s.erTileEdit }), tileEditLabel: s.erTileEdit ? 'Fertig' : '⚙ Startseite einrichten',
       tHeute: erTi.includes('heute'), heute: erOpen.filter(x => x.due === erToday).map(erRow), tUeber: erTi.includes('ueber'), ueber: erOpen.filter(x => x.due && x.due < erToday).map(erRow), tWoche: erTi.includes('woche'), woche: erOpen.filter(x => x.due > erToday && x.due <= erIn7).map(erRow), tProj: erTi.includes('proj'), tNotiz: erTi.includes('notiz'),
       projTile: erP.map(p0 => ({ name: p0.name, st: p0.st === 'aktiv' ? erT.filter(x => x.proj === p0.id && !x.done).length + ' offen' : 'wartet auf Freigabe' })), note: ER ? ER.note || '' : '', setNote: e => erSet({ note: e && e.target ? e.target.value : '' }),
+      lay: erLay, noneShown: !erShown.length, layBtn: erLay.open ? 'Fertig' : '⚙ Startseite einrichten',
+      chooserOpen: erLay.open || !erShown.length, quickT: erF.q || '', setQuickT: erIn('q'), quickAdd: () => { const v = ((this.state.erF || {}).q || '').trim(); if (!v) return; erSet({ tasks: erT.concat([{ id: 'e' + Date.now() + erT.length, title: v, due: erToday, proj: '', done: false }]) }); this.setState({ erF: Object.assign({}, this.state.erF, { q: '' }), erMsg: '„' + v + '“ für heute eingetragen.' }); },
+      wizard: erWizard, inviteGo: () => this.setState({ invOpen: true, invF: { s: erU.length ? 'projekt' : 'team', k: erU[0] ? erU[0].key : '', r: '', days: 7, max: 0, d: '', ap: false }, invLink: '', invMsg: '' }),
+      heuteAll: erOpenAll.filter(z => z.due === erToday).map(z => z.row), ueberAll: erOpenAll.filter(z => z.due && z.due < erToday).map(z => z.row), wocheAll: erOpenAll.filter(z => z.due > erToday && z.due <= erIn7).map(z => z.row),
+      noHeute: !erOpenAll.some(z => z.due === erToday), noUeber: !erOpenAll.some(z => z.due && z.due < erToday), noWoche: !erOpenAll.some(z => z.due > erToday && z.due <= erIn7), week: erWeek,
+      uprojs: erU.map(u => { const ts = TASKS.filter(x => x.proj === u.name), dn = ts.filter(x => this.isDone(x)).length, pct = ts.length ? Math.round(dn / ts.length * 100) : 0, pend = !!u.pending;
+        return { name: u.name, code: u.code, color: u.color || accent, model: u.model + ' · Stufe ' + (u.stufe || 1), st: u.invited ? 'eingeladen von ' + u.invited.by + ' · ' + u.invited.role : (pend ? 'wartet auf Freigabe' : 'aktiv'), stC: pend ? '#B07B00' : (u.invited ? '#5B2D90' : '#107C10'), pend, cnt: (ts.length - dn) + ' offen · ' + dn + ' erledigt', pct: pct + '%', pctTxt: pct + ' %', open: () => erUOpen(u),
+          approve: () => this.setState({ uprojs: (this.state.uprojs || []).map(x => (x.key === u.key ? Object.assign({}, x, { pending: false }) : x)), erMsg: 'Freigegeben (simuliert): „' + u.name + '“ ist aktiv.' }),
+          invite: () => this.setState({ invOpen: true, invF: { s: 'projekt', k: u.key, r: '', days: 7, max: 0, d: '', ap: false }, invLink: '', invMsg: '' }), canInvite: !u.invited }; }), noU: !erU.length,
+      nextNodes: erUnodes.map(z => ({ name: z.n.name, proj: z.u.name, date: erD(z.n.end), icon: z.n.type === 'gate' ? '◆' : '▬' })), noNodes: !erUnodes.length,
+      steps: erSteps.map(x => ({ mark: x[3] ? '✓' : '○', c: x[3] ? '#107C10' : t.muted, label: x[1] })),
+      joinTxt: ER ? ER.joinMsg || '' : '', hasJoin: !!(ER && ER.joinMsg), guest: !!(ER && ER.guest),
+      inviteBanner: !!(ER && ER.invite && !ER.invite.bad), inviteBad: !!(ER && ER.invite && ER.invite.bad), inviteTxt: ER && ER.invite && !ER.invite.bad ? ER.invite.by + ' lädt dich ein: ' + ({ projekt: 'Projekt', team: 'Team', firma: 'Firma' })[ER.invite.s] + ' „' + ER.invite.n + '“ als ' + ER.invite.r + '. Gültig bis ' + erD(ER.invite.exp) + (ER.invite.d ? ', nur für @' + String(ER.invite.d).replace(/^@/, '') : '') : '',
+      inviteErr: ER && ER.invite && !ER.invite.bad ? this.invCheck(ER.invite) : '', hasInviteErr: !!(ER && ER.invite && !ER.invite.bad && this.invCheck(ER.invite)),
       notApp: !erApp, tut: erTut, tutN: erAll ? '' : 'Schritt ' + (erCur + 1) + ' von ' + erSteps.length, tutTitle: erAll ? '🎉 Geschafft!' : erStep[1], tutText: erAll ? 'Du kennst jetzt die Grundlagen. Teams, Berichte und Wissen kommen dazu, sobald du einem Team oder einer Firma beitrittst, zum Beispiel über einen Einladungslink.' : erStep[2],
-      tutBar: erSteps.map((x, i) => ({ c: x[3] ? '#107C10' : (i === erCur ? accent : t.border) })), tutGo: () => { if (erStep) this.setState({ screen: erStep[4], panel: null, navOpen: false, erTileEdit: erStep[0] === 'start' ? true : this.state.erTileEdit }); }, tutCanGo: !erAll, tutAll: erAll,
+      tutBar: erSteps.map((x, i) => ({ c: x[3] ? '#107C10' : (i === erCur ? accent : t.border) })), tutGo: () => { if (!erStep) return; if (erStep[4] === 'pn') { const u0 = (this.state.uprojs || []).filter(u => !(ER.baseU || []).includes(u.key))[0]; return u0 ? this.setState({ screen: 'pn', upSel: u0.key, upTab: 'aufgaben', panel: null, navOpen: false }) : this.setState({ screen: 'projekte' }); } this.setState({ screen: erStep[4], panel: null, navOpen: false, layOpen: erStep[0] === 'start' ? 'erstart' : this.state.layOpen }); }, tutCanGo: !erAll, tutAll: erAll,
       tutOff: () => erSet({ tutOff: true }), tutOn: () => erSet({ tutOff: false }), tutHidden: erApp && !!ER.tutOff };
+    const IVF = s.invF || { s: 'projekt', k: '', r: '', days: 7, max: 0, d: '', ap: false }, invBy = ER ? (ER.name || 'Du') : 'Manuel Jung';
+    const invScopes = ER ? [['projekt', 'Projekt'], ['team', 'Team']].concat(erFirma ? [['firma', 'Firma']] : []) : [['firma', 'Firma'], ['team', 'Team'], ['projekt', 'Projekt']];
+    const invTargets = IVF.s === 'projekt' ? (ER ? erU.filter(u => !u.invited).map(u => [u.key, u.name]) : Object.keys(PNAME_OF).map(k => [k, PNAME_OF[k]])) : (IVF.s === 'team' ? (ER ? [['meinteam', 'Team von ' + invBy]] : Object.keys(TEAMS).map(k => [k, 'Team ' + TEAMS[k].name])) : [['firma', ER ? (ER.company || 'Meine Firma') : 'Musterwerk GmbH']]);
+    const invRoles = IVF.s === 'projekt' ? ['Mitglied', 'Gast (extern, nur dieses Projekt)', 'Projektleitung'] : (IVF.s === 'team' ? ['Mitglied', 'Teamleitung'] : ['Mitarbeiter', 'Admin']);
+    const invK = invTargets.some(x => x[0] === IVF.k) ? IVF.k : (invTargets[0] || [''])[0], invR = invRoles.includes(IVF.r) ? IVF.r : invRoles[0], setIF = p => this.setState({ invF: Object.assign({}, IVF, { k: invK, r: invR }, p), invLink: '' });
+    const invList = (s.invites || []).map(x => ({ name: ({ projekt: 'Projekt', team: 'Team', firma: 'Firma' })[x.s] + ' „' + x.n + '“', role: x.r, exp: 'gültig bis ' + erD(x.exp), uses: (x.uses || 0) + (x.max ? ' von ' + x.max : '') + ' genutzt', st: x.st === 'widerrufen' ? 'widerrufen' : (x.exp < '2026-11-13' ? 'abgelaufen' : (x.max && x.uses >= x.max ? 'aufgebraucht' : 'aktiv')), stC: x.st === 'widerrufen' ? '#C50F1F' : '#107C10', link: x.link, active: x.st !== 'widerrufen',
+      copy: () => { let ok2 = false; try { navigator.clipboard.writeText(x.link); ok2 = true; } catch (e) { ok2 = false; } if (typeof window !== 'undefined') window.__ecLastCopy = x.link; this.setState({ invMsg: ok2 ? 'Link kopiert.' : 'Link markieren und kopieren: ' + x.link }); },
+      revoke: () => this.setState({ invites: (this.state.invites || []).map(y => (y.code === x.code ? Object.assign({}, y, { st: 'widerrufen' }) : y)), invMsg: 'Einladung widerrufen. Der Link funktioniert nicht mehr.' }), joined: (x.joined || []).join(', '), hasJoined: !!(x.joined || []).length }));
+    const inv = { open: !!s.invOpen, close: () => this.setState({ invOpen: false }), openAdmin: () => this.setState({ invOpen: true, invF: { s: 'firma', k: 'firma', r: '', days: 7, max: 0, d: '', ap: false }, invLink: '', invMsg: '' }),
+      scopes: invScopes.map(([k, l]) => erChip(IVF.s === k, l, () => this.setState({ invF: Object.assign({}, IVF, { s: k, k: '', r: '' }), invLink: '' }))), targets: invTargets.map(([k, l]) => erChip(invK === k, l, () => setIF({ k }))), noTargets: !invTargets.length,
+      roles: invRoles.map(r => erChip(invR === r, r, () => setIF({ r }))), days: [[1, '1 Tag'], [7, '7 Tage'], [30, '30 Tage']].map(([d, l]) => erChip((IVF.days || 7) === d, l, () => setIF({ days: d }))),
+      maxes: [[1, 'einmal'], [10, 'bis 10×'], [0, 'unbegrenzt']].map(([m, l]) => erChip((IVF.max || 0) === m, l, () => setIF({ max: m }))), dom: IVF.d || '', setDom: e => setIF({ d: e && e.target ? e.target.value : '' }),
+      apOn: IVF.ap ? 'true' : 'false', apLabel: (IVF.ap ? '✓ ' : '+ ') + 'Admin muss den Beitritt freigeben', apToggle: () => setIF({ ap: !IVF.ap }), showAp: IVF.s !== 'projekt' || !ER, guestNote: /Gast/.test(invR) ? 'Gäste (Kunden, Lieferanten) sehen nur dieses eine Projekt, keine anderen Projekte, Teams oder Personen.' : '',
+      create: () => { if (!invK) return this.setState({ invMsg: 'Erst ein Projekt anlegen, dann einladen.' }); const name = (invTargets.find(x => x[0] === invK) || ['', ''])[1].replace(/^Team /, ''), code = Math.random().toString(36).slice(2, 8), exp = this.isoAdd('2026-11-13', IVF.days || 7);
+        const tok = this.invEncode({ v: 1, c: code, s: IVF.s, k: invK, n: name, r: invR, by: invBy, exp, d: (IVF.d || '').trim().replace(/^@/, ''), ap: !!IVF.ap }), link = this.invBase() + '#einladung=' + tok;
+        this.setState({ invites: [{ code, s: IVF.s, k: invK, n: name, r: invR, exp, max: IVF.max || 0, uses: 0, link, st: 'aktiv', d: IVF.d || '' }].concat(this.state.invites || []), invLink: link, invMsg: 'Einladungslink erzeugt. Kopieren und per Mail, Teams oder Chat verschicken.' }); },
+      link: s.invLink || '', hasLink: !!s.invLink, msg: s.invMsg || '', hasMsg: !!s.invMsg,
+      copy: () => { const l = this.state.invLink; let ok2 = false; try { navigator.clipboard.writeText(l); ok2 = true; } catch (e) { ok2 = false; } if (typeof window !== 'undefined') window.__ecLastCopy = l; this.setState({ invMsg: ok2 ? '📋 Link kopiert.' : 'Kopieren nicht erlaubt: Link im Feld markieren und kopieren.' }); },
+      mail: () => { const l = this.state.invLink; const href = 'mailto:?subject=' + encodeURIComponent('Einladung ins Engineering Cockpit') + '&body=' + encodeURIComponent('Hallo,\n\nich lade dich ins Engineering Cockpit ein. Über diesen Link meldest du dich an und trittst direkt bei:\n' + l + '\n\nViele Grüße\n' + invBy); if (typeof window !== 'undefined') { window.__ecLastMail = href; if (!window.__ecNoMail) { const a = document.createElement('a'); a.href = href; document.body.appendChild(a); a.click(); a.remove(); } } },
+      tryIt: () => { const l = this.state.invLink; try { const w = window.open(l, '_blank'); if (!w) throw new Error('blockiert'); } catch (e) { this.invOpenLink(l); } },
+      tryHere: () => this.invOpenLink(this.state.invLink),
+      list: invList, noList: !invList.length };
     const isF = { start: erApp && s.screen === 'start', arbeit: erApp && s.screen === 'arbeit', projekte: erApp && s.screen === 'projekte' };
     const FBK = [['fehler', '🐞 Fehler'], ['verb', '💡 Verbesserung'], ['frage', '❓ Frage'], ['lob', '👍 Gefällt mir']], fbF = s.fbF || {}, fbKind = fbF.k || 'fehler', setFb = k => e => this.setState({ fbF: Object.assign({}, this.state.fbF, { [k]: e && e.target ? e.target.value : '' }) });
     const SCN = { start: 'Start', arbeit: 'Meine Arbeit', projekte: 'Projekte', projekt: 'Projekt', teams: 'Teams', eingang: 'Posteingang', berichte: 'Berichte', wissen: 'Wissen', admin: 'Verwaltung', profil: 'Profil', pnew: 'Neues Projekt', pn: 'Projekt', kickoff: 'Kickoff', import: 'Import', antrag: 'Projektantrag', mobil: 'Mobil' };
@@ -2653,7 +2735,8 @@ class Component extends DCLogic {
     const WN = [['18.11.', 'Integrationen: LPA-Tool', 'Maßnahmen aus dem LPA-Tool laufen als Aufgaben ein. „Erledigt“ bestätigt der Auditor, Konflikte werden sichtbar.', () => this.setState({ screen: 'admin', adview: 'integ', wnOpen: false, panel: null })],
       ['18.11.', 'Word-Berichte', 'Status, Abnahme, Abschluss und Besprechung als .docx, auch aus deiner Word-Vorlage mit Platzhaltern.', goP('status', { wordOpen: true })],
       ['18.11.', 'Plan gegen Ist mit Prognose', 'Geplant, erreicht und Kosten im Vergleich, mit Prognose für Ende und Gesamtkosten.', goP('status')],
-      ['18.11.', 'Erster Start als neuer Nutzer', 'Anmelden mit E-Mail, Apple, Google, Facebook oder Firmen-SSO, leere App mit Start, Aufgaben und Projekten, interaktives Tutorial.', () => this.setState({ erst: { stage: 'login', tasks: [], projects: [], tiles: [], note: '' }, erVia: null, erF: {}, panel: null, wnOpen: false })],
+      ['18.11.', 'Erster Start als neuer Nutzer', 'Anmelden mit E-Mail, Apple, Google, Facebook oder Firmen-SSO, leere App mit Start, Aufgaben und Projekten, interaktives Tutorial.', () => this.setState(this.erStartPatch(null))],
+      ['18.11.', 'Einladungslinks', 'Link für Projekt, Team oder Firma erzeugen, kopieren und verschicken. Externe treten damit bei, auch als Gast.', () => this.setState({ screen: 'admin', adview: 'einl', wnOpen: false, panel: null })],
       ['18.11.', 'Feedback direkt aus dem Entwurf', '„💬 Feedback geben“ links unten oder auf der Startseite. Ort und Gerät schreibt das Cockpit selbst dazu.', null],
       ['17.11.', 'Abhängigkeiten im Gantt', 'Nachfolger hängen automatisch am Vorgänger, Pfeile zeigen den Ablauf, der kritische Pfad ist rot.', goP('planung', { mview: Object.assign({}, s.mview, { sm42p: 'gantt' }) })],
       ['17.11.', 'PowerPoint aus Projektdaten', 'Foliensatz aus Status, Plan, Aufgaben, Team, Kosten und Risiken, auch im Design deiner Vorlage.', goP('uebersicht', { pptOpen: true })],
@@ -2665,9 +2748,9 @@ class Component extends DCLogic {
     const wn = { open: () => this.setState({ wnOpen: true, fbOpen: false }), close: () => this.setState({ wnOpen: false }), isOpen: !!s.wnOpen, date: '18.11.', barTxt: 'Word-Berichte aus deiner Vorlage, Plan gegen Ist mit Prognose, LPA-Tool unter Verwaltung › Integrationen.',
       bar: !s.wnHide && !wnSeen, hide: () => { try { localStorage.setItem('ecWnSeen', WN_VER); } catch (e) { /* ohne Speicher */ } this.setState({ wnHide: true }); },
       items: WN.map(([d, title, txt, go]) => ({ d, title, txt, canTry: !!go, go: go || (() => {}) })) };
-    const AV_TABS = [['org', 'Organigramm'], ['personen', 'Personen'], ['regeln', 'Freigabewege'], ['gruppen', 'Gruppen und Vertretung'], ['ki', 'KI-Modell'], ['integ', 'Integrationen']];
+    const AV_TABS = [['org', 'Organigramm'], ['personen', 'Personen'], ['regeln', 'Freigabewege'], ['gruppen', 'Gruppen und Vertretung'], ['einl', 'Einladungen'], ['ki', 'KI-Modell'], ['integ', 'Integrationen']];
     const adViews = AV_TABS.map(([k, label]) => ({ label, sel: s.adview === k ? 'true' : 'false', bg: s.adview === k ? t.surface : 'transparent', fg: s.adview === k ? t.text : t.muted, sh: s.adview === k ? '0 1px 3px rgba(0,0,0,0.15)' : 'none', go: () => this.setState({ adview: k, adMsg: '' }) }));
-    const ad = { org: s.adview === 'org', personen: s.adview === 'personen', regeln: s.adview === 'regeln', gruppen: s.adview === 'gruppen', ki: s.adview === 'ki', integ: s.adview === 'integ' };
+    const ad = { org: s.adview === 'org', personen: s.adview === 'personen', regeln: s.adview === 'regeln', gruppen: s.adview === 'gruppen', ki: s.adview === 'ki', integ: s.adview === 'integ', einl: s.adview === 'einl' };
     const ig = (() => { const LI = s.lpaItems || LPA_SEED.filter(x => !x.later), LT = s.lpaT || {}, lst = x => this.lpaSt(x), G = '#107C10', A = '#B07B00', R = '#C50F1F', fdd = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.', auto = s.lpaAuto !== false;
       const SL = { OPEN: 'offen', IN_PROGRESS: 'in Umsetzung', DONE: 'umgesetzt', VERIFIED: 'wirksam', REJECTED: 'verworfen' };
       const setSt = (x, st, m, api, extra) => this.lpaLogPush(m, Object.assign({ lpaL: Object.assign({}, this.state.lpaL, { [x.id]: Object.assign({}, (this.state.lpaL || {})[x.id], { status: st }) }) }, extra || {}), api);
@@ -3797,6 +3880,7 @@ class Component extends DCLogic {
         (nw.llTake || []).forEach((wid, i) => { const w = WISSEN.find(z => z.id === wid); if (!w) return; const rec = (w.f.find(z => z[0] === 'Empfehlung') || w.f[w.f.length - 1])[1], id = key + 'l' + i;
           const x = { id, title: rec.length > 90 ? w.title : rec, proj: name, due: addDays(nw.start, 14), bucket: 'Backlog', prio: 'Mittel', owner: 'Du', mine: true, ms: null, desc: 'Aus Lessons Learned „' + w.title + '“ (' + w.origin + ')', est: 2, co: [] }; TASKS.push(x); TASK[id] = x; });
         const u = { key, name, code, color: nw.color, tpl: nw.tpl, model: TP.model, stufe: nwStufe, mods: nw.mods, start: nw.start, members: nw.members.slice(), nodes, risks: [], costs: [], budget: nwStufe >= 3 ? 50000 : 0, reqs: [], archived: false };
+        if (s.erst && s.erst.type === 'firma') u.pending = true;
         this.setState({ rev: (s.rev || 0) + 1, uprojs: UP.concat([u]), screen: 'pn', upSel: key, upTab: TP.tasks.length || !nodes.length ? 'aufgaben' : 'planung', newP: null, pnMsg: 'Projekt „' + name + '“ angelegt' + (nodes.length ? ' mit ' + nodes.filter(n => n.type === 'phase').length + ' Phasen und ' + nodes.filter(n => n.type === 'gate').length + ' Quality Gates' : '') + (TP.tasks.length ? ' und ' + TP.tasks.length + ' Aufgaben' : '') + '. Aufgaben direkt in einer Spalte mit „+ Aufgabe“ anlegen.' }); } };
 
     const upCur = UP.find(u => u.key === s.upSel) || null;
@@ -4687,7 +4771,7 @@ class Component extends DCLogic {
       mv, fo, dash, paletteItems, mo, dashHasMsg: !!s.dashMsg, dashMsg: s.dashMsg,
       openMobil: () => this.setState({ screen: 'mobil', panel: null, moScreen: 'list', moMsg: '' }),
       focusRows, themeBars, prioSug, applySug, aThemes, aFocusHint,
-      adViews, ad, ig, fb, wn, brief, er, isF, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
+      adViews, ad, ig, fb, wn, brief, er, isF, inv, orgTop, orgTeams, orgDetail, orgTargets, orgHist, orgPeople, rules, pfBtns, pf, groupsAd, vertrList, vtPick,
       adHasMsg: !!s.adMsg, adMsg: s.adMsg, adRing: s.screen === 'admin' || s.screen === 'profil' ? accent : '#FFFFFF', wKiOpen: !!s.wKi, wKiOpenA: s.wKi ? 'true' : 'false', wKiBtn: s.wKi ? '🧠 KI-Vorschläge ausblenden' : '🧠 KI-Vorschläge zum Pflegen', wKiToggle: () => this.setState({ wKi: !s.wKi }),
       wSideOpen: !!s.wSide, wSideOpenA: s.wSide ? 'true' : 'false', wSideBtn: s.wSide ? 'Häufige Themen und Lessons Learned ausblenden' : 'Häufige Themen und Lessons Learned', wSideToggle: () => this.setState({ wSide: !s.wSide }),
       navShow: s.erst ? { projekte: true, teams: false, wissen: false, berichte: false, eingang: false } : (h => ({ projekte: !h.projekte, teams: !h.teams, wissen: !h.wissen, berichte: !h.berichte, eingang: !h.eingang }))(s.navHide || {}), navCls: s.navOpen ? 'open' : '', navOpen: !!s.navOpen, navOpenA: s.navOpen ? 'true' : 'false',
